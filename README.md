@@ -41,18 +41,30 @@ Backend Setup:
    source venv/bin/activate # macOS/Linux
    venv\Scripts\activate # Windows (all of us are macOS though)
 3. Install dependencies:
+   ```bash
    pip install -r requirements.txt
+   ```
 4. Run the backend server:
-   uvicorn main:app --reload --port 8000
+   ```bash
+   uvicorn backend.main:app --reload --port 8000
+   ```
+
+### Frontend Setup:
 
 Frontend Setup:
 
 1. Navigate to the frontend folder:
+   ```bash
    cd frontend
+   ```
 2. Install dependencies:
+   ```bash
    npm install
+   ```
 3. Run the frontend server:
+   ```bash
    npm run dev
+   ```
 4. Open your browser at http://localhost:3000
 
 API Endpoints
