@@ -11,18 +11,15 @@ It combines a Next.js frontend for an interactive UI with a FastAPI backend for 
 
 ## Tech Stack
 
-- **Frontend**: Next.js (React, TypeScript, Tailwind CSS)
-- **Backend**: FastAPI (Python)
-- **Database**: TBU
-- **AI/ML Services**: TBU
-- **Authentication**: TBU
-- **LinkedIn Integration**: TBU
-- **Development**: TBU
-- **Deployment**: TBU
+- Frontend: Next.js (React, TypeScript, Tailwind CSS)
+- Backend: FastAPI (Python)
+- Database: TBU
+- AI/ML Services: OpenAI API
+- Deployment: TBU
 
 ## Folder Structure
 
-my-project/
+qtma25/
 backend/
 main.py
 requirements.txt
@@ -34,20 +31,15 @@ node_modules/
 .gitignore
 README.md
 
-## Getting Started
+Getting Started
+Backend Setup:
 
-### Backend Setup:
-
-1. Navigate to the project root:
-   ```bash
-   cd qtma25
-   ```
+1. Navigate to the backend folder:
+   cd backend
 2. Create and activate a virtual environment:
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # macOS/Linux
-   # venv\Scripts\activate   # Windows
-   ```
+   python -m venv venv
+   source venv/bin/activate # macOS/Linux
+   venv\Scripts\activate # Windows (all of us are macOS though)
 3. Install dependencies:
    ```bash
    pip install -r requirements.txt
@@ -58,6 +50,8 @@ README.md
    ```
 
 ### Frontend Setup:
+
+Frontend Setup:
 
 1. Navigate to the frontend folder:
    ```bash
