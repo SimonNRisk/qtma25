@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { supabase } from '@/lib/supabase'
 
 export default function Onboarding() {
   const [currentStep, setCurrentStep] = useState(1)
@@ -43,10 +44,33 @@ export default function Onboarding() {
     }
   }
 
-  const handleSubmit = () => {
-    // TODO: Handle form submission
-    console.log('Form data:', formData)
-    alert('Onboarding complete! (This is just a demo)')
+  const handleSubmit = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([
+          {
+            full_name: formData.name,
+            company: formData.company,
+            role: formData.role,
+            email: formData.email,
+            industry: formData.industry
+          }
+        ])
+        .select()
+
+      if (error) {
+        console.error('Error saving to Supabase:', error)
+        alert('Error saving data. Please try again.')
+        return
+      }
+
+      console.log('Data saved to Supabase:', data)
+      alert('Onboarding complete! Your data has been saved.')
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Error saving data. Please try again.')
+    }
   }
 
   return (
