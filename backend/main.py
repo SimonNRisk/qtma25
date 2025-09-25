@@ -1,5 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+from pydantic import BaseModel
+from linkedin_service import LinkedInService
+
+# Load environment variables
+load_dotenv()
 
 # Create FastAPI app
 app = FastAPI()
@@ -22,3 +29,20 @@ def read_root():
 @app.get("/api/hello")
 def say_hello():
     return {"message": "Hello from /api/hello"}
+
+# Pydantic model for request body
+class PostRequest(BaseModel):
+    text: str
+
+# LinkedIn post endpoint with image support
+@app.post("/api/linkedin/post")
+async def post_to_linkedin(
+    text: str = Form(...),
+    image: UploadFile = File(None)
+):
+    """
+    Post text and optional image to LinkedIn
+    """
+    linkedin_service = LinkedInService()
+    return await linkedin_service.post_to_linkedin(text, image)
+
