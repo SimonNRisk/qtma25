@@ -4,8 +4,8 @@ from fastapi import UploadFile
 from typing import Optional, Tuple
 
 class LinkedInService:
-    def __init__(self):
-        self.access_token = os.getenv('LINKEDIN_ACCESS_TOKEN')
+    def __init__(self, access_token=None):
+        self.access_token = access_token or os.getenv('LINKEDIN_ACCESS_TOKEN')
         self.user_id = os.getenv('LINKEDIN_USER_ID', 'qzt-jTlMWM')
         
     async def upload_image_to_linkedin(self, image_file: UploadFile) -> Tuple[Optional[str], Optional[str]]:
@@ -114,7 +114,21 @@ class LinkedInService:
                 response = await client.post(linkedin_url, json=payload, headers=headers)
                 
                 if response.status_code == 201:
-                    return {"id": response.json().get("id"), "message": "Post created successfully"}
+                    response_data = response.json()
+                    print(f"LinkedIn API Response: {response_data}")  # Debug logging
+                    
+                    # Try different possible ID fields
+                    post_id = (response_data.get("id") or 
+                              response_data.get("activity") or 
+                              response_data.get("activityId") or
+                              "unknown")
+                    
+                    return {
+                        "id": post_id,
+                        "message": "Post created successfully",
+                        "linkedin_url": f"https://www.linkedin.com/feed/update/{post_id}",
+                        "raw_response": response_data  # For debugging
+                    }
                 else:
                     return {"error": f"LinkedIn API error: {response.status_code} - {response.text}"}
                     
