@@ -1,14 +1,17 @@
 'use client'
 import { useState } from 'react'
+import { LINKEDIN_VIEW_POST_URL } from './utils/constants'
 
 export default function LinkedInPost() {
   const [isPosting, setIsPosting] = useState(false)
   const [result, setResult] = useState('')
   const [postText, setPostText] = useState('')
+  const [linkedinUrl, setLinkedinUrl] = useState('')
 
   const handlePost = async () => {
     setIsPosting(true)
     setResult('')
+    setLinkedinUrl('')
 
     try {
       const response = await fetch('http://localhost:8000/api/linkedin/post', {
@@ -23,7 +26,8 @@ export default function LinkedInPost() {
       const data = await response.json()
 
       if (response.ok) {
-        setResult(`Success! Post ID: ${data.id}`)
+        setResult('Success!')
+        setLinkedinUrl(`https://www.linkedin.com/feed/update/${data.id}`)
       } else {
         setResult(`Error: ${data.error || 'Failed to post'}`)
       }
@@ -52,7 +56,7 @@ export default function LinkedInPost() {
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
               placeholder="Enter your LinkedIn post content here..."
-              className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
+              className="w-full text-black h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
             />
             <div className="text-sm text-gray-500 mt-2">{postText.length} characters</div>
           </div>
@@ -70,7 +74,17 @@ export default function LinkedInPost() {
 
         {result && (
           <div className="mt-6 p-4 rounded-lg bg-gray-100 border-l-4 border-brand-blue">
-            <p className="text-gray-800">{result}</p>
+            <p className="text-gray-800 mb-2">{result}</p>
+            {linkedinUrl && (
+              <a
+                href={linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center text-brand-blue hover:text-blue-600 underline font-medium"
+              >
+                View your post on LinkedIn →
+              </a>
+            )}
           </div>
         )}
       </div>
