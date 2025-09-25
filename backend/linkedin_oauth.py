@@ -8,7 +8,7 @@ class LinkedInOAuth:
         self.client_id = os.getenv('LINKEDIN_CLIENT_ID')
         self.client_secret = os.getenv('LINKEDIN_CLIENT_SECRET')
         self.redirect_uri = os.getenv('LINKEDIN_REDIRECT_URI', 'http://localhost:3000/linkedin-connect/callback')
-        self.scope = 'w_member_social'
+        self.scope = 'w_member_social profile email openid'
         
     def get_auth_url(self) -> Dict[str, str]:
         """Generate LinkedIn OAuth authorization URL"""
@@ -46,8 +46,8 @@ class LinkedInOAuth:
                 raise Exception(f"Token exchange failed: {response.text}")
     
     async def get_user_profile(self, access_token: str) -> Dict[str, Any]:
-        """Get user's LinkedIn profile information"""
-        profile_url = "https://api.linkedin.com/v2/people/~"
+        """Get user's LinkedIn profile information using OpenID Connect"""
+        profile_url = "https://api.linkedin.com/v2/userinfo"
         headers = {
             "Authorization": f"Bearer {access_token}",
             "X-Restli-Protocol-Version": "2.0.0"
