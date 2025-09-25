@@ -14,7 +14,7 @@ export default function LinkedInCallback() {
     const error = searchParams.get('error')
 
     if (error) {
-      setStatus(`❌ OAuth Error: ${error}`)
+      setStatus(`OAuth Error: ${error}`)
       return
     }
 
@@ -30,21 +30,21 @@ export default function LinkedInCallback() {
         .then((res) => res.json())
         .then((data) => {
           if (data.message) {
-            setStatus('✅ Successfully connected to LinkedIn!')
+            setStatus('Successfully connected to LinkedIn!')
             setIsSuccess(true)
             // Redirect back to onboarding after 2 seconds
             setTimeout(() => {
               router.push('/onboarding')
             }, 2000)
           } else {
-            setStatus(`❌ Error: ${data.detail || 'Authentication failed'}`)
+            setStatus(`Error: ${data.detail || 'Authentication failed'}`)
           }
         })
         .catch((error) => {
-          setStatus(`❌ Network error: ${error}`)
+          setStatus(`Network error: ${error}`)
         })
     } else {
-      setStatus('❌ No authorization code received')
+      setStatus('No authorization code received')
     }
   }, [searchParams, router])
 

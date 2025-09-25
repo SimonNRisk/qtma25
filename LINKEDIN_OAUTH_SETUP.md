@@ -3,6 +3,7 @@
 ## 🔐 **LinkedIn App Setup**
 
 ### **1. Create LinkedIn App**
+
 1. Go to [LinkedIn Developer Portal](https://www.linkedin.com/developers/)
 2. Click **"Create App"**
 3. Fill in app details:
@@ -13,6 +14,7 @@
 4. Click **"Create app"**
 
 ### **2. Configure OAuth Settings**
+
 1. In your app dashboard, go to **"Auth"** tab
 2. Add redirect URL: `http://localhost:3000/linkedin-connect/callback`
 3. Request these scopes:
@@ -20,7 +22,9 @@
 4. Note down your **Client ID** and **Client Secret**
 
 ### **3. Set Environment Variables**
+
 Add to your backend `.env` file:
+
 ```bash
 LINKEDIN_CLIENT_ID=your_client_id_here
 LINKEDIN_CLIENT_SECRET=your_client_secret_here
@@ -28,6 +32,7 @@ LINKEDIN_REDIRECT_URI=http://localhost:3000/linkedin-connect/callback
 ```
 
 ### **4. Test the OAuth Flow**
+
 1. Start backend: `uvicorn main:app --reload --port 8000`
 2. Start frontend: `npm run dev`
 3. Go to `http://localhost:3000/linkedin-connect`
@@ -35,7 +40,7 @@ LINKEDIN_REDIRECT_URI=http://localhost:3000/linkedin-connect/callback
 5. Authorize the app
 6. You'll be redirected back and authenticated!
 
-## 🚀 **OAuth Flow**
+## **OAuth Flow**
 
 1. **User clicks "Connect"** → Frontend calls `/api/linkedin/auth`
 2. **Backend generates OAuth URL** → User redirected to LinkedIn
@@ -43,14 +48,14 @@ LINKEDIN_REDIRECT_URI=http://localhost:3000/linkedin-connect/callback
 4. **Callback exchanges code for token** → Token stored securely
 5. **User can now post** → Backend uses stored token for API calls
 
-## 🔧 **Troubleshooting**
+## **Troubleshooting**
 
 - **CORS errors**: Make sure backend is running on port 8000
 - **OAuth errors**: Check your redirect URI matches exactly
 - **API errors**: Verify your LinkedIn app has the right permissions
 - **Token errors**: Check that your client ID/secret are correct
 
-## 📝 **Production Notes**
+## **Production Notes**
 
 - Use environment variables for secrets
 - Store tokens in Supabase database
