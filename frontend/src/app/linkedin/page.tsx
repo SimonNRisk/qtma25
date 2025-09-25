@@ -7,6 +7,14 @@ export default function LinkedInPost() {
   const [result, setResult] = useState('')
   const [postText, setPostText] = useState('')
   const [linkedinUrl, setLinkedinUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setSelectedFile(file)
+    }
+  }
 
   const handlePost = async () => {
     setIsPosting(true)
@@ -14,14 +22,15 @@ export default function LinkedInPost() {
     setLinkedinUrl('')
 
     try {
+      const formData = new FormData()
+      formData.append('text', postText)
+      if (selectedFile) {
+        formData.append('image', selectedFile)
+      }
+
       const response = await fetch('http://localhost:8000/api/linkedin/post', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          text: postText
-        })
+        body: formData
       })
       const data = await response.json()
 
@@ -59,6 +68,24 @@ export default function LinkedInPost() {
               className="w-full text-black h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
             />
             <div className="text-sm text-gray-500 mt-2">{postText.length} characters</div>
+          </div>
+
+          <div className="mb-6">
+            <label htmlFor="imageUpload" className="block text-sm font-medium text-gray-700 mb-2">
+              Upload an image (optional)
+            </label>
+            <input
+              id="imageUpload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+            />
+            {selectedFile && (
+              <div className="mt-2 text-sm text-gray-600">
+                Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </div>
+            )}
           </div>
 
           <div className="text-center">
