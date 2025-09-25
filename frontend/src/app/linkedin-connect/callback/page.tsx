@@ -32,9 +32,9 @@ export default function LinkedInCallback() {
           if (data.message) {
             setStatus('✅ Successfully connected to LinkedIn!')
             setIsSuccess(true)
-            // Redirect back to connect page after 2 seconds
+            // Redirect back to onboarding after 2 seconds
             setTimeout(() => {
-              router.push('/linkedin-connect')
+              router.push('/onboarding')
             }, 2000)
           } else {
             setStatus(`❌ Error: ${data.detail || 'Authentication failed'}`)
