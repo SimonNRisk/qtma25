@@ -5,12 +5,16 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from linkedin_service import LinkedInService
 from linkedin_oauth import LinkedInOAuth
+from supabase_service import SupabaseService
 
 # Load environment variables
 load_dotenv()
 
 # Create FastAPI app
 app = FastAPI()
+
+# Initialize Supabase service
+supabase_service = SupabaseService()
 
 # Enable CORS so frontend can talk to backend
 app.add_middleware(
@@ -64,8 +68,10 @@ async def linkedin_callback(request: dict):
         # Get user profile
         profile_data = await oauth.get_user_profile(access_token)
         
-        # TODO: Store token and profile in Supabase
-        # For now, just return success
+        # Store token in Supabase
+        user_id = profile_data.get("sub", "demo_user")
+        await supabase_service.store_linkedin_token(user_id, access_token, profile_data)
+        
         return {
             "message": "Authentication successful",
             "access_token": access_token,
@@ -82,8 +88,24 @@ async def post_to_linkedin(
     image: UploadFile = File(None)
 ):
     """
-    Post text and optional image to LinkedIn
+    Post text and optional image to LinkedIn using OAuth token
     """
-    linkedin_service = LinkedInService()
+    # For demo purposes, get the first available token
+    # In production, you'd get the user_id from the session/auth
+    try:
+        # Get all tokens (in production, filter by authenticated user)
+        result = supabase_service.supabase.table('linkedin_tokens').select('*').execute()
+        
+        if not result.data:
+            return {"error": "No authenticated users found. Please connect your LinkedIn account first."}
+        
+        # Get the first user's token (in production, get from session)
+        token_data = result.data[0]
+        access_token = token_data["access_token"]
+    except Exception as e:
+        return {"error": f"Error retrieving token: {str(e)}"}
+    
+    # Create LinkedIn service with OAuth token
+    linkedin_service = LinkedInService(access_token=access_token)
     return await linkedin_service.post_to_linkedin(text, image)
 
