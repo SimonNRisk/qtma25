@@ -1,0 +1,79 @@
+'use client'
+import { useState } from 'react'
+
+export default function LinkedInPost() {
+  const [isPosting, setIsPosting] = useState(false)
+  const [result, setResult] = useState('')
+  const [postText, setPostText] = useState('')
+
+  const handlePost = async () => {
+    setIsPosting(true)
+    setResult('')
+
+    try {
+      const response = await fetch('http://localhost:8000/api/linkedin/post', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: postText
+        })
+      })
+      const data = await response.json()
+
+      if (response.ok) {
+        setResult(`Success! Post ID: ${data.id}`)
+      } else {
+        setResult(`Error: ${data.error || 'Failed to post'}`)
+      }
+    } catch (error) {
+      setResult(`Network error: ${error}`)
+    } finally {
+      setIsPosting(false)
+    }
+  }
+
+  return (
+    <main className="min-h-screen bg-brand-light p-8">
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-brand-dark text-white p-6 rounded-lg shadow-lg mb-6">
+          <h1 className="text-3xl font-bold mb-2 text-brand-blue">LinkedIn Demo Post</h1>
+          <p className="text-brand-light">Click the button to post a demo message to LinkedIn</p>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="mb-6">
+            <label htmlFor="postText" className="block text-sm font-medium text-gray-700 mb-2">
+              What do you want to post?
+            </label>
+            <textarea
+              id="postText"
+              value={postText}
+              onChange={(e) => setPostText(e.target.value)}
+              placeholder="Enter your LinkedIn post content here..."
+              className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
+            />
+            <div className="text-sm text-gray-500 mt-2">{postText.length} characters</div>
+          </div>
+
+          <div className="text-center">
+            <button
+              onClick={handlePost}
+              disabled={isPosting || !postText.trim()}
+              className="bg-brand-blue text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg"
+            >
+              {isPosting ? 'Posting...' : 'Post to LinkedIn'}
+            </button>
+          </div>
+        </div>
+
+        {result && (
+          <div className="mt-6 p-4 rounded-lg bg-gray-100 border-l-4 border-brand-blue">
+            <p className="text-gray-800">{result}</p>
+          </div>
+        )}
+      </div>
+    </main>
+  )
+}
