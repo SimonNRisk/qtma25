@@ -13,9 +13,9 @@ export default function Home() {
     
     // Fetch API message
     fetch("http://localhost:8000/api/hello")
-      .then(res => res.json())
-      .then(data => setMessage(data.message))
-      .catch(err => console.error(err));
+      .then((res) => res.json())
+      .then((data) => setMessage(data.message))
+      .catch((err) => console.error(err));
   }, []);
 
   return (

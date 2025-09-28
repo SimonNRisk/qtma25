@@ -1,8 +1,15 @@
 import os
 from typing import Annotated, Optional
 
-from fastapi import FastAPI, Depends, HTTPException, status, Header
+from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status, Header
 from fastapi.middleware.cors import CORSMiddleware
+import os
+from dotenv import load_dotenv
+from pydantic import BaseModel
+from linkedin_service import LinkedInService
+
+# Load environment variables
+load_dotenv()
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -50,10 +57,19 @@ def read_root():
 def say_hello():
     return {"message": "Hello from /api/hello"}
 
+# Pydantic model for request body
+class PostRequest(BaseModel):
+    text: str
 
-@app.get("/me")
-def me(user=Depends(get_current_user)):
+# LinkedIn post endpoint with image support
+@app.post("/api/linkedin/post")
+async def post_to_linkedin(
+    text: str = Form(...),
+    image: UploadFile = File(None)
+):
     """
-    Example protected route. Call with Authorization: Bearer <access_token>
+    Post text and optional image to LinkedIn
     """
-    return {"user": user}
+    linkedin_service = LinkedInService()
+    return await linkedin_service.post_to_linkedin(text, image)
+
