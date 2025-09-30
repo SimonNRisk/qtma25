@@ -38,7 +38,7 @@ AUTHOR_PERSON_URI=your_profile_id
 4. Enter text
 5. Click post
 
-## 🚀 **Testing Commands**
+## **Testing Commands**
 
 ```bash
 # Backend
@@ -51,14 +51,14 @@ cd frontend
 npm run dev
 ```
 
-## 🔧 **Troubleshooting**
+## **Troubleshooting**
 
 - **CORS errors**: Make sure backend is running on port 8000
 - **OAuth errors**: Check your redirect URI matches exactly
 - **API errors**: Verify your LinkedIn app has the right permissions
 - **Token errors**: Check that your client ID/secret are correct
 
-## 📝 **Production Notes**
+## **Production Notes**
 
 - Use environment variables for secrets
 - Store tokens in a database (not in-memory)
