@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from linkedin_service import LinkedInService
 from linkedin_oauth import LinkedInOAuth
-from supabase_service import SupabaseService
+from linkedin_supabase_service import SupabaseService
 
 # Load environment variables
 load_dotenv()
@@ -13,8 +13,8 @@ load_dotenv()
 # Create FastAPI app
 app = FastAPI()
 
-# Initialize Supabase service
-supabase_service = SupabaseService()
+# Initialize LinkedIn Supabase service
+linkedin_supabase_service = SupabaseService()
 
 # Enable CORS so frontend can talk to backend
 app.add_middleware(
@@ -70,7 +70,7 @@ async def linkedin_callback(request: dict):
         
         # Store token in Supabase
         user_id = profile_data.get("sub", "demo_user")
-        await supabase_service.store_linkedin_token(user_id, access_token, profile_data)
+        await linkedin_supabase_service.store_linkedin_token(user_id, access_token, profile_data)
         
         return {
             "message": "Authentication successful",
@@ -94,7 +94,7 @@ async def post_to_linkedin(
     # In production, you'd get the user_id from the session/auth
     try:
         # Get all tokens (in production, filter by authenticated user)
-        result = supabase_service.supabase.table('linkedin_tokens').select('*').execute()
+        result = linkedin_supabase_service.supabase.table('linkedin_tokens').select('*').execute()
         
         if not result.data:
             return {"error": "No authenticated users found. Please connect your LinkedIn account first."}
