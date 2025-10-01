@@ -104,7 +104,7 @@ async def linkedin_callback(request: dict):
         return {
             "message": "Authentication successful",
             "access_token": access_token,
-            "profile": profile_data
+            "profile": profile_data 
         }
         
     except Exception as e:
