@@ -1,10 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { session } from "@/lib/session";
 
 export default function Home() {
   const [message, setMessage] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
+    // Check if user is authenticated
+    setIsAuthenticated(session.isAuthenticated());
+    
+    // Fetch API message
     fetch("http://localhost:8000/api/hello")
       .then((res) => res.json())
       .then((data) => setMessage(data.message))
@@ -12,22 +19,56 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-brand-light">
-      <div className="bg-brand-dark text-white p-8 rounded-lg shadow-lg mb-6">
-        <h1 className="text-4xl font-bold mb-4 text-brand-blue">
-          Next.js + FastAPI
-        </h1>
-        <p className="text-lg text-brand-light">{message}</p>
-      </div>
-      <div className="flex gap-4">
-        <div className="w-16 h-16 bg-brand-dark rounded-lg flex items-center justify-center text-white font-bold">
-          Dark
+    <main className="flex min-h-screen flex-col items-center justify-center p-24 bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="text-center space-y-8">
+        <div className="space-y-4">
+          <h1 className="text-6xl font-bold text-gray-900 mb-2">Welcome</h1>
+          <h2 className="text-2xl text-gray-600 mb-8">Next.js + FastAPI + JWT Auth</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
+            <p className="text-lg text-gray-700 mb-4">{message}</p>
+            <div className="w-full h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+          </div>
         </div>
-        <div className="w-16 h-16 bg-brand-light border-2 border-brand-dark rounded-lg flex items-center justify-center text-brand-dark font-bold">
-          Light
+
+        <div className="space-y-4">
+          {isAuthenticated ? (
+            <div className="space-y-3">
+              <Link 
+                href="/me" 
+                className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+              >
+                Go to Profile
+              </Link>
+              <button 
+                onClick={() => {
+                  session.clear();
+                  setIsAuthenticated(false);
+                }}
+                className="block mx-auto bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <Link 
+                href="/login" 
+                className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+              >
+                Sign In
+              </Link>
+              <Link 
+                href="/signup" 
+                className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
+              >
+                Create Account
+              </Link>
+            </div>
+          )}
         </div>
-        <div className="w-16 h-16 bg-brand-blue rounded-lg flex items-center justify-center text-white font-bold">
-          Blue
+
+        <div className="text-sm text-gray-500 mt-8">
+          <p>Built with Next.js, FastAPI, and JWT Authentication</p>
         </div>
       </div>
     </main>
