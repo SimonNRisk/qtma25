@@ -1,9 +1,9 @@
-'use client'
-import { useOnboarding } from './hooks/useOnboarding'
-import { ProgressBar } from './components/ProgressBar'
-import { WelcomeStep } from './components/WelcomeStep'
-import { PersonalInfoStep } from './components/PersonalInfoStep'
-import { LinkedInStep } from './components/LinkedInStep'
+'use client';
+import { useOnboarding } from './hooks/useOnboarding';
+import { ProgressBar } from './components/ProgressBar';
+import { WelcomeStep } from './components/WelcomeStep';
+import { PersonalInfoStep } from './components/PersonalInfoStep';
+import { LinkedInStep } from './components/LinkedInStep';
 
 export default function Onboarding() {
   const {
@@ -16,8 +16,8 @@ export default function Onboarding() {
     handleBack,
     handleLinkedInConnect,
     handleSubmit,
-    isFormValid
-  } = useOnboarding()
+    isFormValid,
+  } = useOnboarding();
 
   return (
     <main className="min-h-screen bg-brand-light">
@@ -47,5 +47,5 @@ export default function Onboarding() {
         )}
       </div>
     </main>
-  )
+  );
 }

@@ -1,8 +1,8 @@
-import { StepCard } from './StepCard'
-import { NavigationButtons } from './NavigationButtons'
+import { StepCard } from './StepCard';
+import { NavigationButtons } from './NavigationButtons';
 
 interface WelcomeStepProps {
-  onNext: () => void
+  onNext: () => void;
 }
 
 export const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
@@ -27,5 +27,5 @@ export const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
         </div>
       </div>
     </StepCard>
-  )
-}
+  );
+};
