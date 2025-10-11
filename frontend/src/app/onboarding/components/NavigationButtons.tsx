@@ -1,11 +1,11 @@
 interface NavigationButtonsProps {
-  onBack: () => void
-  onNext: () => void
-  showBack?: boolean
-  showNext?: boolean
-  nextDisabled?: boolean
-  nextText?: string
-  backText?: string
+  onBack: () => void;
+  onNext: () => void;
+  showBack?: boolean;
+  showNext?: boolean;
+  nextDisabled?: boolean;
+  nextText?: string;
+  backText?: string;
 }
 
 export const NavigationButtons = ({
@@ -15,7 +15,7 @@ export const NavigationButtons = ({
   showNext = true,
   nextDisabled = false,
   nextText = 'Next',
-  backText = 'Back'
+  backText = 'Back',
 }: NavigationButtonsProps) => {
   return (
     <div className="flex justify-between mt-8">
@@ -38,5 +38,5 @@ export const NavigationButtons = ({
         </button>
       )}
     </div>
-  )
-}
+  );
+};

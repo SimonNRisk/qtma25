@@ -1,74 +1,74 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 
 export interface OnboardingFormData {
-  name: string
-  company: string
-  role: string
-  email: string
-  industry: string
+  name: string;
+  company: string;
+  role: string;
+  email: string;
+  industry: string;
 }
 
 export const useOnboarding = () => {
-  const searchParams = useSearchParams()
-  const [currentStep, setCurrentStep] = useState(1)
-  const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false)
-  const [linkedinConnected, setLinkedinConnected] = useState(false)
+  const searchParams = useSearchParams();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
+  const [linkedinConnected, setLinkedinConnected] = useState(false);
   const [formData, setFormData] = useState<OnboardingFormData>({
     name: '',
     company: '',
     role: '',
     email: '',
-    industry: ''
-  })
+    industry: '',
+  });
 
   // Check if user is returning from LinkedIn authentication
   useEffect(() => {
-    const code = searchParams.get('code')
+    const code = searchParams.get('code');
     if (code) {
-      setLinkedinConnected(true)
-      setCurrentStep(3) // Go to LinkedIn step
+      setLinkedinConnected(true);
+      setCurrentStep(3); // Go to LinkedIn step
     }
-  }, [searchParams])
+  }, [searchParams]);
 
   const handleInputChange = (field: keyof OnboardingFormData, value: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
 
   const handleNext = () => {
     if (currentStep < 3) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const handleLinkedInConnect = async () => {
-    setIsConnectingLinkedIn(true)
+    setIsConnectingLinkedIn(true);
     try {
-      const response = await fetch('http://localhost:8000/api/linkedin/auth')
-      const data = await response.json()
+      const response = await fetch('http://localhost:8000/api/linkedin/auth');
+      const data = await response.json();
 
       if (response.ok && data.auth_url) {
-        window.location.href = data.auth_url
+        window.location.href = data.auth_url;
       } else {
-        alert(data.detail || 'Failed to get LinkedIn authorization URL.')
+        alert(data.detail || 'Failed to get LinkedIn authorization URL.');
       }
     } catch (err) {
-      alert('Network error or backend is not running.')
-      console.error(err)
+      alert('Network error or backend is not running.');
+      console.error(err);
     } finally {
-      setIsConnectingLinkedIn(false)
+      setIsConnectingLinkedIn(false);
     }
-  }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -80,28 +80,34 @@ export const useOnboarding = () => {
             company: formData.company,
             role: formData.role,
             email: formData.email,
-            industry: formData.industry
-          }
+            industry: formData.industry,
+          },
         ])
-        .select()
+        .select();
 
       if (error) {
-        console.error('Error saving to Supabase:', error)
-        alert('Error saving data. Please try again.')
-        return
+        console.error('Error saving to Supabase:', error);
+        alert('Error saving data. Please try again.');
+        return;
       }
 
-      console.log('Data saved to Supabase:', data)
-      alert('Onboarding complete! Your data has been saved.')
+      console.log('Data saved to Supabase:', data);
+      alert('Onboarding complete! Your data has been saved.');
     } catch (error) {
-      console.error('Error:', error)
-      alert('Error saving data. Please try again.')
+      console.error('Error:', error);
+      alert('Error saving data. Please try again.');
     }
-  }
+  };
 
   const isFormValid = () => {
-    return !!(formData.name && formData.company && formData.role && formData.email && formData.industry)
-  }
+    return !!(
+      formData.name &&
+      formData.company &&
+      formData.role &&
+      formData.email &&
+      formData.industry
+    );
+  };
 
   return {
     currentStep,
@@ -113,6 +119,6 @@ export const useOnboarding = () => {
     handleBack,
     handleLinkedInConnect,
     handleSubmit,
-    isFormValid
-  }
-}
+    isFormValid,
+  };
+};

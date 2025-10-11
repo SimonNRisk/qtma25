@@ -1,21 +1,21 @@
-"use client";
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { session } from "@/lib/session";
+'use client';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { session } from '@/lib/session';
 
 export default function Home() {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
     setIsAuthenticated(session.isAuthenticated());
-    
+
     // Fetch API message
-    fetch("http://localhost:8000/api/hello")
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => console.error(err));
+    fetch('http://localhost:8000/api/hello')
+      .then(res => res.json())
+      .then(data => setMessage(data.message))
+      .catch(err => console.error(err));
   }, []);
 
   return (
@@ -33,13 +33,13 @@ export default function Home() {
         <div className="space-y-4">
           {isAuthenticated ? (
             <div className="space-y-3">
-              <Link 
-                href="/me" 
+              <Link
+                href="/me"
                 className="inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
               >
                 Go to Profile
               </Link>
-              <button 
+              <button
                 onClick={() => {
                   session.clear();
                   setIsAuthenticated(false);
@@ -51,14 +51,14 @@ export default function Home() {
             </div>
           ) : (
             <div className="space-y-3">
-              <Link 
-                href="/login" 
+              <Link
+                href="/login"
                 className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
               >
                 Sign In
               </Link>
-              <Link 
-                href="/signup" 
+              <Link
+                href="/signup"
                 className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-8 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
               >
                 Create Account

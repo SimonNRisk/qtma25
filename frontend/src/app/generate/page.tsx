@@ -9,7 +9,7 @@ export default function GeneratePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!prompt.trim()) return;
 
     setIsLoading(true);
@@ -42,7 +42,7 @@ export default function GeneratePage() {
     <div className="min-h-screen p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Generate Content</h1>
-        
+
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="mb-4">
             <label htmlFor="prompt" className="block text-sm font-medium mb-2">
@@ -52,13 +52,13 @@ export default function GeneratePage() {
               type="text"
               id="prompt"
               value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
+              onChange={e => setPrompt(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Enter a prompt to generate content..."
               disabled={isLoading}
             />
           </div>
-          
+
           <button
             type="submit"
             disabled={isLoading || !prompt.trim()}

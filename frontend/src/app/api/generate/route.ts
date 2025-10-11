@@ -14,10 +14,10 @@ export async function POST(request: NextRequest) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: 'gpt-3.5-turbo',
       messages: [
         {
-          role: "user",
+          role: 'user',
           content: prompt,
         },
       ],
@@ -29,9 +29,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ generatedText });
   } catch (error) {
     console.error('OpenAI API error:', error);
-    return NextResponse.json(
-      { error: 'Failed to generate content' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
   }
 }

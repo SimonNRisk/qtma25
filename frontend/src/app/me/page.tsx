@@ -1,10 +1,10 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { getJSON } from "@/lib/api";
-import { session } from "@/lib/session";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useEffect, useState } from 'react';
+import { getJSON } from '@/lib/api';
+import { session } from '@/lib/session';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function MePage() {
   const router = useRouter();
@@ -13,21 +13,21 @@ export default function MePage() {
 
   useEffect(() => {
     const token = session.access();
-    
-    if (!token) { 
-      router.replace("/login"); 
-      return; 
+
+    if (!token) {
+      router.replace('/login');
+      return;
     }
-    
-    getJSON("/me", token)
+
+    getJSON('/me', token)
       .then(data => {
         setUser(data.user);
         setLoading(false);
       })
-      .catch((error) => {
-        console.error("Profile request failed:", error);
+      .catch(error => {
+        console.error('Profile request failed:', error);
         session.clear();
-        router.replace("/login");
+        router.replace('/login');
       });
   }, [router]);
 
@@ -51,10 +51,12 @@ export default function MePage() {
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-white text-2xl font-bold">
-                {user.first_name?.[0] || user.email?.[0] || "U"}
+                {user.first_name?.[0] || user.email?.[0] || 'U'}
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome, {user.first_name || "User"}!</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Welcome, {user.first_name || 'User'}!
+            </h1>
             <p className="text-gray-600">Here's your profile information</p>
           </div>
 
@@ -64,11 +66,11 @@ export default function MePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">First Name</label>
-                  <p className="text-gray-900 font-medium">{user.first_name || "Not provided"}</p>
+                  <p className="text-gray-900 font-medium">{user.first_name || 'Not provided'}</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-600 mb-1">Last Name</label>
-                  <p className="text-gray-900 font-medium">{user.last_name || "Not provided"}</p>
+                  <p className="text-gray-900 font-medium">{user.last_name || 'Not provided'}</p>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
@@ -82,16 +84,16 @@ export default function MePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button 
-                onClick={() => { 
-                  session.clear(); 
-                  router.replace("/login"); 
+              <button
+                onClick={() => {
+                  session.clear();
+                  router.replace('/login');
                 }}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
               >
                 Sign Out
               </button>
-              <Link 
+              <Link
                 href="/"
                 className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl text-center"
               >
