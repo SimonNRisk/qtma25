@@ -1,11 +1,11 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
   --brand-dark: #131313;
-  --brand-light: #EFEFEF;
-  --brand-blue: #87B9D7;
+  --brand-light: #efefef;
+  --brand-blue: #87b9d7;
 }
 
 @theme inline {

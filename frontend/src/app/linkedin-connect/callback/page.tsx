@@ -1,21 +1,21 @@
-'use client'
-import { useEffect, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+'use client';
+import { useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function LinkedInCallback() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [status, setStatus] = useState('Processing...')
-  const [isSuccess, setIsSuccess] = useState(false)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [status, setStatus] = useState('Processing...');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    const code = searchParams.get('code')
-    const state = searchParams.get('state')
-    const error = searchParams.get('error')
+    const code = searchParams.get('code');
+    const state = searchParams.get('state');
+    const error = searchParams.get('error');
 
     if (error) {
-      setStatus(`OAuth Error: ${error}`)
-      return
+      setStatus(`OAuth Error: ${error}`);
+      return;
     }
 
     if (code) {
@@ -23,30 +23,30 @@ export default function LinkedInCallback() {
       fetch('http://localhost:8000/api/linkedin/callback', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, state })
+        body: JSON.stringify({ code, state }),
       })
-        .then((res) => res.json())
-        .then((data) => {
+        .then(res => res.json())
+        .then(data => {
           if (data.message) {
-            setStatus('Successfully connected to LinkedIn!')
-            setIsSuccess(true)
+            setStatus('Successfully connected to LinkedIn!');
+            setIsSuccess(true);
             // Redirect back to onboarding after 2 seconds
             setTimeout(() => {
-              router.push('/onboarding')
-            }, 2000)
+              router.push('/onboarding');
+            }, 2000);
           } else {
-            setStatus(`Error: ${data.detail || 'Authentication failed'}`)
+            setStatus(`Error: ${data.detail || 'Authentication failed'}`);
           }
         })
-        .catch((error) => {
-          setStatus(`Network error: ${error}`)
-        })
+        .catch(error => {
+          setStatus(`Network error: ${error}`);
+        });
     } else {
-      setStatus('No authorization code received')
+      setStatus('No authorization code received');
     }
-  }, [searchParams, router])
+  }, [searchParams, router]);
 
   return (
     <main className="min-h-screen bg-brand-light flex items-center justify-center p-8">
@@ -58,8 +58,18 @@ export default function LinkedInCallback() {
             }`}
           >
             {isSuccess ? (
-              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              <svg
+                className="w-8 h-8 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
               </svg>
             ) : (
               <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -73,5 +83,5 @@ export default function LinkedInCallback() {
         </div>
       </div>
     </main>
-  )
+  );
 }

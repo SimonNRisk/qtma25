@@ -1,51 +1,51 @@
-'use client'
-import { useState } from 'react'
-import { LINKEDIN_VIEW_POST_URL } from './utils/constants'
+'use client';
+import { useState } from 'react';
+import { LINKEDIN_VIEW_POST_URL } from './utils/constants';
 
 export default function LinkedInPost() {
-  const [isPosting, setIsPosting] = useState(false)
-  const [result, setResult] = useState('')
-  const [postText, setPostText] = useState('')
-  const [linkedinUrl, setLinkedinUrl] = useState('')
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isPosting, setIsPosting] = useState(false);
+  const [result, setResult] = useState('');
+  const [postText, setPostText] = useState('');
+  const [linkedinUrl, setLinkedinUrl] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setSelectedFile(file)
+      setSelectedFile(file);
     }
-  }
+  };
 
   const handlePost = async () => {
-    setIsPosting(true)
-    setResult('')
-    setLinkedinUrl('')
+    setIsPosting(true);
+    setResult('');
+    setLinkedinUrl('');
 
     try {
-      const formData = new FormData()
-      formData.append('text', postText)
+      const formData = new FormData();
+      formData.append('text', postText);
       if (selectedFile) {
-        formData.append('image', selectedFile)
+        formData.append('image', selectedFile);
       }
 
       const response = await fetch('http://localhost:8000/api/linkedin/post', {
         method: 'POST',
-        body: formData
-      })
-      const data = await response.json()
+        body: formData,
+      });
+      const data = await response.json();
 
       if (response.ok) {
-        setResult('Success!')
-        setLinkedinUrl(`https://www.linkedin.com/feed/update/${data.id}`)
+        setResult('Success!');
+        setLinkedinUrl(`https://www.linkedin.com/feed/update/${data.id}`);
       } else {
-        setResult(`Error: ${data.error || 'Failed to post'}`)
+        setResult(`Error: ${data.error || 'Failed to post'}`);
       }
     } catch (error) {
-      setResult(`Network error: ${error}`)
+      setResult(`Network error: ${error}`);
     } finally {
-      setIsPosting(false)
+      setIsPosting(false);
     }
-  }
+  };
 
   return (
     <main className="min-h-screen bg-brand-light p-8">
@@ -63,7 +63,7 @@ export default function LinkedInPost() {
             <textarea
               id="postText"
               value={postText}
-              onChange={(e) => setPostText(e.target.value)}
+              onChange={e => setPostText(e.target.value)}
               placeholder="Enter your LinkedIn post content here..."
               className="w-full text-black h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
             />
@@ -116,5 +116,5 @@ export default function LinkedInPost() {
         )}
       </div>
     </main>
-  )
+  );
 }

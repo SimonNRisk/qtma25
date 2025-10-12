@@ -1,14 +1,14 @@
-import { StepCard } from './StepCard'
-import { FormInput } from './FormInput'
-import { NavigationButtons } from './NavigationButtons'
-import { OnboardingFormData } from '../hooks/useOnboarding'
+import { StepCard } from './StepCard';
+import { FormInput } from './FormInput';
+import { NavigationButtons } from './NavigationButtons';
+import { OnboardingFormData } from '../hooks/useOnboarding';
 
 interface PersonalInfoStepProps {
-  formData: OnboardingFormData
-  onInputChange: (field: keyof OnboardingFormData, value: string) => void
-  onNext: () => void
-  onBack: () => void
-  isFormValid: boolean
+  formData: OnboardingFormData;
+  onInputChange: (field: keyof OnboardingFormData, value: string) => void;
+  onNext: () => void;
+  onBack: () => void;
+  isFormValid: boolean;
 }
 
 const industries = [
@@ -21,10 +21,16 @@ const industries = [
   'Real Estate',
   'Manufacturing',
   'Retail',
-  'Other'
-]
+  'Other',
+];
 
-export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFormValid }: PersonalInfoStepProps) => {
+export const PersonalInfoStep = ({
+  formData,
+  onInputChange,
+  onNext,
+  onBack,
+  isFormValid,
+}: PersonalInfoStepProps) => {
   return (
     <StepCard>
       <div className="text-center mb-8">
@@ -37,7 +43,7 @@ export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFo
           id="name"
           label="Full Name"
           value={formData.name}
-          onChange={(value) => onInputChange('name', value)}
+          onChange={value => onInputChange('name', value)}
           placeholder="Enter your full name"
           required
         />
@@ -46,7 +52,7 @@ export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFo
           id="company"
           label="Company"
           value={formData.company}
-          onChange={(value) => onInputChange('company', value)}
+          onChange={value => onInputChange('company', value)}
           placeholder="Enter your company name"
           required
         />
@@ -55,7 +61,7 @@ export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFo
           id="role"
           label="Role/Title"
           value={formData.role}
-          onChange={(value) => onInputChange('role', value)}
+          onChange={value => onInputChange('role', value)}
           placeholder="e.g. Marketing Manager, CEO, Developer"
           required
         />
@@ -65,7 +71,7 @@ export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFo
           label="Email Address"
           type="email"
           value={formData.email}
-          onChange={(value) => onInputChange('email', value)}
+          onChange={value => onInputChange('email', value)}
           placeholder="Enter your email address"
           required
         />
@@ -75,7 +81,7 @@ export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFo
           label="Industry"
           type="select"
           value={formData.industry}
-          onChange={(value) => onInputChange('industry', value)}
+          onChange={value => onInputChange('industry', value)}
           placeholder="Select your industry"
           options={industries}
           required
@@ -84,5 +90,5 @@ export const PersonalInfoStep = ({ formData, onInputChange, onNext, onBack, isFo
 
       <NavigationButtons onBack={onBack} onNext={onNext} nextDisabled={!isFormValid} />
     </StepCard>
-  )
-}
+  );
+};

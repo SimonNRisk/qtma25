@@ -1,10 +1,10 @@
 interface ProgressBarProps {
-  currentStep: number
-  totalSteps: number
+  currentStep: number;
+  totalSteps: number;
 }
 
 export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
-  const percentage = Math.round((currentStep / totalSteps) * 100)
+  const percentage = Math.round((currentStep / totalSteps) * 100);
 
   return (
     <div className="mb-8">
@@ -21,5 +21,5 @@ export const ProgressBar = ({ currentStep, totalSteps }: ProgressBarProps) => {
         />
       </div>
     </div>
-  )
-}
+  );
+};

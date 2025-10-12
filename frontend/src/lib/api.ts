@@ -1,10 +1,10 @@
-export const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
+export const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
 
 export async function postJSON(path: string, body: unknown, token?: string) {
   const res = await fetch(`${API_URL}${path}`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(body),
@@ -19,7 +19,7 @@ export async function postJSON(path: string, body: unknown, token?: string) {
 export async function getJSON(path: string, token: string) {
   const res = await fetch(`${API_URL}${path}`, {
     headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
+    cache: 'no-store',
   });
   if (!res.ok) throw new Error(await res.text());
   return res.json();
