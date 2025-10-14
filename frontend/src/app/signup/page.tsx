@@ -68,7 +68,8 @@ export default function SignUpPage() {
         setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(countdownInterval);
-            router.push('/login');
+            // Use setTimeout to avoid setState during render
+            setTimeout(() => router.push('/login'), 0);
             return 0;
           }
           return prev - 1;
