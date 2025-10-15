@@ -56,6 +56,10 @@ class ProfileBody(BaseModel):
 app.include_router(auth_router)
 
 # ---------- Routes ----------
+@app.get("/me")
+def get_current_user_profile(current_user: Annotated[dict, Depends(get_current_user)]):
+    """Get current user's profile information"""
+    return {"user": current_user}
 @app.get("/")
 def read_root():
     return {"message": "Hello from FastAPI"}
