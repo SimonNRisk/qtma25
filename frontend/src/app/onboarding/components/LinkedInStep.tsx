@@ -7,6 +7,7 @@ interface LinkedInStepProps {
   onLinkedInConnect: () => void;
   onBack: () => void;
   onSubmit: () => void;
+  onSkip?: () => void;
 }
 
 export const LinkedInStep = ({
@@ -15,12 +16,13 @@ export const LinkedInStep = ({
   onLinkedInConnect,
   onBack,
   onSubmit,
+  onSkip,
 }: LinkedInStepProps) => {
   return (
     <StepCard>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-brand-dark mb-2">Connect Your LinkedIn</h1>
-        <p className="text-gray-600">Connect your LinkedIn account to start posting content</p>
+        <h1 className="text-3xl font-bold text-brand-dark mb-2">First Things First</h1>
+        <p className="text-gray-600">Connect your LinkedIn to unlock posting, scheduling, and personalization.</p>
       </div>
 
       <div className="space-y-6">
@@ -63,13 +65,24 @@ export const LinkedInStep = ({
                 Authorize our app to post content on your behalf. We'll only post what you create.
               </p>
 
-              <button
-                onClick={onLinkedInConnect}
-                disabled={isConnectingLinkedIn}
-                className="bg-brand-blue text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg w-full"
-              >
-                {isConnectingLinkedIn ? 'Connecting...' : 'Connect with LinkedIn'}
-              </button>
+              <div className="space-y-3">
+                <button
+                  onClick={onLinkedInConnect}
+                  disabled={isConnectingLinkedIn}
+                  className="bg-brand-blue text-white px-8 py-4 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-lg w-full"
+                >
+                  {isConnectingLinkedIn ? 'Connecting...' : 'Connect with LinkedIn'}
+                </button>
+
+                {onSkip && (
+                  <button
+                    onClick={onSkip}
+                    className="text-gray-500 hover:text-gray-700 font-medium text-sm underline transition-colors"
+                  >
+                    Skip for now
+                  </button>
+                )}
+              </div>
 
               <p className="text-sm text-gray-500 mt-4">
                 You can skip this step and connect later if needed.
@@ -79,7 +92,7 @@ export const LinkedInStep = ({
         </div>
       </div>
 
-      <NavigationButtons onBack={onBack} onNext={onSubmit} nextText="Complete Setup" />
+      <NavigationButtons onBack={onBack} onNext={onSubmit} nextText="Complete Setup" showBack={false}/>
     </StepCard>
   );
 };

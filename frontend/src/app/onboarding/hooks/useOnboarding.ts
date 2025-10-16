@@ -8,6 +8,11 @@ export interface OnboardingFormData {
   role: string;
   email: string;
   industry: string;
+  companyMission: string;
+  targetAudience: string;
+  topicsToPost: string;
+  selectedGoals: string[];
+  selectedHooks: string[];
 }
 
 export const useOnboarding = () => {
@@ -21,6 +26,11 @@ export const useOnboarding = () => {
     role: '',
     email: '',
     industry: '',
+    companyMission: '',
+    targetAudience: '',
+    topicsToPost: '',
+    selectedGoals: [],
+    selectedHooks: [],
   });
 
   // Check if user is returning from LinkedIn authentication
@@ -40,7 +50,7 @@ export const useOnboarding = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 10) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -99,6 +109,34 @@ export const useOnboarding = () => {
     }
   };
 
+  const handleSkip = () => {
+    // Move to next step when skipping LinkedIn connection
+    handleNext();
+  };
+
+  const handleGoalToggle = (goal: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedGoals: prev.selectedGoals.includes(goal)
+        ? prev.selectedGoals.filter(g => g !== goal)
+        : [...prev.selectedGoals, goal]
+    }));
+  };
+
+  const handleHookToggle = (hook: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedHooks: prev.selectedHooks.includes(hook)
+        ? prev.selectedHooks.filter(h => h !== hook)
+        : [...prev.selectedHooks, hook]
+    }));
+  };
+
+  const handleUnlock = () => {
+    // Redirect to signup page
+    window.location.href = '/signup';
+  };
+
   const isFormValid = () => {
     return !!(
       formData.name &&
@@ -119,6 +157,10 @@ export const useOnboarding = () => {
     handleBack,
     handleLinkedInConnect,
     handleSubmit,
+    handleSkip,
+    handleGoalToggle,
+    handleHookToggle,
+    handleUnlock,
     isFormValid,
   };
 };
