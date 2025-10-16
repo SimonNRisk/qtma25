@@ -1,7 +1,14 @@
 export const session = {
   save(access: string, refresh?: string) {
+    // Save to localStorage for client-side access
     localStorage.setItem('access_token', access);
     if (refresh) localStorage.setItem('refresh_token', refresh);
+
+    // Also save to cookies for server-side access
+    document.cookie = `access_token=${access}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
+    if (refresh) {
+      document.cookie = `refresh_token=${refresh}; path=/; max-age=${30 * 24 * 60 * 60}; secure; samesite=strict`;
+    }
   },
   access() {
     return localStorage.getItem('access_token');
@@ -12,6 +19,10 @@ export const session = {
   clear() {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+
+    // Clear cookies
+    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
   },
   // Check if user is authenticated
   isAuthenticated() {
