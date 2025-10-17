@@ -44,7 +44,7 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       // ⬇️ include first_name & last_name
-      const data = await postJSON('/auth/signup', {
+      await postJSON('/auth/signup', {
         email,
         password,
         first_name: first,
