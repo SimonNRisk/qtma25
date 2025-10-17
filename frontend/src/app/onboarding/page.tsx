@@ -4,6 +4,7 @@ import { ProgressBar } from './components/ProgressBar';
 import { WelcomeStep } from './components/WelcomeStep';
 import { PersonalInfoStep } from './components/PersonalInfoStep';
 import { LinkedInStep } from './components/LinkedInStep';
+import { AuthGuard } from '@/components/AuthGuard';
 
 export default function Onboarding() {
   const {
@@ -20,32 +21,34 @@ export default function Onboarding() {
   } = useOnboarding();
 
   return (
-    <main className="min-h-screen bg-brand-light">
-      <div className="max-w-2xl mx-auto px-8 py-12">
-        <ProgressBar currentStep={currentStep} totalSteps={3} />
+    <AuthGuard>
+      <main className="min-h-screen bg-brand-light">
+        <div className="max-w-2xl mx-auto px-8 py-12">
+          <ProgressBar currentStep={currentStep} totalSteps={3} />
 
-        {currentStep === 1 && <WelcomeStep onNext={handleNext} />}
+          {currentStep === 1 && <WelcomeStep onNext={handleNext} />}
 
-        {currentStep === 2 && (
-          <PersonalInfoStep
-            formData={formData}
-            onInputChange={handleInputChange}
-            onNext={handleNext}
-            onBack={handleBack}
-            isFormValid={isFormValid()}
-          />
-        )}
+          {currentStep === 2 && (
+            <PersonalInfoStep
+              formData={formData}
+              onInputChange={handleInputChange}
+              onNext={handleNext}
+              onBack={handleBack}
+              isFormValid={isFormValid()}
+            />
+          )}
 
-        {currentStep === 3 && (
-          <LinkedInStep
-            linkedinConnected={linkedinConnected}
-            isConnectingLinkedIn={isConnectingLinkedIn}
-            onLinkedInConnect={handleLinkedInConnect}
-            onBack={handleBack}
-            onSubmit={handleSubmit}
-          />
-        )}
-      </div>
-    </main>
+          {currentStep === 3 && (
+            <LinkedInStep
+              linkedinConnected={linkedinConnected}
+              isConnectingLinkedIn={isConnectingLinkedIn}
+              onLinkedInConnect={handleLinkedInConnect}
+              onBack={handleBack}
+              onSubmit={handleSubmit}
+            />
+          )}
+        </div>
+      </main>
+    </AuthGuard>
   );
 }

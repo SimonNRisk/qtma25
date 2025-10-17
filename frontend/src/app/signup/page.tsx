@@ -3,12 +3,13 @@
 import { useState } from 'react';
 import { postJSON } from '@/lib/api';
 import { session } from '@/lib/session';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
 export default function SignUpPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [first, setFirst] = useState('');
@@ -69,7 +70,11 @@ export default function SignUpPage() {
           if (prev <= 1) {
             clearInterval(countdownInterval);
             // Use setTimeout to avoid setState during render
-            setTimeout(() => router.push('/login'), 0);
+            const redirectTo = searchParams.get('redirect');
+            const loginUrl = redirectTo
+              ? `/login?redirect=${encodeURIComponent(redirectTo)}`
+              : '/login';
+            setTimeout(() => router.push(loginUrl), 0);
             return 0;
           }
           return prev - 1;
