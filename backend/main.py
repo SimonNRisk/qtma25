@@ -17,6 +17,7 @@ from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from auth import auth_router, get_current_user
+from voice_service import VoiceService, VoiceContextRequest, VoiceContextResponse
 
 load_dotenv()
 
@@ -37,6 +38,9 @@ app = FastAPI()
 
 # Initialize LinkedIn Supabase service
 linkedin_supabase_service = SupabaseService()
+
+# Initialize Voice service (use admin client to bypass RLS)
+voice_service = VoiceService(admin if admin else supabase)
 
 # Enable CORS so frontend can talk to backend
 app.add_middleware(
@@ -137,4 +141,129 @@ async def post_to_linkedin(
     # Create LinkedIn service with OAuth token
     linkedin_service = LinkedInService(access_token=access_token)
     return await linkedin_service.post_to_linkedin(text, image)
+
+# ---------- Voice Context Endpoints ----------
+
+@app.post("/api/voice/upload")
+async def upload_voice_context(
+    audio: UploadFile = File(...),
+    category: str = Form("general"),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Upload audio file, transcribe it, and store context
+    """
+    if not audio.content_type or not audio.content_type.startswith('audio/'):
+        raise HTTPException(status_code=400, detail="File must be an audio file")
+    
+    try:
+        # Save uploaded file temporarily
+        import tempfile
+        import os
+        
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_file:
+            content = await audio.read()
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Transcribe audio
+            transcription = await voice_service.transcribe_audio(temp_file_path)
+            
+            if not transcription.strip():
+                raise HTTPException(status_code=400, detail="No speech detected in audio file")
+            
+            # Store context with AI analysis
+            result = await voice_service.store_voice_context(
+                user_id=current_user["id"],
+                transcription=transcription,
+                category=category
+            )
+            
+            return result
+            
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+                
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Voice processing failed: {str(e)}")
+
+@app.get("/api/voice/contexts")
+async def get_voice_contexts(
+    category: Optional[str] = None,
+    limit: int = 10,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get user's voice contexts, optionally filtered by category
+    """
+    try:
+        contexts = await voice_service.get_user_voice_contexts(
+            user_id=current_user["id"],
+            category=category,
+            limit=limit
+        )
+        return {"contexts": contexts}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve contexts: {str(e)}")
+
+@app.get("/api/voice/context-summary")
+async def get_context_summary(
+    categories: Optional[str] = None,  # comma-separated categories
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get consolidated context summary for content generation
+    """
+    try:
+        category_list = None
+        if categories:
+            category_list = [cat.strip() for cat in categories.split(',')]
+        
+        context_summary = await voice_service.get_context_for_generation(
+            user_id=current_user["id"],
+            categories=category_list
+        )
+        
+        return {"context_summary": context_summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get context summary: {str(e)}")
+
+@app.delete("/api/voice/contexts/{context_id}")
+async def delete_voice_context(
+    context_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Delete a specific voice context
+    """
+    try:
+        result = voice_service.supabase.table('voice_contexts').delete().eq('id', context_id).eq('user_id', current_user["id"]).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=404, detail="Voice context not found")
+        
+        return {"message": "Voice context deleted successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to delete context: {str(e)}")
+
+# ---------- User Profile Endpoint ----------
+
+@app.get("/me")
+async def get_current_user_profile(current_user: dict = Depends(get_current_user)):
+    """
+    Get current user's profile information
+    """
+    try:
+        return {
+            "id": current_user["id"],
+            "email": current_user.get("email", ""),
+            "first_name": current_user.get("first_name", ""),
+            "last_name": current_user.get("last_name", ""),
+            "created_at": current_user.get("created_at", "")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get user profile: {str(e)}")
 
