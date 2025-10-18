@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { AuthGuard } from '@/components/AuthGuard';
 
 export default function GeneratePage() {
   const [prompt, setPrompt] = useState('');
@@ -222,6 +223,6 @@ export default function GeneratePage() {
           </div>
         </div>
       </div>
-    </div>
+    </AuthGuard>
   );
 }

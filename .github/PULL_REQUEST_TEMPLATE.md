@@ -9,7 +9,6 @@
 ## Checklist
 
 - [ ] Tested in development
-- [ ] Test coverage added
 
 ## Proof
 
