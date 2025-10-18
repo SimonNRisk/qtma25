@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Define protected routes that require authentication
-const protectedRoutes = ['/me', '/generate', '/onboarding', '/linkedin', '/linkedin-connect'];
+const protectedRoutes = ['/me', '/generate', '/linkedin', '/linkedin-connect'];
 
 // Define public routes that should redirect authenticated users
 const publicRoutes = ['/login', '/signup'];
