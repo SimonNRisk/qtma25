@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { postJSON } from '@/lib/api';
 import { session } from '@/lib/session';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
@@ -53,7 +54,9 @@ export default function LoginPage() {
         sessionStorage.removeItem('pending_last_name');
       }
 
-      router.push('/me');
+      // Redirect to the desired page (or me)
+      const redirectTo = searchParams.get('redirect') || '/me';
+      router.push(redirectTo);
     } catch (err: any) {
       const errorMessage = err.message || 'Login failed';
       // Check if it's an email confirmation error
