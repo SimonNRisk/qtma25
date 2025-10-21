@@ -14,29 +14,8 @@ interface FinalStepProps {
 
 export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
   const handleUnlock = () => {
-    try {
-      // Save all onboarding data to localStorage
-      const onboardingData = {
-        companyMission: formData.companyMission,
-        targetAudience: formData.targetAudience,
-        topicsToPost: formData.topicsToPost,
-        selectedGoals: formData.selectedGoals,
-        selectedHooks: formData.selectedHooks,
-        timestamp: new Date().toISOString(),
-      };
-      
-      localStorage.setItem('onboarding_data', JSON.stringify(onboardingData));
-      
-      // Mark onboarding as completed
-      localStorage.setItem('onboarding_completed', 'true');
-      
-      // Call the unlock handler
-      onUnlock();
-    } catch (error) {
-      console.error('Error saving onboarding data:', error);
-      // Still proceed with unlock even if localStorage fails
-      onUnlock();
-    }
+    // Call the unlock handler (localStorage saving is now handled in the hook)
+    onUnlock();
   };
 
   return (
@@ -67,21 +46,19 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
               {/* Post Content */}
               <div className="space-y-3">
                 <p className="text-gray-800">
-                  When I first started building [Company Name], I thought customer
-                  growth was measured by volume. Send more cold emails. Run more ads.
-                  Post more often. But after months of hustle, I had...3 paying
-                  customers. It wasn't until a mentor asked me one question that
-                  everything clicked: "Have you actually tried talking to the people
-                  you're trying to serve?" That hit me hard. I realized I'd been
-                  pitching features, not listening to problems. So I changed my
-                  approach completely. I reached out to 20
+                  When I first started building [Company Name], I thought customer growth was
+                  measured by volume. Send more cold emails. Run more ads. Post more often. But
+                  after months of hustle, I had...3 paying customers. It wasn't until a mentor asked
+                  me one question that everything clicked: "Have you actually tried talking to the
+                  people you're trying to serve?" That hit me hard. I realized I'd been pitching
+                  features, not listening to problems. So I changed my approach completely. I
+                  reached out to 20
                 </p>
                 <p className="text-gray-500 text-sm">
                   Instead I asked:
                   <br />
                   • What is your biggest headache area?
-                  <br />
-                  • How are you solving it today?
+                  <br />• How are you solving it today?
                 </p>
               </div>
 
