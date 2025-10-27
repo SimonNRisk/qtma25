@@ -12,7 +12,7 @@ export const getApiUrl = (): string => {
   if (IS_DEV) {
     return 'http://localhost:8000';
   }
-  
+
   const prodUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   if (!prodUrl) {
     console.warn(
@@ -20,7 +20,7 @@ export const getApiUrl = (): string => {
     );
     return 'http://localhost:8000';
   }
-  
+
   return prodUrl;
 };
 
@@ -29,11 +29,11 @@ export const getApiUrl = (): string => {
  */
 export const shouldRedirectToLocalhost = (): boolean => {
   if (typeof window === 'undefined') return false;
-  
+
   const isProductionDomain =
     window.location.hostname.includes('vercel.app') ||
     window.location.hostname.includes('onrender.com');
-  
+
   return isProductionDomain && IS_DEV;
 };
 
@@ -44,4 +44,3 @@ export const getLocalhostUrl = (path: string = window.location.pathname): string
   const search = window.location.search;
   return `http://localhost:3000${path}${search}`;
 };
-
