@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { session } from './session';
 
 export interface OnboardingContext {
   id: string;
@@ -19,26 +19,40 @@ export interface OnboardingContext {
 
 export async function getOnboardingData(): Promise<OnboardingContext | null> {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
+    if (!session.isAuthenticated()) {
       return null;
     }
 
-    // First try to get from Supabase
-    const { data, error } = await supabase
-      .from('onboarding_context')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (data && !error) {
-      return data;
+    const user = session.getUser();
+    if (!user) {
+      return null;
     }
 
-    // If not found in Supabase, try localStorage as fallback
+    const accessToken = session.access();
+    if (!accessToken) {
+      return null;
+    }
+
+    // Try to get from backend API first
+    try {
+      const response = await fetch('http://localhost:8000/api/onboarding/data', {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.data) {
+          return result.data;
+        }
+      }
+    } catch (error) {
+      console.warn('Error fetching from backend:', error);
+    }
+
+    // If not found in backend, try localStorage as fallback
     try {
       const storedData = localStorage.getItem('onboarding_data');
       if (storedData) {
@@ -46,12 +60,12 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
         // Convert localStorage format to OnboardingContext format
         return {
           id: 'local-' + Date.now(),
-          user_id: session.user.id,
-          name: '',
-          company: '',
-          role: '',
-          email: '',
-          industry: '',
+          user_id: user.id,
+          name: parsedData.name || '',
+          company: parsedData.company || '',
+          role: parsedData.role || '',
+          email: parsedData.email || '',
+          industry: parsedData.industry || '',
           company_mission: parsedData.companyMission || '',
           target_audience: parsedData.targetAudience || '',
           topics_to_post: parsedData.topicsToPost || '',
@@ -65,10 +79,6 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
       console.warn('Error reading from localStorage:', localStorageError);
     }
 
-    if (error) {
-      console.error('Error fetching onboarding data:', error);
-    }
-
     return null;
   } catch (error) {
     console.error('Error fetching onboarding data:', error);
@@ -78,21 +88,33 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
 
 export async function updateOnboardingData(updates: Partial<OnboardingContext>): Promise<boolean> {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-
-    if (!session) {
+    if (!session.isAuthenticated()) {
       return false;
     }
 
-    const { error } = await supabase
-      .from('onboarding_context')
-      .update(updates)
-      .eq('user_id', session.user.id);
+    const user = session.getUser();
+    if (!user) {
+      return false;
+    }
 
-    if (error) {
-      console.error('Error updating onboarding data:', error);
+    const accessToken = session.access();
+    if (!accessToken) {
+      return false;
+    }
+
+    // Use backend API for updates
+    const response = await fetch('http://localhost:8000/api/onboarding/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(updates),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error updating onboarding data:', errorData);
       return false;
     }
 
@@ -103,44 +125,120 @@ export async function updateOnboardingData(updates: Partial<OnboardingContext>):
   }
 }
 
-export async function syncLocalStorageToSupabase(): Promise<boolean> {
+// Simple function to sync localStorage data to Supabase after signup
+export async function syncOnboardingDataAfterSignup(): Promise<boolean> {
   try {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+    console.log('Syncing onboarding data after signup...');
+    return await syncLocalStorageToSupabase();
+  } catch (error) {
+    console.error('Error syncing onboarding data after signup:', error);
+    return false;
+  }
+}
 
-    if (!session) {
+export async function syncLocalStorageToSupabase(completeFormData?: {
+  name?: string;
+  company?: string;
+  role?: string;
+  email?: string;
+  industry?: string;
+  companyMission?: string;
+  targetAudience?: string;
+  topicsToPost?: string;
+  selectedGoals?: string[];
+  selectedHooks?: string[];
+}): Promise<boolean> {
+  try {
+    // Use custom session management instead of Supabase auth
+    if (!session.isAuthenticated()) {
+      console.log('No authenticated session found');
       return false;
     }
 
-    // Get data from localStorage
-    const storedData = localStorage.getItem('onboarding_data');
-    if (!storedData) {
+    const user = session.getUser();
+    if (!user) {
+      console.log('Could not get user info from token');
       return false;
     }
 
-    const parsedData = JSON.parse(storedData);
+    console.log('User is authenticated:', user.email);
 
-    // Save to Supabase
-    const { error } = await supabase.from('onboarding_context').upsert({
-      user_id: session.user.id,
-      company_mission: parsedData.companyMission,
-      target_audience: parsedData.targetAudience,
-      topics_to_post: parsedData.topicsToPost,
-      selected_goals: parsedData.selectedGoals,
-      selected_hooks: parsedData.selectedHooks,
+    // Get the access token for backend API authentication
+    const accessToken = session.access();
+    if (!accessToken) {
+      console.error('No access token found');
+      return false;
+    }
+
+    // Prepare data for backend API
+    let onboardingData;
+
+    if (completeFormData) {
+      console.log('Using complete form data...');
+      onboardingData = {
+        name: completeFormData.name || '',
+        company: completeFormData.company || '',
+        role: completeFormData.role || '',
+        email: completeFormData.email || '',
+        industry: completeFormData.industry || '',
+        company_mission: completeFormData.companyMission || '',
+        target_audience: completeFormData.targetAudience || '',
+        topics_to_post: completeFormData.topicsToPost || '',
+        selected_goals: completeFormData.selectedGoals || [],
+        selected_hooks: completeFormData.selectedHooks || [],
+      };
+    } else {
+      // Fallback: Get data from localStorage
+      const storedData = localStorage.getItem('onboarding_data');
+      if (!storedData) {
+        console.log('No onboarding data found in localStorage');
+        return false;
+      }
+
+      const parsedData = JSON.parse(storedData);
+      console.log('Found localStorage data:', parsedData);
+
+      onboardingData = {
+        name: parsedData.name || '',
+        company: parsedData.company || '',
+        role: parsedData.role || '',
+        email: parsedData.email || '',
+        industry: parsedData.industry || '',
+        company_mission: parsedData.companyMission || '',
+        target_audience: parsedData.targetAudience || '',
+        topics_to_post: parsedData.topicsToPost || '',
+        selected_goals: parsedData.selectedGoals || [],
+        selected_hooks: parsedData.selectedHooks || [],
+      };
+    }
+
+    console.log('Data to be sent to backend:', onboardingData);
+
+    // Use backend API instead of direct Supabase
+    const response = await fetch('http://localhost:8000/api/onboarding/submit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(onboardingData),
     });
 
-    if (error) {
-      console.error('Error syncing localStorage to Supabase:', error);
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error syncing to backend:', errorData);
       return false;
     }
+
+    const result = await response.json();
+    console.log('Successfully saved via backend:', result);
 
     // Clear localStorage after successful sync
     localStorage.removeItem('onboarding_data');
+    localStorage.removeItem('onboarding_completed');
     return true;
   } catch (error) {
-    console.error('Error syncing localStorage to Supabase:', error);
+    console.error('Error syncing to backend:', error);
     return false;
   }
 }

@@ -201,9 +201,33 @@ export const useOnboarding = () => {
     }));
   };
 
-  const handleUnlock = () => {
-    // Save to localStorage before redirecting
-    saveToLocalStorage();
+  const handleUnlock = async () => {
+    // Save complete onboarding data to localStorage (including personal info)
+    try {
+      const completeOnboardingData = {
+        // Personal info
+        name: formData.name,
+        company: formData.company,
+        role: formData.role,
+        email: formData.email,
+        industry: formData.industry,
+        // Company details
+        companyMission: formData.companyMission,
+        targetAudience: formData.targetAudience,
+        topicsToPost: formData.topicsToPost,
+        // Preferences
+        selectedGoals: formData.selectedGoals,
+        selectedHooks: formData.selectedHooks,
+        // Metadata
+        timestamp: new Date().toISOString(),
+      };
+
+      localStorage.setItem('onboarding_data', JSON.stringify(completeOnboardingData));
+      localStorage.setItem('onboarding_completed', 'true');
+    } catch (error) {
+      console.error('Error saving to localStorage:', error);
+    }
+
     // Redirect to signup page
     window.location.href = '/signup';
   };
