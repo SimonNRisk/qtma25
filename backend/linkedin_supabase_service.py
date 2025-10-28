@@ -59,7 +59,7 @@ class SupabaseService:
                 
                 # Check if token is expired
                 expires_at = datetime.fromisoformat(token_data['expires_at'].replace('Z', '+00:00'))
-                if datetime.utcnow() > expires_at:
+                if datetime.utcnow().replace(tzinfo=expires_at.tzinfo) > expires_at:
                     print(f"Token expired for user {user_id}")
                     return None
                 
