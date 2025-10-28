@@ -77,7 +77,7 @@ def verify_token(token: str, token_type: str = "access"):
         return payload
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
-    except jwt.JWTError:
+    except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 # ---------- Auth Helpers ----------
@@ -116,7 +116,7 @@ async def get_current_user(authorization: Annotated[Optional[str], Header()] = N
 def signup(body: SignUpBody):
     """Sign up a new user - requires email confirmation"""
     try:
-        # Create user in Supabase with email confirmation enabled
+        # Create user in Supabase (email confirmation disabled for now)
         res = supabase.auth.sign_up({
             "email": body.email,
             "password": body.password,
@@ -124,8 +124,7 @@ def signup(body: SignUpBody):
                 "data": {
                     "first_name": body.first_name,
                     "last_name": body.last_name,
-                },
-                "email_redirect_to": f"{os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')}/auth/callback"
+                }
             }
         })
 
@@ -151,13 +150,13 @@ def signup(body: SignUpBody):
             except Exception:
                 profile_upserted = False
 
-        # Return success message without JWT tokens (user needs to confirm email first)
+        # Return success message (email confirmation disabled)
         return {
-            "message": "Account created successfully! Please check your email to confirm your account before signing in.",
+            "message": "Account created successfully!",
             "user_id": user_id,
             "email": body.email,
             "profile_saved": profile_upserted,
-            "email_confirmation_required": True
+            "email_confirmation_required": False
         }
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

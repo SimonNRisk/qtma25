@@ -1,23 +1,18 @@
 import os
 from typing import Annotated, Optional
 
-from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status, Header
-
+from fastapi import FastAPI, Depends, HTTPException, status, Form, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-import os
-from dotenv import load_dotenv
 from pydantic import BaseModel
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
 from linkedin_service import LinkedInService
 from linkedin_oauth import LinkedInOAuth
 from linkedin_supabase_service import SupabaseService
-
-# Load environment variables
-load_dotenv()
-from pydantic import BaseModel, EmailStr
-from supabase import create_client, Client
-from dotenv import load_dotenv
 from auth import auth_router, get_current_user
 
+# Load environment variables
 load_dotenv()
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
@@ -51,6 +46,18 @@ app.add_middleware(
 class ProfileBody(BaseModel):
     first_name: str = ""
     last_name: str = ""
+
+class OnboardingData(BaseModel):
+    name: str
+    company: str
+    role: str
+    email: str = ""  # Optional since we get it from user account
+    industry: str
+    company_mission: str
+    target_audience: str
+    topics_to_post: str
+    selected_goals: list[str]
+    selected_hooks: list[str]
 
 # Include auth router
 app.include_router(auth_router)
@@ -141,4 +148,65 @@ async def post_to_linkedin(
     # Create LinkedIn service with OAuth token
     linkedin_service = LinkedInService(access_token=access_token)
     return await linkedin_service.post_to_linkedin(text, image)
+
+# Onboarding data submission endpoint
+@app.post("/api/onboarding/submit")
+async def submit_onboarding_data(
+    onboarding_data: OnboardingData,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
+    """
+    Save user onboarding data to Supabase
+    """
+    try:
+        if not admin:
+            raise HTTPException(status_code=500, detail="Admin client not available")
+        
+        # Save onboarding data to Supabase
+        result = admin.table("onboarding_context").upsert({
+            "user_id": current_user["id"],
+            "name": onboarding_data.name,
+            "company": onboarding_data.company,
+            "role": onboarding_data.role,
+            "email": current_user["email"],  # Use email from user account
+            "industry": onboarding_data.industry,
+            "company_mission": onboarding_data.company_mission,
+            "target_audience": onboarding_data.target_audience,
+            "topics_to_post": onboarding_data.topics_to_post,
+            "selected_goals": onboarding_data.selected_goals,
+            "selected_hooks": onboarding_data.selected_hooks,
+        }).execute()
+        
+        if not result.data:
+            raise HTTPException(status_code=500, detail="Failed to save onboarding data")
+        
+        return {
+            "message": "Onboarding data saved successfully",
+            "data": result.data[0]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error saving onboarding data: {str(e)}")
+
+@app.get("/api/onboarding/data")
+async def get_onboarding_data(current_user: Annotated[dict, Depends(get_current_user)]):
+    """
+    Get user's onboarding data
+    """
+    try:
+        if not admin:
+            raise HTTPException(status_code=500, detail="Admin client not available")
+        
+        result = admin.table("onboarding_context").select("*").eq("user_id", current_user["id"]).execute()
+        
+        if not result.data:
+            return {"message": "No onboarding data found", "data": None}
+        
+        return {
+            "message": "Onboarding data retrieved successfully",
+            "data": result.data[0]
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving onboarding data: {str(e)}")
 

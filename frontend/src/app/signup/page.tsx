@@ -6,6 +6,7 @@ import { session } from '@/lib/session';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { syncOnboardingDataAfterSignup } from '@/lib/onboarding';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -45,41 +46,80 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       // ⬇️ include first_name & last_name
-      const data = await postJSON('/auth/signup', {
+      const signupResponse = await postJSON('/auth/signup', {
         email,
         password,
         first_name: first,
         last_name: last,
       });
 
-      // Show success message about email confirmation
-      setMsg(
-        'Account created successfully! Please check your email to confirm your account before signing in.'
-      );
+      // Check if email confirmation is required
+      if (signupResponse.email_confirmation_required) {
+        // Show success message about email confirmation
+        setMsg(
+          'Account created successfully! Please check your email to confirm your account before signing in.'
+        );
 
-      // Clear form
-      setEmail('');
-      setPassword('');
-      setFirst('');
-      setLast('');
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setFirst('');
+        setLast('');
 
-      // Start countdown and redirect to login page
-      setCountdown(5);
-      const countdownInterval = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(countdownInterval);
-            // Use setTimeout to avoid setState during render
-            const redirectTo = searchParams.get('redirect');
-            const loginUrl = redirectTo
-              ? `/login?redirect=${encodeURIComponent(redirectTo)}`
-              : '/login';
-            setTimeout(() => router.push(loginUrl), 0);
-            return 0;
+        // Start countdown and redirect to login page
+        setCountdown(5);
+        const countdownInterval = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(countdownInterval);
+              // Use setTimeout to avoid setState during render
+              const redirectTo = searchParams.get('redirect');
+              const loginUrl = redirectTo
+                ? `/login?redirect=${encodeURIComponent(redirectTo)}`
+                : '/login';
+              setTimeout(() => router.push(loginUrl), 0);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+      } else {
+        // Email confirmation not required - automatically log in
+        try {
+          const loginResponse = await postJSON('/auth/login', {
+            email,
+            password,
+          });
+
+          // Save JWT tokens
+          session.save(loginResponse.access_token, loginResponse.refresh_token);
+
+          // Sync onboarding data if it exists
+          try {
+            const synced = await syncOnboardingDataAfterSignup();
+            if (synced) {
+              console.log('Onboarding data synced successfully');
+            } else {
+              console.log('No onboarding data to sync');
+            }
+          } catch (error) {
+            console.warn('Failed to sync onboarding data:', error);
           }
-          return prev - 1;
-        });
-      }, 1000);
+
+          setMsg('Account created and logged in successfully!');
+
+          // Redirect to profile page
+          setTimeout(() => {
+            router.push('/me');
+          }, 1500);
+        } catch (loginError: any) {
+          console.error('Auto-login failed:', loginError);
+          setMsg('Account created! Please log in manually.');
+          setTimeout(() => {
+            router.push('/login');
+          }, 2000);
+        }
+      }
     } catch (err: any) {
       setMsg(err.message?.replace(/["{}]/g, '') || 'Sign up failed');
     } finally {

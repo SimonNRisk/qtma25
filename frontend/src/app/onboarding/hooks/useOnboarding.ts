@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 
 export interface OnboardingFormData {
   name: string;
   company: string;
   role: string;
-  email: string;
   industry: string;
+  companyMission: string;
+  targetAudience: string;
+  topicsToPost: string;
+  selectedGoals: string[];
+  selectedHooks: string[];
 }
 
 export const useOnboarding = () => {
@@ -19,8 +22,12 @@ export const useOnboarding = () => {
     name: '',
     company: '',
     role: '',
-    email: '',
     industry: '',
+    companyMission: '',
+    targetAudience: '',
+    topicsToPost: '',
+    selectedGoals: [],
+    selectedHooks: [],
   });
 
   // Check if user is returning from LinkedIn authentication
@@ -32,6 +39,33 @@ export const useOnboarding = () => {
     }
   }, [searchParams]);
 
+  // Load data from localStorage on mount
+  useEffect(() => {
+    try {
+      const storedData = localStorage.getItem('onboarding_data');
+      if (storedData) {
+        const parsedData = JSON.parse(storedData);
+        setFormData(prev => ({
+          ...prev,
+          // Personal info
+          name: parsedData.name || prev.name,
+          company: parsedData.company || prev.company,
+          role: parsedData.role || prev.role,
+          industry: parsedData.industry || prev.industry,
+          // Company details
+          companyMission: parsedData.companyMission || prev.companyMission,
+          targetAudience: parsedData.targetAudience || prev.targetAudience,
+          topicsToPost: parsedData.topicsToPost || prev.topicsToPost,
+          // Preferences
+          selectedGoals: parsedData.selectedGoals || prev.selectedGoals,
+          selectedHooks: parsedData.selectedHooks || prev.selectedHooks,
+        }));
+      }
+    } catch (error) {
+      console.warn('Error loading from localStorage:', error);
+    }
+  }, []);
+
   const handleInputChange = (field: keyof OnboardingFormData, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -40,7 +74,10 @@ export const useOnboarding = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 3) {
+    if (currentStep < 10) {
+      // Save to localStorage when moving to next step (for persistence)
+      // Include personal info if we're past step 1 (where personal info is collected)
+      saveToLocalStorage(currentStep >= 1);
       setCurrentStep(currentStep + 1);
     }
   };
@@ -70,43 +107,77 @@ export const useOnboarding = () => {
     }
   };
 
-  const handleSubmit = async () => {
+  // Save complete onboarding data to localStorage
+  const saveToLocalStorage = (includePersonalInfo = false) => {
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .insert([
-          {
-            full_name: formData.name,
-            company: formData.company,
-            role: formData.role,
-            email: formData.email,
-            industry: formData.industry,
-          },
-        ])
-        .select();
+      const onboardingData = {
+        // Personal info (only if requested)
+        ...(includePersonalInfo && {
+          name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          industry: formData.industry,
+        }),
+        // Company details
+        companyMission: formData.companyMission,
+        targetAudience: formData.targetAudience,
+        topicsToPost: formData.topicsToPost,
+        // Preferences
+        selectedGoals: formData.selectedGoals,
+        selectedHooks: formData.selectedHooks,
+        // Metadata
+        timestamp: new Date().toISOString(),
+      };
 
-      if (error) {
-        console.error('Error saving to Supabase:', error);
-        alert('Error saving data. Please try again.');
-        return;
-      }
-
-      console.log('Data saved to Supabase:', data);
-      alert('Onboarding complete! Your data has been saved.');
+      localStorage.setItem('onboarding_data', JSON.stringify(onboardingData));
+      localStorage.setItem('onboarding_completed', 'true');
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error saving data. Please try again.');
+      console.error('Error saving to localStorage:', error);
     }
   };
 
+  // Note: handleSubmit is kept for LinkedIn step compatibility but simplified
+  const handleSubmit = async () => {
+    // Save to localStorage first
+    saveToLocalStorage(true);
+
+    // The actual API submission is handled by syncOnboardingDataAfterSignup()
+    // after user signs up, so we don't need to duplicate that logic here
+  };
+
+  const handleSkip = () => {
+    // Move to next step when skipping LinkedIn connection
+    handleNext();
+  };
+
+  const handleGoalToggle = (goal: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedGoals: prev.selectedGoals.includes(goal)
+        ? prev.selectedGoals.filter(g => g !== goal)
+        : [...prev.selectedGoals, goal],
+    }));
+  };
+
+  const handleHookToggle = (hook: string) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedHooks: prev.selectedHooks.includes(hook)
+        ? prev.selectedHooks.filter(h => h !== hook)
+        : [...prev.selectedHooks, hook],
+    }));
+  };
+
+  const handleUnlock = async () => {
+    // Save complete onboarding data to localStorage (including personal info)
+    saveToLocalStorage(true);
+
+    // Redirect to signup page
+    window.location.href = '/signup';
+  };
+
   const isFormValid = () => {
-    return !!(
-      formData.name &&
-      formData.company &&
-      formData.role &&
-      formData.email &&
-      formData.industry
-    );
+    return !!(formData.name && formData.company && formData.role && formData.industry);
   };
 
   return {
@@ -119,6 +190,10 @@ export const useOnboarding = () => {
     handleBack,
     handleLinkedInConnect,
     handleSubmit,
+    handleSkip,
+    handleGoalToggle,
+    handleHookToggle,
+    handleUnlock,
     isFormValid,
   };
 };
