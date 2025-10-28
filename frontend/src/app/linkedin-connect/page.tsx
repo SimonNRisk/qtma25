@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
+import { session } from '@/lib/session';
 
 export default function LinkedInConnect() {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -12,8 +13,18 @@ export default function LinkedInConnect() {
     setError('');
 
     try {
-      // Get OAuth URL from backend
-      const response = await fetch('http://localhost:8000/api/linkedin/auth');
+      // Get OAuth URL from backend with authentication
+      const token = session.access();
+      if (!token) {
+        setError('Please log in first');
+        return;
+      }
+
+      const response = await fetch('http://localhost:8000/api/linkedin/auth', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       const data = await response.json();
 
       if (response.ok) {
