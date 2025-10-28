@@ -1,4 +1,4 @@
--- I WILL RUN THIS OCT 21 2025 --
+-- RAN OCT 28 --
 -- Create onboarding_context table to store user onboarding responses
 CREATE TABLE IF NOT EXISTS onboarding_context (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
