@@ -1,23 +1,18 @@
 import os
 from typing import Annotated, Optional
 
-from fastapi import FastAPI, File, UploadFile, Form, Depends, HTTPException, status, Header
-
+from fastapi import FastAPI, Depends, HTTPException, status, Form, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-import os
-from dotenv import load_dotenv
 from pydantic import BaseModel
+from supabase import create_client, Client
+from dotenv import load_dotenv
+
 from linkedin_service import LinkedInService
 from linkedin_oauth import LinkedInOAuth
 from linkedin_supabase_service import SupabaseService
-
-# Load environment variables
-load_dotenv()
-from pydantic import BaseModel, EmailStr
-from supabase import create_client, Client
-from dotenv import load_dotenv
 from auth import auth_router, get_current_user
 
+# Load environment variables
 load_dotenv()
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]

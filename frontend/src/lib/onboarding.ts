@@ -64,7 +64,7 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
           name: parsedData.name || '',
           company: parsedData.company || '',
           role: parsedData.role || '',
-          email: parsedData.email || '',
+          email: user.email || '', // Use email from user account
           industry: parsedData.industry || '',
           company_mission: parsedData.companyMission || '',
           target_audience: parsedData.targetAudience || '',
@@ -128,18 +128,9 @@ export async function updateOnboardingData(updates: Partial<OnboardingContext>):
 // Simple function to sync localStorage data to Supabase after signup
 export async function syncOnboardingDataAfterSignup(): Promise<boolean> {
   try {
-    console.log('🔄 Syncing onboarding data after signup...');
-
     if (!session.isAuthenticated()) {
-      console.log('❌ User not authenticated');
       return false;
     }
-
-    const user = session.getUser();
-    const accessToken = session.access();
-    console.log('🔍 User:', user);
-    console.log('🔍 Token exists:', !!accessToken);
-    console.log('🔍 Token expired:', session.isTokenExpired());
 
     return await syncLocalStorageToSupabase();
   } catch (error) {
@@ -163,22 +154,17 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
   try {
     // Use custom session management instead of Supabase auth
     if (!session.isAuthenticated()) {
-      console.log('No authenticated session found');
       return false;
     }
 
     const user = session.getUser();
     if (!user) {
-      console.log('Could not get user info from token');
       return false;
     }
-
-    console.log('User is authenticated:', user.email);
 
     // Get the access token for backend API authentication
     const accessToken = session.access();
     if (!accessToken) {
-      console.error('No access token found');
       return false;
     }
 
@@ -186,12 +172,11 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
     let onboardingData;
 
     if (completeFormData) {
-      console.log('Using complete form data...');
       onboardingData = {
         name: completeFormData.name || '',
         company: completeFormData.company || '',
         role: completeFormData.role || '',
-        email: completeFormData.email || '',
+        email: '', // Email will be populated from user account
         industry: completeFormData.industry || '',
         company_mission: completeFormData.companyMission || '',
         target_audience: completeFormData.targetAudience || '',
@@ -203,18 +188,16 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
       // Fallback: Get data from localStorage
       const storedData = localStorage.getItem('onboarding_data');
       if (!storedData) {
-        console.log('No onboarding data found in localStorage');
         return false;
       }
 
       const parsedData = JSON.parse(storedData);
-      console.log('Found localStorage data:', parsedData);
 
       onboardingData = {
         name: parsedData.name || '',
         company: parsedData.company || '',
         role: parsedData.role || '',
-        email: parsedData.email || '',
+        email: '', // Email will be populated from user account
         industry: parsedData.industry || '',
         company_mission: parsedData.companyMission || '',
         target_audience: parsedData.targetAudience || '',
@@ -223,8 +206,6 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
         selected_hooks: parsedData.selectedHooks || [],
       };
     }
-
-    console.log('Data to be sent to backend:', onboardingData);
 
     // Use backend API instead of direct Supabase
     const response = await fetch('http://localhost:8000/api/onboarding/submit', {
@@ -237,23 +218,12 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
     });
 
     if (!response.ok) {
-      console.error('Backend response status:', response.status);
-      console.error('Backend response headers:', Object.fromEntries(response.headers.entries()));
-
-      let errorData;
-      try {
-        errorData = await response.json();
-        console.error('Error syncing to backend:', errorData);
-      } catch (parseError) {
-        console.error('Failed to parse error response as JSON:', parseError);
-        const textResponse = await response.text();
-        console.error('Raw error response:', textResponse);
-      }
+      const errorData = await response.json().catch(() => ({}));
+      console.error('Error syncing to backend:', errorData);
       return false;
     }
 
-    const result = await response.json();
-    console.log('Successfully saved via backend:', result);
+    await response.json();
 
     // Clear localStorage after successful sync
     localStorage.removeItem('onboarding_data');

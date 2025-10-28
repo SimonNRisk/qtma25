@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 
 export interface OnboardingFormData {
   name: string;
   company: string;
   role: string;
-  email: string;
   industry: string;
   companyMission: string;
   targetAudience: string;
@@ -24,7 +22,6 @@ export const useOnboarding = () => {
     name: '',
     company: '',
     role: '',
-    email: '',
     industry: '',
     companyMission: '',
     targetAudience: '',
@@ -54,7 +51,6 @@ export const useOnboarding = () => {
           name: parsedData.name || prev.name,
           company: parsedData.company || prev.company,
           role: parsedData.role || prev.role,
-          email: parsedData.email || prev.email,
           industry: parsedData.industry || prev.industry,
           // Company details
           companyMission: parsedData.companyMission || prev.companyMission,
@@ -114,25 +110,12 @@ export const useOnboarding = () => {
   // Save complete onboarding data to localStorage
   const saveToLocalStorage = (includePersonalInfo = false) => {
     try {
-      console.log('💾 Saving to localStorage:', {
-        includePersonalInfo,
-        currentStep,
-        formData: {
-          name: formData.name,
-          company: formData.company,
-          role: formData.role,
-          email: formData.email,
-          industry: formData.industry,
-        },
-      });
-
       const onboardingData = {
         // Personal info (only if requested)
         ...(includePersonalInfo && {
           name: formData.name,
           company: formData.company,
           role: formData.role,
-          email: formData.email,
           industry: formData.industry,
         }),
         // Company details
@@ -146,10 +129,8 @@ export const useOnboarding = () => {
         timestamp: new Date().toISOString(),
       };
 
-      console.log('💾 Data being saved:', onboardingData);
       localStorage.setItem('onboarding_data', JSON.stringify(onboardingData));
       localStorage.setItem('onboarding_completed', 'true');
-      console.log('✅ Successfully saved to localStorage');
     } catch (error) {
       console.error('Error saving to localStorage:', error);
     }
@@ -162,7 +143,6 @@ export const useOnboarding = () => {
 
     // The actual API submission is handled by syncOnboardingDataAfterSignup()
     // after user signs up, so we don't need to duplicate that logic here
-    console.log('Onboarding data saved to localStorage, will sync after signup');
   };
 
   const handleSkip = () => {

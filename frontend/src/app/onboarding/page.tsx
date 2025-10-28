@@ -1,7 +1,6 @@
 'use client';
 import { useOnboarding } from './hooks/useOnboarding';
 import { ProgressBar } from './components/ProgressBar';
-import { WelcomeStep } from './components/WelcomeStep';
 import { PersonalInfoStep } from './components/PersonalInfoStep';
 import { LinkedInStep } from './components/LinkedInStep';
 import { QuestionStep } from './components/QuestionStep';
@@ -9,7 +8,6 @@ import { ProfileSummaryStep } from './components/ProfileSummaryStep';
 import { GoalsSelectionStep } from './components/GoalsSelectionStep';
 import { HooksSelectionStep } from './components/HooksSelectionStep';
 import { FinalStep } from './components/FinalStep';
-import { WelcomeSection } from './components/WelcomeSection';
 
 export default function Onboarding() {
   const {
@@ -31,7 +29,7 @@ export default function Onboarding() {
 
   return (
     <main className="min-h-screen bg-white">
-      <ProgressBar currentStep={currentStep} totalSteps={8} />
+      <ProgressBar currentStep={currentStep} totalSteps={9} />
 
       {/* Steps */}
       {currentStep === 6 ? (
