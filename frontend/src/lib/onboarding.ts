@@ -128,7 +128,19 @@ export async function updateOnboardingData(updates: Partial<OnboardingContext>):
 // Simple function to sync localStorage data to Supabase after signup
 export async function syncOnboardingDataAfterSignup(): Promise<boolean> {
   try {
-    console.log('Syncing onboarding data after signup...');
+    console.log('🔄 Syncing onboarding data after signup...');
+
+    if (!session.isAuthenticated()) {
+      console.log('❌ User not authenticated');
+      return false;
+    }
+
+    const user = session.getUser();
+    const accessToken = session.access();
+    console.log('🔍 User:', user);
+    console.log('🔍 Token exists:', !!accessToken);
+    console.log('🔍 Token expired:', session.isTokenExpired());
+
     return await syncLocalStorageToSupabase();
   } catch (error) {
     console.error('Error syncing onboarding data after signup:', error);
@@ -225,8 +237,18 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Error syncing to backend:', errorData);
+      console.error('Backend response status:', response.status);
+      console.error('Backend response headers:', Object.fromEntries(response.headers.entries()));
+
+      let errorData;
+      try {
+        errorData = await response.json();
+        console.error('Error syncing to backend:', errorData);
+      } catch (parseError) {
+        console.error('Failed to parse error response as JSON:', parseError);
+        const textResponse = await response.text();
+        console.error('Raw error response:', textResponse);
+      }
       return false;
     }
 

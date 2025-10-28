@@ -34,7 +34,7 @@ export default function Onboarding() {
       <ProgressBar currentStep={currentStep} totalSteps={8} />
 
       {/* Steps */}
-      {currentStep === 5 ? (
+      {currentStep === 6 ? (
         <ProfileSummaryStep
           formData={{
             companyMission: formData.companyMission,
@@ -44,21 +44,21 @@ export default function Onboarding() {
           onBack={handleBack}
           onNext={handleNext}
         />
-      ) : currentStep === 6 ? (
+      ) : currentStep === 7 ? (
         <GoalsSelectionStep
           selectedGoals={formData.selectedGoals}
           onGoalToggle={handleGoalToggle}
           onBack={handleBack}
           onNext={handleNext}
         />
-      ) : currentStep === 7 ? (
+      ) : currentStep === 8 ? (
         <HooksSelectionStep
           selectedHooks={formData.selectedHooks}
           onHookToggle={handleHookToggle}
           onBack={handleBack}
           onNext={handleNext}
         />
-      ) : currentStep === 8 ? (
+      ) : currentStep === 9 ? (
         <FinalStep
           formData={{
             companyMission: formData.companyMission,
@@ -73,6 +73,16 @@ export default function Onboarding() {
       ) : (
         <div className="flex justify-center items-center min-h-screen">
           {currentStep === 1 && (
+            <PersonalInfoStep
+              formData={formData}
+              onInputChange={handleInputChange}
+              onNext={handleNext}
+              onBack={handleBack}
+              isFormValid={isFormValid()}
+            />
+          )}
+
+          {currentStep === 2 && (
             <LinkedInStep
               linkedinConnected={linkedinConnected}
               isConnectingLinkedIn={isConnectingLinkedIn}
@@ -83,7 +93,7 @@ export default function Onboarding() {
             />
           )}
 
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <QuestionStep
               mainQuestion="What is the core mission of your company, in one or two sentences?"
               placeholder="Enter your company's mission statement..."
@@ -95,7 +105,7 @@ export default function Onboarding() {
             />
           )}
 
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <QuestionStep
               mainQuestion="Who is your primary target audience?"
               placeholder="e.g. customers, investors, partners, talent"
@@ -107,7 +117,7 @@ export default function Onboarding() {
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <QuestionStep
               mainQuestion="Are there any specific topics you'd love to post about, even just rough thoughts?"
               placeholder="e.g. AI, marketing, leadership, culture, etc."
@@ -116,16 +126,6 @@ export default function Onboarding() {
               onBack={handleBack}
               onNext={handleNext}
               nextDisabled={!formData.topicsToPost?.trim()}
-            />
-          )}
-
-          {currentStep === 10 && (
-            <PersonalInfoStep
-              formData={formData}
-              onInputChange={handleInputChange}
-              onNext={handleNext}
-              onBack={handleBack}
-              isFormValid={isFormValid()}
             />
           )}
         </div>

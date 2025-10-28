@@ -67,16 +67,6 @@ export const PersonalInfoStep = ({
         />
 
         <FormInput
-          id="email"
-          label="Email Address"
-          type="email"
-          value={formData.email}
-          onChange={value => onInputChange('email', value)}
-          placeholder="Enter your email address"
-          required
-        />
-
-        <FormInput
           id="industry"
           label="Industry"
           type="select"

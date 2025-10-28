@@ -1,15 +1,15 @@
--- RAN OCT 28 --
--- NOTE: The "personal information" fields were later deleted --
+-- RAN OCT 28 (UPDATED) --
 -- Create onboarding_context table to store user onboarding responses
+-- Email is populated from user account during onboarding sync
 CREATE TABLE IF NOT EXISTS onboarding_context (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     
-    -- Personal Information (later deleted)
+    -- Personal Information
     name TEXT,
     company TEXT,
     role TEXT,
-    email TEXT,
+    email TEXT,  -- Populated from auth.users during sync
     industry TEXT,
     
     -- Company Details

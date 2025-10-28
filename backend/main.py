@@ -56,7 +56,7 @@ class OnboardingData(BaseModel):
     name: str
     company: str
     role: str
-    email: str
+    email: str = ""  # Optional since we get it from user account
     industry: str
     company_mission: str
     target_audience: str
@@ -173,7 +173,7 @@ async def submit_onboarding_data(
             "name": onboarding_data.name,
             "company": onboarding_data.company,
             "role": onboarding_data.role,
-            "email": onboarding_data.email,
+            "email": current_user["email"],  # Use email from user account
             "industry": onboarding_data.industry,
             "company_mission": onboarding_data.company_mission,
             "target_audience": onboarding_data.target_audience,

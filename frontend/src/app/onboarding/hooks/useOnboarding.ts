@@ -50,9 +50,17 @@ export const useOnboarding = () => {
         const parsedData = JSON.parse(storedData);
         setFormData(prev => ({
           ...prev,
+          // Personal info
+          name: parsedData.name || prev.name,
+          company: parsedData.company || prev.company,
+          role: parsedData.role || prev.role,
+          email: parsedData.email || prev.email,
+          industry: parsedData.industry || prev.industry,
+          // Company details
           companyMission: parsedData.companyMission || prev.companyMission,
           targetAudience: parsedData.targetAudience || prev.targetAudience,
           topicsToPost: parsedData.topicsToPost || prev.topicsToPost,
+          // Preferences
           selectedGoals: parsedData.selectedGoals || prev.selectedGoals,
           selectedHooks: parsedData.selectedHooks || prev.selectedHooks,
         }));
@@ -72,7 +80,8 @@ export const useOnboarding = () => {
   const handleNext = () => {
     if (currentStep < 10) {
       // Save to localStorage when moving to next step (for persistence)
-      saveToLocalStorage();
+      // Include personal info if we're past step 1 (where personal info is collected)
+      saveToLocalStorage(currentStep >= 1);
       setCurrentStep(currentStep + 1);
     }
   };
@@ -102,80 +111,58 @@ export const useOnboarding = () => {
     }
   };
 
-  // Save onboarding data to localStorage
-  const saveToLocalStorage = () => {
+  // Save complete onboarding data to localStorage
+  const saveToLocalStorage = (includePersonalInfo = false) => {
     try {
+      console.log('💾 Saving to localStorage:', {
+        includePersonalInfo,
+        currentStep,
+        formData: {
+          name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          email: formData.email,
+          industry: formData.industry,
+        },
+      });
+
       const onboardingData = {
+        // Personal info (only if requested)
+        ...(includePersonalInfo && {
+          name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          email: formData.email,
+          industry: formData.industry,
+        }),
+        // Company details
         companyMission: formData.companyMission,
         targetAudience: formData.targetAudience,
         topicsToPost: formData.topicsToPost,
+        // Preferences
         selectedGoals: formData.selectedGoals,
         selectedHooks: formData.selectedHooks,
+        // Metadata
         timestamp: new Date().toISOString(),
       };
 
+      console.log('💾 Data being saved:', onboardingData);
       localStorage.setItem('onboarding_data', JSON.stringify(onboardingData));
       localStorage.setItem('onboarding_completed', 'true');
+      console.log('✅ Successfully saved to localStorage');
     } catch (error) {
       console.error('Error saving to localStorage:', error);
     }
   };
 
+  // Note: handleSubmit is kept for LinkedIn step compatibility but simplified
   const handleSubmit = async () => {
-    try {
-      // Save to localStorage first
-      saveToLocalStorage();
+    // Save to localStorage first
+    saveToLocalStorage(true);
 
-      // Get current user session
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
-      if (sessionError || !session) {
-        console.error('Error getting session:', sessionError);
-        alert('Please sign in to complete onboarding.');
-        return;
-      }
-
-      // Prepare onboarding data for backend
-      const onboardingData = {
-        name: formData.name,
-        company: formData.company,
-        role: formData.role,
-        email: formData.email,
-        industry: formData.industry,
-        company_mission: formData.companyMission,
-        target_audience: formData.targetAudience,
-        topics_to_post: formData.topicsToPost,
-        selected_goals: formData.selectedGoals,
-        selected_hooks: formData.selectedHooks,
-      };
-
-      // Submit to backend endpoint
-      const response = await fetch('http://localhost:8000/api/onboarding/submit', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify(onboardingData),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        console.error('Error saving onboarding data:', result);
-        alert(result.detail || 'Error saving data. Please try again.');
-        return;
-      }
-
-      console.log('Onboarding data saved successfully:', result);
-      alert('Onboarding complete! Your data has been saved.');
-    } catch (error) {
-      console.error('Error:', error);
-      alert('Error saving data. Please try again.');
-    }
+    // The actual API submission is handled by syncOnboardingDataAfterSignup()
+    // after user signs up, so we don't need to duplicate that logic here
+    console.log('Onboarding data saved to localStorage, will sync after signup');
   };
 
   const handleSkip = () => {
@@ -203,43 +190,14 @@ export const useOnboarding = () => {
 
   const handleUnlock = async () => {
     // Save complete onboarding data to localStorage (including personal info)
-    try {
-      const completeOnboardingData = {
-        // Personal info
-        name: formData.name,
-        company: formData.company,
-        role: formData.role,
-        email: formData.email,
-        industry: formData.industry,
-        // Company details
-        companyMission: formData.companyMission,
-        targetAudience: formData.targetAudience,
-        topicsToPost: formData.topicsToPost,
-        // Preferences
-        selectedGoals: formData.selectedGoals,
-        selectedHooks: formData.selectedHooks,
-        // Metadata
-        timestamp: new Date().toISOString(),
-      };
-
-      localStorage.setItem('onboarding_data', JSON.stringify(completeOnboardingData));
-      localStorage.setItem('onboarding_completed', 'true');
-    } catch (error) {
-      console.error('Error saving to localStorage:', error);
-    }
+    saveToLocalStorage(true);
 
     // Redirect to signup page
     window.location.href = '/signup';
   };
 
   const isFormValid = () => {
-    return !!(
-      formData.name &&
-      formData.company &&
-      formData.role &&
-      formData.email &&
-      formData.industry
-    );
+    return !!(formData.name && formData.company && formData.role && formData.industry);
   };
 
   return {
