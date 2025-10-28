@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
 
 export interface OnboardingFormData {
   name: string;
@@ -14,10 +13,7 @@ export interface OnboardingFormData {
 }
 
 export const useOnboarding = () => {
-  const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState(1);
-  const [isConnectingLinkedIn, setIsConnectingLinkedIn] = useState(false);
-  const [linkedinConnected, setLinkedinConnected] = useState(false);
   const [formData, setFormData] = useState<OnboardingFormData>({
     name: '',
     company: '',
@@ -29,15 +25,6 @@ export const useOnboarding = () => {
     selectedGoals: [],
     selectedHooks: [],
   });
-
-  // Check if user is returning from LinkedIn authentication
-  useEffect(() => {
-    const code = searchParams.get('code');
-    if (code) {
-      setLinkedinConnected(true);
-      setCurrentStep(3); // Go to LinkedIn step
-    }
-  }, [searchParams]);
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -74,7 +61,7 @@ export const useOnboarding = () => {
   };
 
   const handleNext = () => {
-    if (currentStep < 10) {
+    if (currentStep < 9) {
       // Save to localStorage when moving to next step (for persistence)
       // Include personal info if we're past step 1 (where personal info is collected)
       saveToLocalStorage(currentStep >= 1);
@@ -85,25 +72,6 @@ export const useOnboarding = () => {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1);
-    }
-  };
-
-  const handleLinkedInConnect = async () => {
-    setIsConnectingLinkedIn(true);
-    try {
-      const response = await fetch('http://localhost:8000/api/linkedin/auth');
-      const data = await response.json();
-
-      if (response.ok && data.auth_url) {
-        window.location.href = data.auth_url;
-      } else {
-        alert(data.detail || 'Failed to get LinkedIn authorization URL.');
-      }
-    } catch (err) {
-      alert('Network error or backend is not running.');
-      console.error(err);
-    } finally {
-      setIsConnectingLinkedIn(false);
     }
   };
 
@@ -134,20 +102,6 @@ export const useOnboarding = () => {
     } catch (error) {
       console.error('Error saving to localStorage:', error);
     }
-  };
-
-  // Note: handleSubmit is kept for LinkedIn step compatibility but simplified
-  const handleSubmit = async () => {
-    // Save to localStorage first
-    saveToLocalStorage(true);
-
-    // The actual API submission is handled by syncOnboardingDataAfterSignup()
-    // after user signs up, so we don't need to duplicate that logic here
-  };
-
-  const handleSkip = () => {
-    // Move to next step when skipping LinkedIn connection
-    handleNext();
   };
 
   const handleGoalToggle = (goal: string) => {
@@ -182,15 +136,10 @@ export const useOnboarding = () => {
 
   return {
     currentStep,
-    isConnectingLinkedIn,
-    linkedinConnected,
     formData,
     handleInputChange,
     handleNext,
     handleBack,
-    handleLinkedInConnect,
-    handleSubmit,
-    handleSkip,
     handleGoalToggle,
     handleHookToggle,
     handleUnlock,

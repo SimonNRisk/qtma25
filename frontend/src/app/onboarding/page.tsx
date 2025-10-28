@@ -2,25 +2,20 @@
 import { useOnboarding } from './hooks/useOnboarding';
 import { ProgressBar } from './components/ProgressBar';
 import { PersonalInfoStep } from './components/PersonalInfoStep';
-import { LinkedInStep } from './components/LinkedInStep';
 import { QuestionStep } from './components/QuestionStep';
 import { ProfileSummaryStep } from './components/ProfileSummaryStep';
 import { GoalsSelectionStep } from './components/GoalsSelectionStep';
 import { HooksSelectionStep } from './components/HooksSelectionStep';
 import { FinalStep } from './components/FinalStep';
+import Link from 'next/link';
 
 export default function Onboarding() {
   const {
     currentStep,
-    isConnectingLinkedIn,
-    linkedinConnected,
     formData,
     handleInputChange,
     handleNext,
     handleBack,
-    handleLinkedInConnect,
-    handleSubmit,
-    handleSkip,
     handleGoalToggle,
     handleHookToggle,
     handleUnlock,
@@ -29,10 +24,20 @@ export default function Onboarding() {
 
   return (
     <main className="min-h-screen bg-white">
-      <ProgressBar currentStep={currentStep} totalSteps={9} />
+      {/* Login link at bottom middle */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+        <Link
+          href="/login"
+          className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 underline"
+        >
+          Already a user? Login in
+        </Link>
+      </div>
+
+      <ProgressBar currentStep={currentStep} totalSteps={8} />
 
       {/* Steps */}
-      {currentStep === 6 ? (
+      {currentStep === 5 ? (
         <ProfileSummaryStep
           formData={{
             companyMission: formData.companyMission,
@@ -42,21 +47,21 @@ export default function Onboarding() {
           onBack={handleBack}
           onNext={handleNext}
         />
-      ) : currentStep === 7 ? (
+      ) : currentStep === 6 ? (
         <GoalsSelectionStep
           selectedGoals={formData.selectedGoals}
           onGoalToggle={handleGoalToggle}
           onBack={handleBack}
           onNext={handleNext}
         />
-      ) : currentStep === 8 ? (
+      ) : currentStep === 7 ? (
         <HooksSelectionStep
           selectedHooks={formData.selectedHooks}
           onHookToggle={handleHookToggle}
           onBack={handleBack}
           onNext={handleNext}
         />
-      ) : currentStep === 9 ? (
+      ) : currentStep === 8 ? (
         <FinalStep
           formData={{
             companyMission: formData.companyMission,
@@ -81,17 +86,6 @@ export default function Onboarding() {
           )}
 
           {currentStep === 2 && (
-            <LinkedInStep
-              linkedinConnected={linkedinConnected}
-              isConnectingLinkedIn={isConnectingLinkedIn}
-              onLinkedInConnect={handleLinkedInConnect}
-              onBack={handleBack}
-              onSubmit={handleSubmit}
-              onSkip={handleSkip}
-            />
-          )}
-
-          {currentStep === 3 && (
             <QuestionStep
               mainQuestion="What is the core mission of your company, in one or two sentences?"
               placeholder="Enter your company's mission statement..."
@@ -103,7 +97,7 @@ export default function Onboarding() {
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 3 && (
             <QuestionStep
               mainQuestion="Who is your primary target audience?"
               placeholder="e.g. customers, investors, partners, talent"
@@ -115,7 +109,7 @@ export default function Onboarding() {
             />
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 4 && (
             <QuestionStep
               mainQuestion="Are there any specific topics you'd love to post about, even just rough thoughts?"
               placeholder="e.g. AI, marketing, leadership, culture, etc."
