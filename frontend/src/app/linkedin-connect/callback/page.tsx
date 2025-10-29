@@ -33,9 +33,9 @@ export default function LinkedInCallback() {
           if (data.message) {
             setStatus('Successfully connected to LinkedIn!');
             setIsSuccess(true);
-            // Redirect back to onboarding after 2 seconds
+            // Redirect back to profile page after 2 seconds
             setTimeout(() => {
-              router.push('/onboarding');
+              router.push('/me');
             }, 2000);
           } else {
             setStatus(`Error: ${data.detail || 'Authentication failed'}`);
