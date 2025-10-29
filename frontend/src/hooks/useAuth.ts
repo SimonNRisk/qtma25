@@ -18,10 +18,7 @@ export function useAuth(redirectTo: string = '/login') {
         setIsAuthenticated(false);
         setUser(null);
         if (redirectTo) {
-          // Preserve the current URL as a redirect parameter
-          const currentPath = window.location.pathname + window.location.search;
-          const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
-          router.replace(redirectUrl);
+          router.replace(redirectTo);
         }
         return;
       }

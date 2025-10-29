@@ -253,21 +253,3 @@ async def delete_voice_context(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete context: {str(e)}")
 
-# ---------- User Profile Endpoint ----------
-
-@app.get("/me")
-async def get_current_user_profile(current_user: dict = Depends(get_current_user)):
-    """
-    Get current user's profile information
-    """
-    try:
-        return {
-            "id": current_user["id"],
-            "email": current_user.get("email", ""),
-            "first_name": current_user.get("first_name", ""),
-            "last_name": current_user.get("last_name", ""),
-            "created_at": current_user.get("created_at", "")
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get user profile: {str(e)}")
-
