@@ -22,15 +22,15 @@ certifi==2025.7.14
 cffi==1.17.1
 charset-normalizer==3.4.2
 click==8.1.8
-clyent==1.2.2
-conda-repo-cli==1.0.41
-conda-verify==3.4.2
+# clyent==1.2.2
+# conda-repo-cli==1.0.41
+# conda-verify==3.4.2
 constantly==15.1.0
 contourpy==1.3.2
 cryptography==45.0.5
 cssselect==1.1.0
 cycler==0.12.1
-datashape==0.5.4
+# datashape==0.5.4
 deprecation==2.1.0
 distlib==0.3.8
 distro==1.9.0
@@ -89,7 +89,7 @@ ml_dtypes==0.5.1
 munkres==1.1.4
 mypy-extensions==0.4.3
 namex==0.0.8
-navigator-updater==0.4.0
+# navigator-updater==0.4.0
 networkx==3.4.2
 numpy==1.26.4
 oauthlib==3.2.2
@@ -114,7 +114,7 @@ psutil==7.0.0
 py-cpuinfo==9.0.0
 pyarrow==11.0.0
 pyasn1==0.6.1
-pyasn1-modules==0.2.8
+pyasn1-modules==0.4.1
 pycparser==2.22
 pycurl==7.45.2
 pydantic==2.11.7
@@ -164,16 +164,8 @@ StrEnum==0.4.15
 supabase==2.17.0
 supafunc==0.10.1
 sympy==1.14.0
-TBB==0.2
-tensorboard==2.16.2
-tensorboard-data-server==0.7.2
-tensorflow==2.16.1
-tensorflow-io-gcs-filesystem==0.37.0
 termcolor==2.4.0
 thop==0.1.1.post2209072238
-torch==2.7.1
-torchaudio==2.1.2
-torchvision==0.22.1
 tqdm==4.67.1
 trio==0.30.0
 trio-websocket==0.12.2
@@ -183,7 +175,7 @@ tzdata==2025.2
 ultralytics==8.3.168
 ultralytics-thop==2.0.14
 uritemplate==4.1.1
-urllib3==2.5.0
+urllib3>=2.4,<2.5
 uvicorn==0.34.3
 virtualenv==20.25.0
 wavio==0.0.9
