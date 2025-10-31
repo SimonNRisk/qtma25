@@ -1,34 +1,81 @@
 'use client';
 import { useOnboarding } from './hooks/useOnboarding';
 import { ProgressBar } from './components/ProgressBar';
-import { WelcomeStep } from './components/WelcomeStep';
 import { PersonalInfoStep } from './components/PersonalInfoStep';
-import { LinkedInStep } from './components/LinkedInStep';
-import { AuthGuard } from '@/components/AuthGuard';
+import { QuestionStep } from './components/QuestionStep';
+import { ProfileSummaryStep } from './components/ProfileSummaryStep';
+import { GoalsSelectionStep } from './components/GoalsSelectionStep';
+import { HooksSelectionStep } from './components/HooksSelectionStep';
+import { FinalStep } from './components/FinalStep';
+import Link from 'next/link';
 
 export default function Onboarding() {
   const {
     currentStep,
-    isConnectingLinkedIn,
-    linkedinConnected,
     formData,
     handleInputChange,
     handleNext,
     handleBack,
-    handleLinkedInConnect,
-    handleSubmit,
+    handleGoalToggle,
+    handleHookToggle,
+    handleUnlock,
     isFormValid,
   } = useOnboarding();
 
   return (
-    <AuthGuard>
-      <main className="min-h-screen bg-brand-light">
-        <div className="max-w-2xl mx-auto px-8 py-12">
-          <ProgressBar currentStep={currentStep} totalSteps={3} />
+    <main className="min-h-screen bg-white">
+      {/* Login link at bottom middle */}
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+        <Link
+          href="/login"
+          className="text-sm text-gray-600 hover:text-gray-900 transition-colors duration-200 underline"
+        >
+          Already a user? Login in
+        </Link>
+      </div>
 
-          {currentStep === 1 && <WelcomeStep onNext={handleNext} />}
+      <ProgressBar currentStep={currentStep} totalSteps={8} />
 
-          {currentStep === 2 && (
+      {/* Steps */}
+      {currentStep === 5 ? (
+        <ProfileSummaryStep
+          formData={{
+            companyMission: formData.companyMission,
+            targetAudience: formData.targetAudience,
+            topicsToPost: formData.topicsToPost,
+          }}
+          onBack={handleBack}
+          onNext={handleNext}
+        />
+      ) : currentStep === 6 ? (
+        <GoalsSelectionStep
+          selectedGoals={formData.selectedGoals}
+          onGoalToggle={handleGoalToggle}
+          onBack={handleBack}
+          onNext={handleNext}
+        />
+      ) : currentStep === 7 ? (
+        <HooksSelectionStep
+          selectedHooks={formData.selectedHooks}
+          onHookToggle={handleHookToggle}
+          onBack={handleBack}
+          onNext={handleNext}
+        />
+      ) : currentStep === 8 ? (
+        <FinalStep
+          formData={{
+            companyMission: formData.companyMission,
+            targetAudience: formData.targetAudience,
+            topicsToPost: formData.topicsToPost,
+            selectedGoals: formData.selectedGoals,
+            selectedHooks: formData.selectedHooks,
+          }}
+          onUnlock={handleUnlock}
+          onBack={handleBack}
+        />
+      ) : (
+        <div className="flex justify-center items-center min-h-screen">
+          {currentStep === 1 && (
             <PersonalInfoStep
               formData={formData}
               onInputChange={handleInputChange}
@@ -38,17 +85,43 @@ export default function Onboarding() {
             />
           )}
 
-          {currentStep === 3 && (
-            <LinkedInStep
-              linkedinConnected={linkedinConnected}
-              isConnectingLinkedIn={isConnectingLinkedIn}
-              onLinkedInConnect={handleLinkedInConnect}
+          {currentStep === 2 && (
+            <QuestionStep
+              mainQuestion="What is the core mission of your company, in one or two sentences?"
+              placeholder="Enter your company's mission statement..."
+              value={formData.companyMission || ''}
+              onChange={value => handleInputChange('companyMission', value)}
               onBack={handleBack}
-              onSubmit={handleSubmit}
+              onNext={handleNext}
+              nextDisabled={!formData.companyMission?.trim()}
+            />
+          )}
+
+          {currentStep === 3 && (
+            <QuestionStep
+              mainQuestion="Who is your primary target audience?"
+              placeholder="e.g. customers, investors, partners, talent"
+              value={formData.targetAudience || ''}
+              onChange={value => handleInputChange('targetAudience', value)}
+              onBack={handleBack}
+              onNext={handleNext}
+              nextDisabled={!formData.targetAudience?.trim()}
+            />
+          )}
+
+          {currentStep === 4 && (
+            <QuestionStep
+              mainQuestion="Are there any specific topics you'd love to post about, even just rough thoughts?"
+              placeholder="e.g. AI, marketing, leadership, culture, etc."
+              value={formData.topicsToPost || ''}
+              onChange={value => handleInputChange('topicsToPost', value)}
+              onBack={handleBack}
+              onNext={handleNext}
+              nextDisabled={!formData.topicsToPost?.trim()}
             />
           )}
         </div>
-      </main>
-    </AuthGuard>
+      )}
+    </main>
   );
 }
