@@ -37,7 +37,7 @@ export default function LinkedInPost() {
 
       if (response.ok) {
         setResult('Success!');
-        setLinkedinUrl(`https://www.linkedin.com/feed/update/${data.id}`);
+        setLinkedinUrl(`${LINKEDIN_VIEW_POST_URL}${data.id}`);
       } else {
         setResult(`Error: ${data.error || 'Failed to post'}`);
       }
