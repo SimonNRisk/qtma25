@@ -3,13 +3,22 @@ import { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { LINKEDIN_VIEW_POST_URL } from './utils/constants';
 import { AiAssistant } from './components/ai-assistant';
+import { usePostHistory } from '@/hooks/usePostHistory';
 
 export default function LinkedInPost() {
   const [isPosting, setIsPosting] = useState(false);
   const [result, setResult] = useState('');
-  const [postText, setPostText] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Use post history hook
+  const {
+    currentPost: postText,
+    setCurrentPost,
+    saveToHistory,
+    goBack,
+    canGoBack,
+  } = usePostHistory('');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +58,14 @@ export default function LinkedInPost() {
     }
   };
 
+  const handlePostUpdate = (newPostText: string) => {
+    saveToHistory(newPostText);
+  };
+
+  const handleGoBack = () => {
+    goBack();
+  };
+
   return (
     <AuthGuard>
       <main className="min-h-screen bg-brand-light p-8">
@@ -64,16 +81,38 @@ export default function LinkedInPost() {
 
               <div className="bg-white rounded-lg shadow-lg p-6">
                 <div className="mb-6">
-                  <label
-                    htmlFor="postText"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    What do you want to post?
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label htmlFor="postText" className="block text-sm font-medium text-gray-700">
+                      What do you want to post?
+                    </label>
+                    {canGoBack && (
+                      <button
+                        onClick={handleGoBack}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm text-brand-blue hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Restore previous version"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          strokeWidth={2}
+                          stroke="currentColor"
+                          className="w-4 h-4"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
+                          />
+                        </svg>
+                        Back
+                      </button>
+                    )}
+                  </div>
                   <textarea
                     id="postText"
                     value={postText}
-                    onChange={e => setPostText(e.target.value)}
+                    onChange={e => setCurrentPost(e.target.value)}
                     placeholder="Enter your LinkedIn post content here..."
                     className="w-full text-black h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none"
                   />
@@ -129,7 +168,7 @@ export default function LinkedInPost() {
                 </div>
               )}
             </div>
-            <AiAssistant currentPostText={postText} onPostUpdate={setPostText} />
+            <AiAssistant currentPostText={postText} onPostUpdate={handlePostUpdate} />
           </div>
         </div>
       </main>
