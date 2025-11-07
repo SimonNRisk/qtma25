@@ -7,20 +7,34 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { prompt } = await request.json();
+    const { prompt, systemPrompt, currentPostText } = await request.json();
 
     if (!prompt) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
+    const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
+
+    if (systemPrompt) {
+      messages.push({
+        role: 'system',
+        content: systemPrompt,
+      });
+    }
+
+    // If currentPostText is provided, include it in the user prompt
+    const userContent = currentPostText
+      ? `Current post content:\n${currentPostText}\n\nUser request: ${prompt}\n\nPlease provide only the edited post content as your response, without any additional explanation or commentary.`
+      : prompt;
+
+    messages.push({
+      role: 'user',
+      content: userContent,
+    });
+
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
-      messages: [
-        {
-          role: 'user',
-          content: prompt,
-        },
-      ],
+      messages,
       max_tokens: 500,
     });
 
