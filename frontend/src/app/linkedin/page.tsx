@@ -129,7 +129,7 @@ export default function LinkedInPost() {
                 </div>
               )}
             </div>
-            <AiAssistant />
+            <AiAssistant currentPostText={postText} onPostUpdate={setPostText} />
           </div>
         </div>
       </main>

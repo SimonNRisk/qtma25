@@ -5,9 +5,15 @@ import { useState, useRef, useEffect } from 'react';
 interface Message {
   role: 'user' | 'assistant';
   content: string;
+  editedPost?: string;
 }
 
-export const AiAssistant = () => {
+interface AiAssistantProps {
+  currentPostText: string;
+  onPostUpdate: (newPostText: string) => void;
+}
+
+export const AiAssistant = ({ currentPostText, onPostUpdate }: AiAssistantProps) => {
   const [prompt, setPrompt] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -28,24 +34,37 @@ export const AiAssistant = () => {
 
     const userMessage: Message = { role: 'user', content: prompt };
     setMessages(prev => [...prev, userMessage]);
+    const currentPrompt = prompt;
     setPrompt('');
     setIsLoading(true);
 
     try {
+      // System prompt that instructs the AI to return only the edited post
+      const systemPrompt = `You are a LinkedIn post editor. Your task is to edit the provided post content based on the user's request. 
+You must respond with ONLY the edited post content - no explanations, no commentary, no additional text. 
+Just return the complete edited post exactly as it should appear.`;
+
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({
+          prompt: currentPrompt,
+          systemPrompt,
+          currentPostText: currentPostText || '',
+        }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
+        // The response should be the edited post content
+        const editedPost = data.generatedText.trim();
         const assistantMessage: Message = {
           role: 'assistant',
-          content: data.generatedText,
+          content: editedPost,
+          editedPost: editedPost,
         };
         setMessages(prev => [...prev, assistantMessage]);
       } else {
@@ -70,12 +89,16 @@ export const AiAssistant = () => {
     }
   };
 
+  const handleInsertPost = (editedPost: string) => {
+    onPostUpdate(editedPost);
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)] w-96 bg-white rounded-lg shadow-lg">
       {/* Header */}
       <div className="bg-brand-blue text-white p-4 rounded-t-lg">
-        <h2 className="text-xl font-bold">AI Assistant</h2>
-        <p className="text-sm text-brand-light">Chat with AI to improve your posts</p>
+        <h2 className="text-xl font-bold">AI Post Editor</h2>
+        <p className="text-sm text-brand-light">Edit your LinkedIn post with AI</p>
       </div>
 
       {/* Messages Container */}
@@ -83,8 +106,8 @@ export const AiAssistant = () => {
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500 text-center">
             <div>
-              <p className="text-lg mb-2">👋 Start a conversation</p>
-              <p className="text-sm">Ask me to help improve your LinkedIn post!</p>
+              <p className="text-lg mb-2">✏️ Edit your post</p>
+              <p className="text-sm">Ask me to improve, shorten, or rewrite your post!</p>
             </div>
           </div>
         ) : (
@@ -101,9 +124,19 @@ export const AiAssistant = () => {
                 }`}
               >
                 <div className="text-sm font-medium mb-1">
-                  {message.role === 'user' ? 'You' : 'Assistant'}
+                  {message.role === 'user' ? 'You' : 'Edited Post'}
                 </div>
                 <div className="whitespace-pre-wrap break-words">{message.content}</div>
+                {message.role === 'assistant' && message.editedPost && (
+                  <div className="mt-3 pt-3 border-t border-gray-300">
+                    <button
+                      onClick={() => handleInsertPost(message.editedPost!)}
+                      className="w-full bg-brand-blue text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
+                    >
+                      Insert into Post
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ))
@@ -136,7 +169,7 @@ export const AiAssistant = () => {
         <form onSubmit={handleSubmitPrompt} className="flex gap-2">
           <input
             type="text"
-            placeholder="Ask me anything..."
+            placeholder="e.g., Make it shorter, add emojis, improve tone..."
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
             className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent text-gray-800"
