@@ -45,11 +45,19 @@ export default function MePage() {
 
   if (!user) return null;
 
+  const backgroundStyle = {
+    backgroundImage:
+      'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.65) 0%, rgba(3,34,54,0.75) 35%, #0f4662 70%, #0a324b 100%)',
+  };
+
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 p-4">
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div
+        className="min-h-screen p-4 sm:p-6 md:p-8 flex items-center justify-center"
+        style={backgroundStyle}
+      >
+        <div className="max-w-2xl w-full">
+          <div className="bg-white rounded-[32px] shadow-2xl p-8 sm:p-10 border border-slate-100">
             <div className="text-center mb-8">
               <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white text-2xl font-bold">
@@ -63,7 +71,7 @@ export default function MePage() {
             </div>
 
             <div className="space-y-6">
-              <div className="bg-gray-50 rounded-lg p-6">
+              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100 shadow-inner">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Profile Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -101,7 +109,7 @@ export default function MePage() {
                 </button>
                 <Link
                   href="/"
-                  className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl text-center"
+                  className="flex-1 bg-slate-700 hover:bg-slate-800 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl text-center"
                 >
                   Back to Home
                 </Link>
