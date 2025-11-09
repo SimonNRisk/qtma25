@@ -200,7 +200,7 @@ export default function LoginPage() {
             <p className="text-sm text-white/80">
               Don't have an account?{' '}
               <Link
-                href="/signup"
+                href="/onboarding"
                 className="text-white font-semibold hover:text-cyan-200 transition duration-200"
               >
                 Create one
