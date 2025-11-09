@@ -25,7 +25,7 @@ export default function Onboarding() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)]">
       {/* Login link at bottom middle */}
-      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
+      <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-0">
         <Link
           href="/login"
           className="text-sm text-white/80 hover:text-white transition-colors duration-200 underline"
@@ -40,6 +40,9 @@ export default function Onboarding() {
       {currentStep === 5 ? (
         <ProfileSummaryStep
           formData={{
+            name: formData.name,
+            company: formData.company,
+            role: formData.role,
             companyMission: formData.companyMission,
             targetAudience: formData.targetAudience,
             topicsToPost: formData.topicsToPost,

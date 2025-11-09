@@ -18,7 +18,7 @@ export const NavigationButtons = ({
   backText = 'Back',
 }: NavigationButtonsProps) => {
   return (
-    <div className="flex justify-between mt-8">
+    <div className={`flex mt-8 ${showBack ? 'justify-between' : 'justify-end'}`}>
       {showBack && (
         <button
           onClick={onBack}

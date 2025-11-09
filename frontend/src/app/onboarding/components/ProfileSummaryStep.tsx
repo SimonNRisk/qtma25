@@ -5,6 +5,9 @@ import { WelcomeSection } from './WelcomeSection';
 
 interface ProfileSummaryStepProps {
   formData: {
+    name: string;
+    company: string;
+    role: string;
     companyMission: string;
     targetAudience: string;
     topicsToPost: string;
@@ -48,7 +51,9 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
           <StepCard>
             <div className="space-y-6">
               {/* Header */}
-              <h2 className="text-2xl font-bold text-white">Catchy Header</h2>
+              <h2 className="text-2xl font-bold text-white">
+                {formData.name}, {formData.role} at {formData.company}
+              </h2>
 
               {/* Bio Section */}
               <div className="space-y-2">
