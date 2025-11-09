@@ -22,18 +22,23 @@ export const FormInput = ({
   if (type === 'select' && options) {
     return (
       <div>
-        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+        <label
+          htmlFor={id}
+          className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+        >
           {label} {required && '*'}
         </label>
         <select
           id={id}
           value={value}
           onChange={e => onChange(e.target.value)}
-          className="w-full text-black p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+          className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
         >
-          <option value="">Select your {label.toLowerCase()}</option>
+          <option value="" className="text-black">
+            Select your {label.toLowerCase()}
+          </option>
           {options.map(option => (
-            <option key={option} value={option}>
+            <option key={option} value={option} className="text-black">
               {option}
             </option>
           ))}
@@ -44,7 +49,10 @@ export const FormInput = ({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
+      <label
+        htmlFor={id}
+        className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+      >
         {label} {required && '*'}
       </label>
       <input
@@ -52,7 +60,7 @@ export const FormInput = ({
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full text-black p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent"
+        className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
         placeholder={placeholder}
       />
     </div>

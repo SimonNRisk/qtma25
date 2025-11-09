@@ -22,7 +22,9 @@ export const LinkedInStep = ({
     <StepCard>
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-brand-dark mb-2">First Things First</h1>
-        <p className="text-gray-600">Connect your LinkedIn to unlock posting, scheduling, and personalization.</p>
+        <p className="text-gray-600">
+          Connect your LinkedIn to unlock posting, scheduling, and personalization.
+        </p>
       </div>
 
       <div className="space-y-6">
@@ -92,7 +94,12 @@ export const LinkedInStep = ({
         </div>
       </div>
 
-      <NavigationButtons onBack={onBack} onNext={onSubmit} nextText="Complete Setup" showBack={false}/>
+      <NavigationButtons
+        onBack={onBack}
+        onNext={onSubmit}
+        nextText="Complete Setup"
+        showBack={false}
+      />
     </StepCard>
   );
 };

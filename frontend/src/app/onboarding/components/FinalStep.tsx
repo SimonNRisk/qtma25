@@ -19,11 +19,11 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen p-8">
       {/* Left Section - Post Idea Intro */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-md">
-          <h1 className="text-5xl font-bold text-black leading-tight">
+          <h1 className="text-5xl font-bold text-white leading-tight">
             Here's a post idea based on your style
           </h1>
         </div>
@@ -31,7 +31,7 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
 
       {/* Right Section - Post Card with Overlay */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-[632px] mx-auto relative">
+        <div className="w-[900px] mx-auto relative">
           <StepCard>
             <div className="space-y-4 p-6">
               {/* Post Header */}
@@ -92,12 +92,15 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
               <h2 className="text-white text-3xl font-bold text-center mb-6">
                 Sign up to unlock this post's full potential
               </h2>
-              <button
-                onClick={handleUnlock}
-                className="bg-white text-gray-900 px-8 py-4 rounded-lg font-medium hover:bg-gray-100 transition-colors text-lg w-full max-w-xs"
-              >
-                Unlock
-              </button>
+              <div className="relative w-full max-w-xs">
+                <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent blur-xl opacity-30 pointer-events-none" />
+                <button
+                  onClick={handleUnlock}
+                  className="relative w-full px-8 py-4 rounded-2xl text-base font-semibold tracking-wide text-white transition hover:translate-y-[-1px] border border-[var(--login-button-border)] bg-gradient-to-br from-[var(--login-button-start)] via-[var(--login-button-mid)] to-[var(--login-button-end)] login-button text-lg"
+                >
+                  Unlock
+                </button>
+              </div>
               <div className="mt-6 text-white text-opacity-50 text-sm text-center">
                 How do you feel about this post?
                 <div className="flex justify-center space-x-4 mt-2">

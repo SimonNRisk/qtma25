@@ -76,10 +76,10 @@ export function usePostHistory(
 
     // Get the most recent history entry
     const previousVersion = history[history.length - 1];
-    
+
     // Remove it from history
     setHistory(prev => prev.slice(0, -1));
-    
+
     // Update current post
     previousPostRef.current = previousVersion.content;
     setCurrentPostState(previousVersion.content);
@@ -112,4 +112,3 @@ export function usePostHistory(
     clearHistory,
   };
 }
-

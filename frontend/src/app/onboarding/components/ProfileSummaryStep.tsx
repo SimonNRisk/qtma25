@@ -5,6 +5,9 @@ import { WelcomeSection } from './WelcomeSection';
 
 interface ProfileSummaryStepProps {
   formData: {
+    name: string;
+    company: string;
+    role: string;
     companyMission: string;
     targetAudience: string;
     topicsToPost: string;
@@ -28,38 +31,35 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen p-8">
       {/* Left Section - Welcome */}
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md">
-          <WelcomeSection 
-            title="Nice to meet you!"
-            subtitle="Here's what we learned."
-          />
+          <WelcomeSection title="Nice to meet you!" subtitle="Here's what we learned." />
         </div>
       </div>
 
       {/* Right Section - Profile Summary */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-[632px]">
+        <div className="w-[900px]">
           <StepCard>
             <div className="space-y-6">
               {/* Header */}
-              <h2 className="text-2xl font-bold text-black">
-                Catchy Header
+              <h2 className="text-2xl font-bold text-white">
+                {formData.name}, {formData.role} at {formData.company}
               </h2>
 
               {/* Bio Section */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Bio</label>
-                <div className="border-b-2 border-gray-300 pb-2">
-                  <p className="text-gray-600">
+                <label className="text-sm font-medium text-white/80">Bio</label>
+                <div className="border-b-2 border-white/30 pb-2">
+                  <p className="text-white/90">
                     {formData.companyMission || 'Company mission not provided'}
                   </p>
                 </div>
@@ -67,34 +67,34 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
 
               {/* Tone Section */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Tone</label>
-                <div className="border-b-2 border-gray-300 pb-2">
-                  <p className="text-gray-600">Professional & Engaging</p>
+                <label className="text-sm font-medium text-white/80">Tone</label>
+                <div className="border-b-2 border-white/30 pb-2">
+                  <p className="text-white/90">Professional & Engaging</p>
                 </div>
               </div>
 
               {/* Keywords Section */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Keywords</label>
+                <label className="text-sm font-medium text-white/80">Keywords</label>
                 <div className="flex flex-wrap gap-2">
                   {formData.topicsToPost ? (
                     formData.topicsToPost.split(',').map((topic, index) => (
                       <span
                         key={index}
-                        className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm text-black"
+                        className="px-3 py-1 bg-white/20 border border-white/40 rounded-full text-sm text-white"
                       >
                         {topic.trim()}
                       </span>
                     ))
                   ) : (
                     <>
-                      <span className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm text-black">
+                      <span className="px-3 py-1 bg-white/20 border border-white/40 rounded-full text-sm text-white">
                         Marketing
                       </span>
-                      <span className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm text-black">
+                      <span className="px-3 py-1 bg-white/20 border border-white/40 rounded-full text-sm text-white">
                         Founder
                       </span>
-                      <span className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm text-black">
+                      <span className="px-3 py-1 bg-white/20 border border-white/40 rounded-full text-sm text-white">
                         Startup
                       </span>
                     </>
@@ -103,13 +103,15 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
               </div>
 
               {/* Separator */}
-              <div className="border-t-2 border-dashed border-blue-200 my-4"></div>
+              <div className="border-t-2 border-dashed border-white/30 my-4"></div>
 
               {/* Analytics Section */}
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Analytics</label>
-                <div className="border-b-2 border-gray-300 pb-2">
-                  <p className="text-gray-600">Target Audience: {formData.targetAudience || 'Not specified'}</p>
+                <label className="text-sm font-medium text-white/80">Analytics</label>
+                <div className="border-b-2 border-white/30 pb-2">
+                  <p className="text-white/90">
+                    Target Audience: {formData.targetAudience || 'Not specified'}
+                  </p>
                 </div>
               </div>
 
