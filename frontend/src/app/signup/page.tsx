@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { postJSON } from '@/lib/api';
 import { session } from '@/lib/session';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -19,6 +19,16 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
+
+  // Check if user has completed onboarding before allowing signup
+  useEffect(() => {
+    const onboardingData = localStorage.getItem('onboarding_data');
+
+    // If no onboarding data exists, redirect to onboarding (no signup without onboarding)
+    if (!onboardingData) {
+      router.replace('/onboarding');
+    }
+  }, [router]);
 
   async function handleOAuthLogin(provider: string) {
     setOauthLoading(provider);
