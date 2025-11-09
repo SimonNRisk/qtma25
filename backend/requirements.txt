@@ -1,0 +1,21 @@
+# Core FastAPI dependencies
+fastapi==0.115.13
+uvicorn==0.34.3
+python-multipart==0.0.9
+
+# Authentication
+PyJWT==2.10.1
+python-jose==3.5.0
+
+# Database
+supabase==2.17.0
+
+# HTTP client
+httpx==0.28.1
+
+# Environment variables
+python-dotenv==1.1.1
+
+# Email validation (for pydantic EmailStr)
+email-validator==2.3.0
+
