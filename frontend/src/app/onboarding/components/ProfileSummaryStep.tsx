@@ -38,10 +38,7 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
       {/* Left Section - Welcome */}
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md">
-          <WelcomeSection 
-            title="Nice to meet you!"
-            subtitle="Here's what we learned."
-          />
+          <WelcomeSection title="Nice to meet you!" subtitle="Here's what we learned." />
         </div>
       </div>
 
@@ -51,9 +48,7 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
           <StepCard>
             <div className="space-y-6">
               {/* Header */}
-              <h2 className="text-2xl font-bold text-white">
-                Catchy Header
-              </h2>
+              <h2 className="text-2xl font-bold text-white">Catchy Header</h2>
 
               {/* Bio Section */}
               <div className="space-y-2">
@@ -109,7 +104,9 @@ export const ProfileSummaryStep = ({ formData, onBack, onNext }: ProfileSummaryS
               <div className="space-y-2">
                 <label className="text-sm font-medium text-white/80">Analytics</label>
                 <div className="border-b-2 border-white/30 pb-2">
-                  <p className="text-white/90">Target Audience: {formData.targetAudience || 'Not specified'}</p>
+                  <p className="text-white/90">
+                    Target Audience: {formData.targetAudience || 'Not specified'}
+                  </p>
                 </div>
               </div>
 

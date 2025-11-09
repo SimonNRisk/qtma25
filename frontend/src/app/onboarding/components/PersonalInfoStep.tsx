@@ -78,7 +78,12 @@ export const PersonalInfoStep = ({
         />
       </div>
 
-      <NavigationButtons onBack={onBack} onNext={onNext} nextDisabled={!isFormValid} showBack={false} />
+      <NavigationButtons
+        onBack={onBack}
+        onNext={onNext}
+        nextDisabled={!isFormValid}
+        showBack={false}
+      />
     </StepCard>
   );
 };

@@ -22,7 +22,10 @@ export const FormInput = ({
   if (type === 'select' && options) {
     return (
       <div>
-        <label htmlFor={id} className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1">
+        <label
+          htmlFor={id}
+          className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+        >
           {label} {required && '*'}
         </label>
         <select
@@ -31,7 +34,9 @@ export const FormInput = ({
           onChange={e => onChange(e.target.value)}
           className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
         >
-          <option value="" className="text-black">Select your {label.toLowerCase()}</option>
+          <option value="" className="text-black">
+            Select your {label.toLowerCase()}
+          </option>
           {options.map(option => (
             <option key={option} value={option} className="text-black">
               {option}
@@ -44,7 +49,10 @@ export const FormInput = ({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1">
+      <label
+        htmlFor={id}
+        className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+      >
         {label} {required && '*'}
       </label>
       <input

@@ -28,7 +28,7 @@ export const GoalsSelectionStep = ({
     'Grow audience',
     'Stay organized',
     'Save time on posting',
-    'Other'
+    'Other',
   ];
 
   return (
@@ -36,10 +36,7 @@ export const GoalsSelectionStep = ({
       {/* Left Section - Welcome */}
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md">
-          <WelcomeSection 
-            title="What do you hope to achieve on Astro?"
-            subtitle=""
-          />
+          <WelcomeSection title="What do you hope to achieve on Astro?" subtitle="" />
         </div>
       </div>
 
@@ -55,14 +52,15 @@ export const GoalsSelectionStep = ({
 
               {/* Goals Grid */}
               <div className="flex flex-wrap gap-3">
-                {goals.map((goal) => (
+                {goals.map(goal => (
                   <button
                     key={goal}
                     onClick={() => onGoalToggle(goal)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border
-                      ${selectedGoals.includes(goal)
-                        ? 'bg-gray-800 text-white border-gray-800'
-                        : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                      ${
+                        selectedGoals.includes(goal)
+                          ? 'bg-gray-800 text-white border-gray-800'
+                          : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
                       }`}
                   >
                     {goal}

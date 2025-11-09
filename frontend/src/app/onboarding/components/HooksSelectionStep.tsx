@@ -18,36 +18,36 @@ export const HooksSelectionStep = ({
   const hooks = [
     {
       text: "I pitched to 20 investors before our first yes. Here's what changed.",
-      tags: ["Story", "Leadership"]
+      tags: ['Story', 'Leadership'],
     },
     {
-      text: "3 mistakes killing most LinkedIn posts (and how to fix them).",
-      tags: ["Tips", "Content"]
+      text: '3 mistakes killing most LinkedIn posts (and how to fix them).',
+      tags: ['Tips', 'Content'],
     },
     {
       text: "Cold outreach is over— here's what works now.",
-      tags: ["Opinion", "Case Study"]
+      tags: ['Opinion', 'Case Study'],
     },
     {
-      text: "We shipped a failed feature and learned three brutal lessons.",
-      tags: ["Learning", "Story"]
+      text: 'We shipped a failed feature and learned three brutal lessons.',
+      tags: ['Learning', 'Story'],
     },
     {
       text: "Leadership isn't just about vision. It's about small daily choices.",
-      tags: ["Leadership", "Philosophy"]
+      tags: ['Leadership', 'Philosophy'],
     },
     {
-      text: "What does the new AI regulation mean for founders?",
-      tags: ["Industry", "Analysis"]
+      text: 'What does the new AI regulation mean for founders?',
+      tags: ['Industry', 'Analysis'],
     },
     {
-      text: "We tested 5 landing pages. One crushed the rest by 42%.",
-      tags: ["Data", "Case Study"]
+      text: 'We tested 5 landing pages. One crushed the rest by 42%.',
+      tags: ['Data', 'Case Study'],
     },
     {
       text: "Curious— what's the boldest career risk you've ever taken?",
-      tags: ["Question", "Engagement"]
-    }
+      tags: ['Question', 'Engagement'],
+    },
   ];
 
   return (

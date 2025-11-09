@@ -1,6 +1,6 @@
 'use client';
 import { useOnboarding } from './hooks/useOnboarding';
-import { ProgressBar } from './components/ProgressBar';
+import { OnboardingHeader } from './components/OnboardingHeader';
 import { PersonalInfoStep } from './components/PersonalInfoStep';
 import { QuestionStep } from './components/QuestionStep';
 import { ProfileSummaryStep } from './components/ProfileSummaryStep';
@@ -34,7 +34,7 @@ export default function Onboarding() {
         </Link>
       </div>
 
-      <ProgressBar currentStep={currentStep} totalSteps={8} />
+      <OnboardingHeader currentStep={currentStep} totalSteps={8} />
 
       {/* Steps */}
       {currentStep === 5 ? (
