@@ -23,7 +23,6 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (data.url) {
-        // Redirect to OAuth provider
         window.location.href = data.url;
       } else {
         setMsg('OAuth login failed. Please try again.');
@@ -41,25 +40,19 @@ export default function LoginPage() {
     setLoading(true);
     try {
       const data = await postJSON('/auth/login', { email, password });
-
-      // Save JWT tokens to localStorage
       session.save(data.access_token, data.refresh_token);
 
-      // Clear any pending profile data
       const f = sessionStorage.getItem('pending_first_name');
       const l = sessionStorage.getItem('pending_last_name');
       if (f || l) {
-        // later call FastAPI /profiles/upsert here
         sessionStorage.removeItem('pending_first_name');
         sessionStorage.removeItem('pending_last_name');
       }
 
-      // Redirect to the desired page (or me)
       const redirectTo = searchParams.get('redirect') || '/me';
       router.push(redirectTo);
     } catch (err: any) {
       const errorMessage = err.message || 'Login failed';
-      // Check if it's an email confirmation error
       if (errorMessage.includes('email') && errorMessage.includes('confirm')) {
         setMsg('Please check your email and confirm your account before signing in.');
       } else {
@@ -75,18 +68,20 @@ export default function LoginPage() {
   }, [router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+    <div className="h-screen overflow-hidden flex items-center justify-center p-6 bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)]">
+      <div className="max-w-xl w-full">
+        <div className="rounded-[32px] border border-white/60 px-10 py-6 text-white shadow-[0_30px_60px_rgba(0,0,0,0.55)] bg-gradient-to-b from-[var(--login-card-start)] via-[var(--login-card-mid)] to-[var(--login-card-end)]">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
-            <p className="text-gray-600">Sign in to your account</p>
+            <h1 className="mt-3 text-3xl font-light tracking-[0.4em] uppercase">Welcome Back</h1>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-6">
+          <form onSubmit={onSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
+              <label
+                htmlFor="email"
+                className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+              >
+                Email
               </label>
               <input
                 id="email"
@@ -95,12 +90,15 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+              >
                 Password
               </label>
               <input
@@ -110,45 +108,46 @@ export default function LoginPage() {
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
               />
+              <p className="mt-1 text-[11px] text-white/75">
+                Use 8 or more letters, numbers, and symbols
+              </p>
             </div>
 
             {msg && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              <div className="rounded-xl border border-red-400/40 bg-red-500/10 px-3 py-2 text-xs text-red-100">
                 {msg}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </button>
+            <div className="relative">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent blur-xl opacity-30 pointer-events-none" />
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative w-full rounded-2xl py-3.5 text-base font-semibold tracking-wide text-white transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-70 border border-[var(--login-button-border)] bg-gradient-to-br from-[var(--login-button-start)] via-[var(--login-button-mid)] to-[var(--login-button-end)] login-button"
+              >
+                {loading ? 'Signing in...' : 'Continue'}
+              </button>
+            </div>
           </form>
 
-          {/* OAuth Section */}
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
+            <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
+              <div className="flex-1 border-t border-white/40" />
+              <span>OR</span>
+              <div className="flex-1 border-t border-white/40" />
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3">
-              {/* Google OAuth */}
+            <div className="mt-4 grid grid-cols-1 gap-3">
               <button
                 onClick={() => handleOAuthLogin('google')}
                 disabled={oauthLoading === 'google'}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                className="w-full inline-flex justify-center rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {oauthLoading === 'google' ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
@@ -174,14 +173,13 @@ export default function LoginPage() {
                 )}
               </button>
 
-              {/* GitHub OAuth */}
               <button
                 onClick={() => handleOAuthLogin('github')}
                 disabled={oauthLoading === 'github'}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                className="w-full inline-flex justify-center rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {oauthLoading === 'github' ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
                     <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -199,23 +197,23 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-sm text-white/80">
               Don't have an account?{' '}
               <Link
                 href="/signup"
-                className="text-blue-600 hover:text-blue-700 font-semibold transition duration-200"
+                className="text-white font-semibold hover:text-cyan-200 transition duration-200"
               >
                 Create one
               </Link>
             </p>
           </div>
 
-          <div className="mt-6 text-center">
+          <div className="mt-3 text-center">
             <Link
               href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm transition duration-200"
+              className="text-[11px] uppercase tracking-[0.35em] text-white/70 transition hover:text-white"
             >
-              ← Back to Home
+              Back to Home
             </Link>
           </div>
         </div>
