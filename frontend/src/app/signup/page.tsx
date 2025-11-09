@@ -28,7 +28,6 @@ export default function SignUpPage() {
       const data = await response.json();
 
       if (data.url) {
-        // Redirect to OAuth provider
         window.location.href = data.url;
       } else {
         setMsg('OAuth login failed. Please try again.');
@@ -45,7 +44,6 @@ export default function SignUpPage() {
     setMsg(null);
     setLoading(true);
     try {
-      // ⬇️ include first_name & last_name
       const signupResponse = await postJSON('/auth/signup', {
         email,
         password,
@@ -53,30 +51,20 @@ export default function SignUpPage() {
         last_name: last,
       });
 
-      // Check if email confirmation is required
       if (signupResponse.email_confirmation_required) {
-        // Show success message about email confirmation
-        setMsg(
-          'Account created successfully! Please check your email to confirm your account before signing in.'
-        );
-
-        // Clear form
+        setMsg('Account created successfully! Please check your email to confirm your account before signing in.');
         setEmail('');
         setPassword('');
         setFirst('');
         setLast('');
 
-        // Start countdown and redirect to login page
         setCountdown(5);
         const countdownInterval = setInterval(() => {
           setCountdown(prev => {
             if (prev <= 1) {
               clearInterval(countdownInterval);
-              // Use setTimeout to avoid setState during render
               const redirectTo = searchParams.get('redirect');
-              const loginUrl = redirectTo
-                ? `/login?redirect=${encodeURIComponent(redirectTo)}`
-                : '/login';
+              const loginUrl = redirectTo ? `/login?redirect=${encodeURIComponent(redirectTo)}` : '/login';
               setTimeout(() => router.push(loginUrl), 0);
               return 0;
             }
@@ -84,17 +72,14 @@ export default function SignUpPage() {
           });
         }, 1000);
       } else {
-        // Email confirmation not required - automatically log in
         try {
           const loginResponse = await postJSON('/auth/login', {
             email,
             password,
           });
 
-          // Save JWT tokens
           session.save(loginResponse.access_token, loginResponse.refresh_token);
 
-          // Sync onboarding data if it exists
           try {
             const synced = await syncOnboardingDataAfterSignup();
             if (synced) {
@@ -107,8 +92,6 @@ export default function SignUpPage() {
           }
 
           setMsg('Account created and logged in successfully!');
-
-          // Redirect to profile page
           setTimeout(() => {
             router.push('/me');
           }, 1500);
@@ -128,180 +111,130 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join us today and get started</p>
+    <div className="signup-shell">
+      <div className="signup-card text-gray-800">
+        <div className="text-center mb-8">
+          <h1 className="text-[32px] font-semibold text-white">Welcome to Astro</h1>
+          <p className="text-sm text-gray-200 mt-1">Begin by creating an account</p>
+        </div>
+
+        <form onSubmit={onSubmit} className="signup-form">
+          <div className="signup-field-grid">
+            <div>
+              <label htmlFor="first" className="block text-sm font-semibold text-gray-700 mb-1">
+                First Name
+              </label>
+              <input
+                id="first"
+                placeholder="Enter first name"
+                value={first}
+                onChange={e => setFirst(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-[14px] bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-150 placeholder:text-gray-400"
+              />
+            </div>
+            <div>
+              <label htmlFor="last" className="block text-sm font-semibold text-gray-700 mb-1">
+                Last Name
+              </label>
+              <input
+                id="last"
+                placeholder="Enter last name"
+                value={last}
+                onChange={e => setLast(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-200 rounded-[14px] bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-150 placeholder:text-gray-400"
+              />
+            </div>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="first" className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                <input
-                  id="first"
-                  placeholder="Enter first name"
-                  value={first}
-                  onChange={e => setFirst(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-                />
-              </div>
-              <div>
-                <label htmlFor="last" className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                <input
-                  id="last"
-                  placeholder="Enter last name"
-                  value={last}
-                  onChange={e => setLast(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-                />
+          <div>
+            <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
+              Email Address
+            </label>
+            <input
+              id="email"
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              className="w-full px-4 py-3 border border-gray-200 rounded-[14px] bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-150 placeholder:text-gray-400"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              placeholder="Create a password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              autoComplete="new-password"
+              className="w-full px-4 py-3 border border-gray-200 rounded-[14px] bg-white text-gray-800 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition duration-150 placeholder:text-gray-400"
+            />
+          </div>
+
+          {msg && (
+            <div
+              className={`px-3 py-2.5 rounded-lg ${
+                msg.includes('successfully')
+                  ? 'bg-green-50 border border-green-200 text-green-700'
+                  : 'bg-red-50 border border-red-200 text-red-700'
+              }`}
+            >
+              <div className="flex items-center justify-between text-sm">
+                <span>{msg}</span>
+                {countdown > 0 && (
+                  <span className="font-semibold whitespace-nowrap">Redirecting in {countdown}s...</span>
+                )}
               </div>
             </div>
+          )}
 
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-              />
-            </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#8a2be2] hover:bg-[#7a24c8] disabled:bg-purple-300 text-white font-semibold py-3 px-4 rounded-[16px] transition duration-150 shadow-[0_15px_30px_rgba(138,43,226,0.35)] hover:shadow-[0_18px_38px_rgba(122,36,200,0.45)] disabled:cursor-not-allowed"
+          >
+            {loading ? 'Creating Account...' : 'Create Account'}
+          </button>
+        </form>
 
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-                autoComplete="new-password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
-              />
-            </div>
+        <div className="signup-divider">OR</div>
 
-            {msg && (
-              <div
-                className={`px-4 py-3 rounded-lg ${
-                  msg.includes('successfully')
-                    ? 'bg-green-50 border border-green-200 text-green-700'
-                    : 'bg-red-50 border border-red-200 text-red-700'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <span>{msg}</span>
-                  {countdown > 0 && (
-                    <span className="text-sm font-semibold">Redirecting in {countdown}s...</span>
-                  )}
-                </div>
-              </div>
+        <div className="mt-4 grid grid-cols-1 gap-2.5">
+          <button
+            onClick={() => handleOAuthLogin('google')}
+            disabled={oauthLoading === 'google'}
+            className="w-full inline-flex justify-center py-3 px-4 border border-gray-200 rounded-[16px] shadow-[0_10px_20px_rgba(15,15,40,0.08)] bg-white text-sm font-semibold text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150"
+          >
+            {oauthLoading === 'google' ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500" />
+            ) : (
+              <>
+                <Image src="/google-logo.svg" alt="Google logo" width={20} height={20} className="mr-2" />
+                Continue with Google
+              </>
             )}
+          </button>
+        </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
-          </form>
-
-          {/* OAuth Section */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-1 gap-3">
-              {/* Google OAuth */}
-              <button
-                onClick={() => handleOAuthLogin('google')}
-                disabled={oauthLoading === 'google'}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
-              >
-                {oauthLoading === 'google' ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
-                ) : (
-                  <>
-                    <Image
-                      src="/google-logo.svg"
-                      alt="Google logo"
-                      width={20}
-                      height={20}
-                      className="mr-2"
-                    />
-                    Continue with Google
-                  </>
-                )}
-              </button>
-
-              {/* GitHub OAuth */}
-              <button
-                onClick={() => handleOAuthLogin('github')}
-                disabled={oauthLoading === 'github'}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
-              >
-                {oauthLoading === 'github' ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
-                ) : (
-                  <>
-                    <Image
-                      src="/github-logo.svg"
-                      alt="GitHub logo"
-                      width={20}
-                      height={20}
-                      className="mr-2"
-                    />
-                    Continue with GitHub
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Already have an account?{' '}
-              <Link
-                href="/login"
-                className="text-purple-600 hover:text-purple-700 font-semibold transition duration-200"
-              >
-                Sign in
-              </Link>
-            </p>
-          </div>
-
-          <div className="mt-6 text-center">
-            <Link
-              href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm transition duration-200"
-            >
-              ← Back to Home
+        <div className="signup-footer">
+          <p>
+            Already have an account?{' '}
+            <Link href="/login" className="signup-footer__primary">
+              Log in here
             </Link>
-          </div>
+          </p>
+          <Link href="/" className="signup-footer__home">
+            ← Back to Home
+          </Link>
         </div>
       </div>
     </div>

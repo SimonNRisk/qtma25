@@ -52,7 +52,19 @@ export default function LoginPage() {
       const redirectTo = searchParams.get('redirect') || '/me';
       router.push(redirectTo);
     } catch (err: any) {
-      const errorMessage = err.message || 'Login failed';
+      let errorMessage = err?.message || 'Login failed';
+      try {
+        const parsed = JSON.parse(errorMessage);
+        if (typeof parsed === 'object' && parsed !== null) {
+          if (typeof parsed.detail === 'string') {
+            errorMessage = parsed.detail;
+          } else if (typeof parsed.message === 'string') {
+            errorMessage = parsed.message;
+          }
+        }
+      } catch {
+        // message was not JSON, leave as-is
+      }
       if (errorMessage.includes('email') && errorMessage.includes('confirm')) {
         setMsg('Please check your email and confirm your account before signing in.');
       } else {
@@ -68,12 +80,9 @@ export default function LoginPage() {
   }, [router]);
 
   return (
-    <div
-      className="h-screen overflow-hidden bg-gradient-to-br from-[#041626] via-[#072f46] to-[#0b4c6c] flex items-center justify-center p-6"
-      style={{ fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif' }}
-    >
+    <div className="h-screen overflow-hidden font-login bg-gradient-to-br from-abyss-900 via-abyss-800 to-abyss-700 flex items-center justify-center p-6">
       <div className="max-w-xl w-full">
-        <div className="rounded-[32px] border border-white/60 bg-gradient-to-b from-[#1c537a] via-[#174261] to-[#112f45] px-10 py-6 text-white shadow-[0_30px_60px_rgba(0,0,0,0.55)]">
+        <div className="rounded-[32px] border border-white/60 bg-gradient-to-b from-fjord-700 via-fjord-800 to-fjord-900 px-10 py-6 text-white shadow-[0_30px_60px_rgba(0,0,0,0.55)]">
           <div className="text-center mb-8">
             <h1 className="mt-3 text-3xl font-light tracking-[0.4em] uppercase">Welcome Back</h1>
           </div>
@@ -121,7 +130,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="relative w-full rounded-2xl border border-[#9ed0ff] bg-gradient-to-br from-[#133045] via-[#05090f] to-[#010305] py-3.5 text-base font-semibold tracking-wide text-white shadow-[inset_-30px_-20px_60px_rgba(0,0,0,0.65),0_18px_40px_rgba(0,0,0,0.5)] transition hover:translate-y-[-1px] hover:shadow-[inset_-30px_-20px_60px_rgba(0,0,0,0.55),0_20px_45px_rgba(0,0,0,0.6)] disabled:cursor-not-allowed disabled:opacity-70"
+                className="relative w-full rounded-2xl border border-ice-300 bg-gradient-to-br from-obsidian-700 via-obsidian-900 to-obsidian-950 py-3.5 text-base font-semibold tracking-wide text-white shadow-[inset_-30px_-20px_60px_rgba(0,0,0,0.65),0_18px_40px_rgba(0,0,0,0.5)] transition hover:translate-y-[-1px] hover:shadow-[inset_-30px_-20px_60px_rgba(0,0,0,0.55),0_20px_45px_rgba(0,0,0,0.6)] disabled:cursor-not-allowed disabled:opacity-70"
               >
                 {loading ? 'Signing in...' : 'Continue'}
               </button>
