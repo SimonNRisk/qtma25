@@ -49,7 +49,7 @@ export const GoalsSelectionStep = ({
           <StepCard>
             <div className="space-y-6">
               {/* Sub Header */}
-              <p className="text-lg text-gray-700">
+              <p className="text-lg text-white/90">
                 Select at least 2 goals to personalize your Astro experience.
               </p>
 
@@ -61,8 +61,8 @@ export const GoalsSelectionStep = ({
                     onClick={() => onGoalToggle(goal)}
                     className={`px-4 py-2 rounded-full text-sm font-medium transition-colors border
                       ${selectedGoals.includes(goal)
-                        ? 'bg-gray-800 text-white border-gray-800'
-                        : 'bg-gray-100 text-gray-800 border-gray-300 hover:bg-gray-200'
+                        ? 'bg-white/20 text-white border-white'
+                        : 'bg-transparent text-white border-white/40 hover:bg-white/10 hover:border-white/60'
                       }`}
                   >
                     {goal}

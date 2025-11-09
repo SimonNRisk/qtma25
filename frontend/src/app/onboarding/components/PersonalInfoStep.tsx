@@ -34,8 +34,8 @@ export const PersonalInfoStep = ({
   return (
     <StepCard>
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-brand-dark mb-2">Tell us about yourself</h1>
-        <p className="text-gray-600">This helps us personalize your experience</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Tell us about yourself</h1>
+        <p className="text-white/80">This helps us personalize your experience</p>
       </div>
 
       <div className="space-y-6">
@@ -78,7 +78,7 @@ export const PersonalInfoStep = ({
         />
       </div>
 
-      <NavigationButtons onBack={onBack} onNext={onNext} nextDisabled={!isFormValid} />
+      <NavigationButtons onBack={onBack} onNext={onNext} nextDisabled={!isFormValid} showBack={false} />
     </StepCard>
   );
 };

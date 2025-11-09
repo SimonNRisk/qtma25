@@ -40,14 +40,14 @@ export const QuestionStep = ({
         <div className="space-y-6">
         {/* Main Question */}
         <div className="rounded-lg">
-          <p className="text-xl font-semibold text-gray-900">
+          <p className="text-xl font-semibold text-white">
             {mainQuestion}
           </p>
         </div>
 
         {/* Sub Header */}
         {subHeader && (
-          <p className="text-gray-600 text-sm">
+          <p className="text-white/80 text-sm">
             {subHeader}
           </p>
         )}
@@ -60,7 +60,7 @@ export const QuestionStep = ({
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
               rows={rows}
-              className="w-full px-4 py-3 border-2 border-gray-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+              className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30 resize-none"
             />
           ) : (
             <input
@@ -68,7 +68,7 @@ export const QuestionStep = ({
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full px-4 py-3 border-2 border-gray-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
             />
           )}
         </div>

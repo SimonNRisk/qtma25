@@ -55,7 +55,7 @@ export const HooksSelectionStep = ({
       <StepCard>
         <div className="space-y-6">
           {/* Header */}
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-white">
             Select at least 3 hooks that resemble your tone and style.
           </h2>
 
