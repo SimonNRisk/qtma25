@@ -43,11 +43,11 @@ export function Sidebar() {
   const pathname = usePathname();
 
   // Determine active routes
-  const isCreateActive = pathname?.includes('/create') || pathname === '/';
+  const isCreateActive = pathname?.includes('/create');
   const isExploreActive = pathname?.includes('/explore');
-  const isPublishActive = pathname?.includes('/publish') || pathname?.includes('/linkedin');
+  const isScheduleActive = pathname?.includes('/schedule');
   const isAnalyzeActive = pathname?.includes('/analyze');
-  const isUserActive = pathname?.includes('/me') || pathname?.includes('/profile');
+  const isUserActive = pathname?.includes('/me') || pathname === '/';
 
   return (
     <aside
@@ -80,7 +80,7 @@ export function Sidebar() {
 
         {/* Navigation Items */}
         <SidebarItem
-          href="/"
+          href="/create"
           icon={<FaComments className="w-6 h-6" />}
           label="Create"
           isActive={isCreateActive}
@@ -92,10 +92,10 @@ export function Sidebar() {
           isActive={isExploreActive}
         />
         <SidebarItem
-          href="/linkedin"
+          href="/schedule"
           icon={<FaCalendar className="w-6 h-6" />}
-          label="Publish"
-          isActive={isPublishActive}
+          label="Schedule"
+          isActive={isScheduleActive}
         />
         <SidebarItem
           href="/analyze"
