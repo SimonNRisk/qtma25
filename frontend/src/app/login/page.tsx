@@ -207,15 +207,6 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
-
-          <div className="mt-3 text-center">
-            <Link
-              href="/"
-              className="text-[11px] uppercase tracking-[0.35em] text-white/70 transition hover:text-white"
-            >
-              Back to Home
-            </Link>
-          </div>
         </div>
       </div>
     </div>
