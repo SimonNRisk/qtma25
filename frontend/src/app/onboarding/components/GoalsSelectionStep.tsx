@@ -32,7 +32,7 @@ export const GoalsSelectionStep = ({
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen p-8">
       {/* Left Section - Welcome */}
       <div className="flex-1 flex items-center justify-center">
         <div className="max-w-md">
@@ -42,7 +42,7 @@ export const GoalsSelectionStep = ({
 
       {/* Right Section - Goals Selection */}
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-[632px]">
+        <div className="w-[900px]">
           <StepCard>
             <div className="space-y-6">
               {/* Sub Header */}

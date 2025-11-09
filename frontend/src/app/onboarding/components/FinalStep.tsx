@@ -19,7 +19,7 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen p-8">
       {/* Left Section - Post Idea Intro */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-md">
@@ -31,7 +31,7 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
 
       {/* Right Section - Post Card with Overlay */}
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-[632px] mx-auto relative">
+        <div className="w-[900px] mx-auto relative">
           <StepCard>
             <div className="space-y-4 p-6">
               {/* Post Header */}

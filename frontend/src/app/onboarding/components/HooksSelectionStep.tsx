@@ -51,7 +51,7 @@ export const HooksSelectionStep = ({
   ];
 
   return (
-    <div className="w-[632px] mx-auto">
+    <div className="w-[900px] mx-auto mt-8">
       <StepCard>
         <div className="space-y-6">
           {/* Header */}
