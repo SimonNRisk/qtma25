@@ -48,17 +48,9 @@ export default function MePage() {
 
   if (!user) return null;
 
-  const backgroundStyle = {
-    backgroundImage:
-      'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.65) 0%, rgba(3,34,54,0.75) 35%, #0f4662 70%, #0a324b 100%)',
-  };
-
   return (
     <AuthGuard>
-      <div
-        className="min-h-screen p-4 sm:p-6 md:p-8 flex items-center justify-center"
-        style={backgroundStyle}
-      >
+      <div className="min-h-screen p-4 sm:p-6 md:p-8 flex items-center justify-center profile-bg">
         <div className="max-w-2xl w-full">
           <div className="bg-white rounded-[32px] shadow-2xl p-8 sm:p-10 border border-slate-100">
             <div className="text-center mb-8">
