@@ -35,6 +35,31 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
+    // Input validation - prevent abuse
+    if (typeof prompt !== 'string' || prompt.length > 5000) {
+      return NextResponse.json(
+        { error: 'Prompt must be a string and less than 5000 characters' },
+        { status: 400 }
+      );
+    }
+
+    if (
+      currentPostText &&
+      (typeof currentPostText !== 'string' || currentPostText.length > 10000)
+    ) {
+      return NextResponse.json(
+        { error: 'Post text must be a string and less than 10000 characters' },
+        { status: 400 }
+      );
+    }
+
+    if (systemPrompt && (typeof systemPrompt !== 'string' || systemPrompt.length > 2000)) {
+      return NextResponse.json(
+        { error: 'System prompt must be a string and less than 2000 characters' },
+        { status: 400 }
+      );
+    }
+
     const messages: Array<{ role: 'system' | 'user'; content: string }> = [];
 
     if (systemPrompt) {
