@@ -43,7 +43,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   // Determine active routes
-  const isChatActive = pathname?.includes('/chat') || pathname === '/';
+  const isCreateActive = pathname?.includes('/create') || pathname === '/';
   const isExploreActive = pathname?.includes('/explore');
   const isPublishActive = pathname?.includes('/publish') || pathname?.includes('/linkedin');
   const isAnalyzeActive = pathname?.includes('/analyze');
@@ -82,25 +82,25 @@ export function Sidebar() {
         <SidebarItem
           href="/"
           icon={<FaComments className="w-6 h-6" />}
-          label="chat"
-          isActive={isChatActive}
+          label="Create"
+          isActive={isCreateActive}
         />
         <SidebarItem
           href="/explore"
           icon={<FaCompass className="w-6 h-6" />}
-          label="explore"
+          label="Explore"
           isActive={isExploreActive}
         />
         <SidebarItem
           href="/linkedin"
           icon={<FaCalendar className="w-6 h-6" />}
-          label="publish"
+          label="Publish"
           isActive={isPublishActive}
         />
         <SidebarItem
           href="/analyze"
           icon={<FaChartBar className="w-6 h-6" />}
-          label="analyze"
+          label="Analyze"
           isActive={isAnalyzeActive}
         />
       </div>
