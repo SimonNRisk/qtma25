@@ -5,7 +5,29 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+function verifyToken(token: string | undefined): boolean {
+  if (!token) return false;
+
+  try {
+    // Decode JWT token to check expiration
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    const exp = payload.exp * 1000; // Convert to milliseconds
+    return Date.now() < exp;
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
+  // Check authentication
+  const accessToken =
+    request.cookies.get('access_token')?.value ||
+    request.headers.get('authorization')?.replace('Bearer ', '');
+
+  if (!accessToken || !verifyToken(accessToken)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { prompt, systemPrompt, currentPostText } = await request.json();
 
