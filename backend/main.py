@@ -154,25 +154,52 @@ async def linkedin_callback(request: dict):
 @app.post("/api/linkedin/post")
 async def post_to_linkedin(
     text: str = Form(...),
-    image: UploadFile = File(None)
+    image: UploadFile = File(None),
+    current_user: Annotated[dict, Depends(get_current_user)]
 ):
     """
     Post text and optional image to LinkedIn using OAuth token
+    Requires authentication - uses the authenticated user's LinkedIn token
     """
-    # For demo purposes, get the first available token
-    # In production, you'd get the user_id from the session/auth
+    # Input validation
+    if not text or not text.strip():
+        raise HTTPException(status_code=400, detail="Post text cannot be empty")
+    
+    if len(text) > 3000:  # LinkedIn post character limit
+        raise HTTPException(status_code=400, detail="Post text exceeds maximum length of 3000 characters")
+    
+    # File validation
+    if image:
+        # Check file type first
+        allowed_types = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+        if image.content_type not in allowed_types:
+            raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed types: {', '.join(allowed_types)}")
+        
+        # Check file size (max 10MB) - read file to check size
+        # Note: We need to read it anyway for upload, so this is acceptable
+        file_content = await image.read()
+        if len(file_content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="Image file size exceeds 10MB limit")
+        
+        # Reset file pointer for later use
+        await image.seek(0)
+    
     try:
-        # Get all tokens (in production, filter by authenticated user)
-        result = linkedin_supabase_service.supabase.table('linkedin_tokens').select('*').execute()
+        # Get the authenticated user's LinkedIn token
+        user_id = current_user["id"]
+        token_data = await linkedin_supabase_service.get_linkedin_token(user_id)
         
-        if not result.data:
-            return {"error": "No authenticated users found. Please connect your LinkedIn account first."}
+        if not token_data:
+            raise HTTPException(
+                status_code=400, 
+                detail="No LinkedIn account connected. Please connect your LinkedIn account first."
+            )
         
-        # Get the first user's token (in production, get from session)
-        token_data = result.data[0]
         access_token = token_data["access_token"]
+    except HTTPException:
+        raise
     except Exception as e:
-        return {"error": f"Error retrieving token: {str(e)}"}
+        raise HTTPException(status_code=500, detail=f"Error retrieving token: {str(e)}")
     
     # Create LinkedIn service with OAuth token
     linkedin_service = LinkedInService(access_token=access_token)
