@@ -4,6 +4,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { LINKEDIN_VIEW_POST_URL } from './utils/constants';
 import { AiAssistant } from './components/ai-assistant';
 import { usePostHistory } from '@/hooks/usePostHistory';
+import { API_URL } from '@/lib/api';
 
 export default function LinkedInPost() {
   const [isPosting, setIsPosting] = useState(false);
@@ -39,7 +40,7 @@ export default function LinkedInPost() {
         formData.append('image', selectedFile);
       }
 
-      const response = await fetch('http://localhost:8000/api/linkedin/post', {
+      const response = await fetch(`${API_URL}/api/linkedin/post`, {
         method: 'POST',
         body: formData,
       });

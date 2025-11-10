@@ -1,4 +1,5 @@
 import { session } from './session';
+import { API_URL } from './api';
 
 export interface OnboardingContext {
   id: string;
@@ -35,7 +36,7 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
 
     // Try to get from backend API first
     try {
-      const response = await fetch('http://localhost:8000/api/onboarding/data', {
+      const response = await fetch(`${API_URL}/api/onboarding/data`, {
         method: 'GET',
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -103,7 +104,7 @@ export async function updateOnboardingData(updates: Partial<OnboardingContext>):
     }
 
     // Use backend API for updates
-    const response = await fetch('http://localhost:8000/api/onboarding/submit', {
+    const response = await fetch(`${API_URL}/api/onboarding/submit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -208,7 +209,7 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
     }
 
     // Use backend API instead of direct Supabase
-    const response = await fetch('http://localhost:8000/api/onboarding/submit', {
+    const response = await fetch(`${API_URL}/api/onboarding/submit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

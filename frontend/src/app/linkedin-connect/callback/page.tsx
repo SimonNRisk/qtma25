@@ -2,6 +2,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthGuard } from '@/components/AuthGuard';
+import { API_URL } from '@/lib/api';
 
 function LinkedInCallbackContent() {
   const router = useRouter();
@@ -21,7 +22,7 @@ function LinkedInCallbackContent() {
 
     if (code) {
       // Send code to backend to exchange for access token
-      fetch('http://localhost:8000/api/linkedin/callback', {
+      fetch(`${API_URL}/api/linkedin/callback`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
