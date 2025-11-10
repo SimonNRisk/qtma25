@@ -1,6 +1,6 @@
-import { StepCard } from './StepCard';
-import { NavigationButtons } from './NavigationButtons';
-import { WelcomeSection } from './WelcomeSection';
+import { StepCard } from '../onboarding/components/StepCard';
+import { NavigationButtons } from '../onboarding/components/NavigationButtons';
+import { WelcomeSection } from '../onboarding/components/WelcomeSection';
 
 interface GoalsSelectionStepProps {
   selectedGoals: string[];
