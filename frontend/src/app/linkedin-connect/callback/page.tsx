@@ -1,9 +1,9 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { AuthGuard } from '@/components/AuthGuard';
 
-export default function LinkedInCallback() {
+function LinkedInCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState('Processing...');
@@ -86,5 +86,22 @@ export default function LinkedInCallback() {
         </div>
       </main>
     </AuthGuard>
+  );
+}
+
+export default function LinkedInCallback() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-brand-light flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-blue mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <LinkedInCallbackContent />
+    </Suspense>
   );
 }
