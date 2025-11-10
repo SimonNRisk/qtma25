@@ -256,8 +256,9 @@ def oauth_login(provider: str):
     
     try:
         # Get OAuth URL from Supabase
-        redirect_url = f"{os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')}/auth/callback"
-        
+        frontend_origin = os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')
+        redirect_url = f"{frontend_origin}/auth/callback"
+                
         if provider == "google":
             res = supabase.auth.sign_in_with_oauth({
                 "provider": "google",
