@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { session } from '@/lib/session';
+import { API_URL } from '@/lib/api';
 
 export default function LinkedInConnect() {
   const [isConnecting, setIsConnecting] = useState(false);
@@ -20,7 +21,7 @@ export default function LinkedInConnect() {
         return;
       }
 
-      const response = await fetch('http://localhost:8000/api/linkedin/auth', {
+      const response = await fetch(`${API_URL}/api/linkedin/auth`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
