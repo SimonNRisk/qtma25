@@ -74,7 +74,9 @@ export default function AuthCallbackPage() {
           } catch (exchangeError) {
             console.error('OAuth code exchange error:', exchangeError);
             setStatus('error');
-            setMessage(`OAuth error: ${exchangeError.message}`);
+            const errorMessage =
+              exchangeError instanceof Error ? exchangeError.message : 'OAuth exchange failed';
+            setMessage(`OAuth error: ${errorMessage}`);
           }
         }
         // Handle direct token flow (if tokens are provided directly)
@@ -115,7 +117,9 @@ export default function AuthCallbackPage() {
           } catch (exchangeError) {
             console.error('OAuth exchange error:', exchangeError);
             setStatus('error');
-            setMessage(`OAuth error: ${exchangeError.message}`);
+            const errorMessage =
+              exchangeError instanceof Error ? exchangeError.message : 'OAuth exchange failed';
+            setMessage(`OAuth error: ${errorMessage}`);
           }
         } else {
           console.log(
@@ -127,7 +131,7 @@ export default function AuthCallbackPage() {
           setStatus('error');
           setMessage('Invalid authentication link - missing tokens');
         }
-      } catch (err) {
+      } catch {
         setStatus('error');
         setMessage('An error occurred during authentication');
       }

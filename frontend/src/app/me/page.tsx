@@ -9,8 +9,18 @@ import { AuthGuard } from '@/components/AuthGuard';
 
 export default function MePage() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
-  const [linkedinStatus, setLinkedinStatus] = useState<any>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    email: string;
+    first_name?: string;
+    last_name?: string;
+  } | null>(null);
+  const [linkedinStatus, setLinkedinStatus] = useState<{
+    connected: boolean;
+    profile_data?: { name?: string };
+    connected_at?: string;
+    expires_at?: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -62,7 +72,7 @@ export default function MePage() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 Welcome, {user.first_name || 'User'}!
               </h1>
-              <p className="text-gray-600">Here's your profile information</p>
+              <p className="text-gray-600">Here&apos;s your profile information</p>
             </div>
 
             <div className="space-y-6">

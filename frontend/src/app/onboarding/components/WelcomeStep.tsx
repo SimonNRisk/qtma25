@@ -1,5 +1,4 @@
 import { StepCard } from './StepCard';
-import { NavigationButtons } from './NavigationButtons';
 
 interface WelcomeStepProps {
   onNext: () => void;
@@ -10,7 +9,9 @@ export const WelcomeStep = ({ onNext }: WelcomeStepProps) => {
     <StepCard>
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-brand-dark mb-2">Welcome!</h1>
-        <p className="text-gray-600">Let's get you set up with your LinkedIn content platform</p>
+        <p className="text-gray-600">
+          Let&apos;s get you set up with your LinkedIn content platform
+        </p>
       </div>
 
       <div className="space-y-6">

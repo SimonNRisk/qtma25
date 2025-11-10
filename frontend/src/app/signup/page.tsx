@@ -43,7 +43,7 @@ export default function SignUpPage() {
       } else {
         setMsg('OAuth login failed. Please try again.');
       }
-    } catch (err: any) {
+    } catch {
       setMsg('OAuth login failed. Please try again.');
     } finally {
       setOauthLoading(null);
@@ -122,7 +122,7 @@ export default function SignUpPage() {
           setTimeout(() => {
             router.push('/me');
           }, 1500);
-        } catch (loginError: any) {
+        } catch (loginError) {
           console.error('Auto-login failed:', loginError);
           setMsg('Account created! Please log in manually.');
           setTimeout(() => {
@@ -130,8 +130,9 @@ export default function SignUpPage() {
           }, 2000);
         }
       }
-    } catch (err: any) {
-      setMsg(err.message?.replace(/["{}]/g, '') || 'Sign up failed');
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Sign up failed';
+      setMsg(errorMessage.replace(/["{}]/g, '') || 'Sign up failed');
     } finally {
       setLoading(false);
     }

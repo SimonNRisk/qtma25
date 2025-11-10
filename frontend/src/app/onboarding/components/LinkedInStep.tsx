@@ -64,7 +64,8 @@ export const LinkedInStep = ({
                 Connect Your LinkedIn Account
               </h2>
               <p className="text-gray-600 mb-6">
-                Authorize our app to post content on your behalf. We'll only post what you create.
+                Authorize our app to post content on your behalf. We&apos;ll only post what you
+                create.
               </p>
 
               <div className="space-y-3">

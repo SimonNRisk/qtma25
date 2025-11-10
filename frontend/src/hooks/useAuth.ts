@@ -7,7 +7,12 @@ import { session } from '@/lib/session';
 export function useAuth(redirectTo: string = '/login') {
   const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{
+    id: string;
+    email: string;
+    first_name?: string;
+    last_name?: string;
+  } | null>(null);
 
   useEffect(() => {
     const checkAuth = () => {

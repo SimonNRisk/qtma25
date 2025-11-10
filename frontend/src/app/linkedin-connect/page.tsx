@@ -33,7 +33,7 @@ export default function LinkedInConnect() {
       } else {
         setError(data.detail || 'Failed to get LinkedIn auth URL');
       }
-    } catch (error) {
+    } catch {
       setError('Network error. Please try again.');
     } finally {
       setIsConnecting(false);
@@ -68,7 +68,8 @@ export default function LinkedInConnect() {
                   Connect Your LinkedIn Account
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  Authorize our app to post content on your behalf. We'll only post what you create.
+                  Authorize our app to post content on your behalf. We&apos;ll only post what you
+                  create.
                 </p>
               </div>
 
@@ -87,7 +88,7 @@ export default function LinkedInConnect() {
               </button>
 
               <div className="mt-6 text-sm text-gray-500">
-                <p>• We'll redirect you to LinkedIn to authorize</p>
+                <p>• We&apos;ll redirect you to LinkedIn to authorize</p>
                 <p>• You can revoke access anytime in LinkedIn settings</p>
                 <p>• We only request permission to post content</p>
               </div>

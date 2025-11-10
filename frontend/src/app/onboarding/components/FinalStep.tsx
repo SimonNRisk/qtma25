@@ -12,7 +12,7 @@ interface FinalStepProps {
   onBack: () => void;
 }
 
-export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
+export const FinalStep = ({ onUnlock }: FinalStepProps) => {
   const handleUnlock = () => {
     // Call the unlock handler (localStorage saving is now handled in the hook)
     onUnlock();
@@ -24,7 +24,7 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="max-w-md">
           <h1 className="text-5xl font-bold text-white leading-tight">
-            Here's a post idea based on your style
+            Here&apos;s a post idea based on your style
           </h1>
         </div>
       </div>
@@ -48,11 +48,11 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
                 <p className="text-gray-800">
                   When I first started building [Company Name], I thought customer growth was
                   measured by volume. Send more cold emails. Run more ads. Post more often. But
-                  after months of hustle, I had...3 paying customers. It wasn't until a mentor asked
-                  me one question that everything clicked: "Have you actually tried talking to the
-                  people you're trying to serve?" That hit me hard. I realized I'd been pitching
-                  features, not listening to problems. So I changed my approach completely. I
-                  reached out to 20
+                  after months of hustle, I had...3 paying customers. It wasn&apos;t until a mentor
+                  asked me one question that everything clicked: &quot;Have you actually tried
+                  talking to the people you&apos;re trying to serve?&quot; That hit me hard. I
+                  realized I&apos;d been pitching features, not listening to problems. So I changed
+                  my approach completely. I reached out to 20
                 </p>
                 <p className="text-gray-500 text-sm">
                   Instead I asked:
@@ -90,7 +90,7 @@ export const FinalStep = ({ formData, onUnlock, onBack }: FinalStepProps) => {
                 </svg>
               </div>
               <h2 className="text-white text-3xl font-bold text-center mb-6">
-                Sign up to unlock this post's full potential
+                Sign up to unlock this post&apos;s full potential
               </h2>
               <div className="relative w-full max-w-xs">
                 <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent blur-xl opacity-30 pointer-events-none" />

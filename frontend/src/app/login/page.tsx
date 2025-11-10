@@ -27,7 +27,7 @@ export default function LoginPage() {
       } else {
         setMsg('OAuth login failed. Please try again.');
       }
-    } catch (err: any) {
+    } catch {
       setMsg('OAuth login failed. Please try again.');
     } finally {
       setOauthLoading(null);
@@ -51,8 +51,8 @@ export default function LoginPage() {
 
       const redirectTo = searchParams.get('redirect') || '/me';
       router.push(redirectTo);
-    } catch (err: any) {
-      const errorMessage = err.message || 'Login failed';
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
       if (errorMessage.includes('email') && errorMessage.includes('confirm')) {
         setMsg('Please check your email and confirm your account before signing in.');
       } else {
@@ -198,7 +198,7 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-white/80">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link
                 href="/onboarding"
                 className="text-white font-semibold hover:text-cyan-200 transition duration-200"
