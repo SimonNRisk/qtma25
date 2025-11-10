@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { syncOnboardingDataAfterSignup } from '@/lib/onboarding';
+import { StepCard } from '../onboarding/components/StepCard';
 
 function SignUpForm() {
   const router = useRouter();
@@ -139,18 +140,21 @@ function SignUpForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+    <main className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)] flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        <StepCard>
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
-            <p className="text-gray-600">Join us today and get started</p>
+            <h1 className="text-3xl font-bold text-white mb-2">Create Account</h1>
+            <p className="text-white/80">Join us today and get started</p>
           </div>
 
           <form onSubmit={onSubmit} className="space-y-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="first" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="first"
+                  className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+                >
                   First Name
                 </label>
                 <input
@@ -159,11 +163,14 @@ function SignUpForm() {
                   value={first}
                   onChange={e => setFirst(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                  className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
                 />
               </div>
               <div>
-                <label htmlFor="last" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="last"
+                  className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+                >
                   Last Name
                 </label>
                 <input
@@ -172,13 +179,16 @@ function SignUpForm() {
                   value={last}
                   onChange={e => setLast(e.target.value)}
                   required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                  className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+              >
                 Email Address
               </label>
               <input
@@ -189,12 +199,15 @@ function SignUpForm() {
                 onChange={e => setEmail(e.target.value)}
                 required
                 autoComplete="email"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
               />
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-[13px] font-semibold uppercase tracking-wide text-white/80 mb-1"
+              >
                 Password
               </label>
               <input
@@ -205,56 +218,59 @@ function SignUpForm() {
                 onChange={e => setPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition duration-200"
+                className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
               />
+              <p className="mt-1 text-[11px] text-white/75">
+                Use 8 or more letters, numbers, and symbols
+              </p>
             </div>
 
             {msg && (
               <div
-                className={`px-4 py-3 rounded-lg ${
+                className={`px-4 py-3 rounded-xl border ${
                   msg.includes('successfully')
-                    ? 'bg-green-50 border border-green-200 text-green-700'
-                    : 'bg-red-50 border border-red-200 text-red-700'
+                    ? 'bg-green-500/10 border-green-400/40 text-green-100'
+                    : 'bg-red-500/10 border-red-400/40 text-red-100'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span>{msg}</span>
+                  <span className="text-sm">{msg}</span>
                   {countdown > 0 && (
-                    <span className="text-sm font-semibold">Redirecting in {countdown}s...</span>
+                    <span className="text-xs font-semibold">Redirecting in {countdown}s...</span>
                   )}
                 </div>
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-lg hover:shadow-xl disabled:cursor-not-allowed"
-            >
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </button>
+            <div className="relative mt-8">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-transparent via-white/10 to-transparent blur-xl opacity-30 pointer-events-none" />
+              <button
+                type="submit"
+                disabled={loading}
+                className="relative w-full rounded-2xl py-3.5 text-base font-semibold tracking-wide text-white transition hover:translate-y-[-1px] disabled:cursor-not-allowed disabled:opacity-50 border border-[var(--login-button-border)] bg-gradient-to-br from-[var(--login-button-start)] via-[var(--login-button-mid)] to-[var(--login-button-end)] login-button"
+              >
+                {loading ? 'Creating Account...' : 'Create Account'}
+              </button>
+            </div>
           </form>
 
           {/* OAuth Section */}
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
+            <div className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-white/80">
+              <div className="flex-1 border-t border-white/40" />
+              <span>OR</span>
+              <div className="flex-1 border-t border-white/40" />
             </div>
 
-            <div className="mt-6 grid grid-cols-1 gap-3">
+            <div className="mt-4 grid grid-cols-1 gap-3">
               {/* Google OAuth */}
               <button
                 onClick={() => handleOAuthLogin('google')}
                 disabled={oauthLoading === 'google'}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                className="w-full inline-flex justify-center rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {oauthLoading === 'google' ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
                     <Image
@@ -273,10 +289,10 @@ function SignUpForm() {
               <button
                 onClick={() => handleOAuthLogin('github')}
                 disabled={oauthLoading === 'github'}
-                className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition duration-200"
+                className="w-full inline-flex justify-center rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm font-medium text-white transition hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {oauthLoading === 'github' ? (
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-500"></div>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
                     <Image
@@ -294,28 +310,19 @@ function SignUpForm() {
           </div>
 
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-sm text-white/80">
               Already have an account?{' '}
               <Link
                 href="/login"
-                className="text-purple-600 hover:text-purple-700 font-semibold transition duration-200"
+                className="text-white font-semibold hover:text-cyan-200 transition duration-200"
               >
                 Sign in
               </Link>
             </p>
           </div>
-
-          <div className="mt-6 text-center">
-            <Link
-              href="/"
-              className="text-gray-500 hover:text-gray-700 text-sm transition duration-200"
-            >
-              ← Back to Home
-            </Link>
-          </div>
-        </div>
+        </StepCard>
       </div>
-    </div>
+    </main>
   );
 }
 
@@ -323,10 +330,10 @@ export default function SignUpPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)] flex items-center justify-center p-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+            <p className="text-white/80">Loading...</p>
           </div>
         </div>
       }
