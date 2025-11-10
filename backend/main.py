@@ -153,9 +153,9 @@ async def linkedin_callback(request: dict):
 # LinkedIn post endpoint with image support
 @app.post("/api/linkedin/post")
 async def post_to_linkedin(
+    current_user: Annotated[dict, Depends(get_current_user)],
     text: str = Form(...),
-    image: UploadFile = File(None),
-    current_user: Annotated[dict, Depends(get_current_user)]
+    image: UploadFile = File(None)
 ):
     """
     Post text and optional image to LinkedIn using OAuth token
