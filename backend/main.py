@@ -38,6 +38,7 @@ linkedin_supabase_service = SupabaseService()
 # Enable CORS so frontend can talk to backend
 app.add_middleware(
     CORSMiddleware,
+    # In local development, you need to add localhost to this list
     allow_origins=[FRONTEND_ORIGIN],
     allow_credentials=True,
     allow_methods=["*"],
