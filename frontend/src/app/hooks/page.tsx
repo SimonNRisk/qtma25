@@ -31,54 +31,24 @@ interface HooksResponse {
   };
 }
 
-function formatDate(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(date);
-  } catch {
-    return dateString;
-  }
+interface FlattenedHook {
+  id: string;
+  content: string;
+  recordId: string;
+  createdAt: string;
 }
 
-function formatRelativeTime(dateString: string): string {
-  try {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMins / 60);
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffMins < 1) return 'just now';
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return formatDate(dateString);
-  } catch {
-    return dateString;
-  }
-}
-
-function getLengthLabel(length?: number): string {
-  const labels = { 1: 'Short', 2: 'Medium', 3: 'Long' };
-  return length ? labels[length as keyof typeof labels] || 'Unknown' : 'N/A';
-}
+type TabType = 'scheduled' | 'drafts' | 'sent';
 
 export default function HooksPage() {
   // State
-  const [records, setRecords] = useState<HookRecord[]>([]);
+  const [flattenedHooks, setFlattenedHooks] = useState<FlattenedHook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedRecord, setExpandedRecord] = useState<string | null>(null);
-  const [copiedHook, setCopiedHook] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<TabType>('drafts');
+  const [user, setUser] = useState<{ first_name?: string; last_name?: string; email?: string } | null>(null);
   const [pagination, setPagination] = useState({
-    limit: 10,
+    limit: 50,
     offset: 0,
     total: 0,
     has_more: false,
@@ -97,13 +67,26 @@ export default function HooksPage() {
 
     try {
       const response = (await getJSON(
-        `/api/linkedin/hooks?limit=10&offset=${offset}`,
+        `/api/linkedin/hooks?limit=50&offset=${offset}`,
         token
       )) as HooksResponse;
 
       if (response.success) {
-        setRecords(response.data);
         setPagination(response.pagination);
+        
+        // Flatten hooks into individual cards
+        const flattened: FlattenedHook[] = [];
+        response.data.forEach((record) => {
+          record.hooks.forEach((hook, index) => {
+            flattened.push({
+              id: `${record.id}-${index}`,
+              content: hook,
+              recordId: record.id,
+              createdAt: record.created_at,
+            });
+          });
+        });
+        setFlattenedHooks(flattened);
       } else {
         setError('Failed to load hooks');
       }
@@ -111,7 +94,7 @@ export default function HooksPage() {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to retrieve hooks';
       setError(errorMessage);
-      setRecords([]);
+      setFlattenedHooks([]);
     } finally {
       setIsLoading(false);
     }
@@ -119,379 +102,193 @@ export default function HooksPage() {
 
   useEffect(() => {
     fetchHooks(0);
+    
+    // Fetch user profile data
+    const token = session.access();
+    if (token) {
+      getJSON('/me', token)
+        .then((data: any) => {
+          setUser(data.user);
+        })
+        .catch((err) => {
+          console.error('Failed to fetch user data:', err);
+          // Fallback to JWT token data
+          const jwtUser = session.getUser();
+          if (jwtUser) {
+            setUser(jwtUser);
+          }
+        });
+    }
   }, [fetchHooks]);
 
-
-  const handleCopyHook = useCallback(async (hook: string, hookId: string) => {
-    try {
-      await navigator.clipboard.writeText(hook);
-      setCopiedHook(hookId);
-      setTimeout(() => setCopiedHook(null), 2000);
-    } catch {
-      setError('Failed to copy to clipboard');
+  const getUserName = () => {
+    if (user?.first_name && user?.last_name) {
+      return `${user.first_name} ${user.last_name}`;
     }
-  }, []);
-
-  const toggleExpanded = useCallback((recordId: string) => {
-    setExpandedRecord((prev) => (prev === recordId ? null : recordId));
-  }, []);
-
-  const handlePrevPage = useCallback(() => {
-    const newOffset = Math.max(0, pagination.offset - pagination.limit);
-    fetchHooks(newOffset);
-  }, [pagination, fetchHooks]);
-
-  const handleNextPage = useCallback(() => {
-    if (pagination.has_more) {
-      const newOffset = pagination.offset + pagination.limit;
-      fetchHooks(newOffset);
+    if (user?.first_name) {
+      return user.first_name;
     }
-  }, [pagination, fetchHooks]);
-
-  const handleRefresh = useCallback(() => {
-    fetchHooks(pagination.offset);
-  }, [fetchHooks, pagination.offset]);
-
-  const renderEmptyState = () => (
-    <div className="text-center py-16 px-4">
-      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
-        <svg
-          className="w-8 h-8 text-blue-600"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-          />
-        </svg>
-      </div>
-      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-        No hooks generated yet
-      </h3>
-      <p className="text-gray-600 mb-6 max-w-md mx-auto">
-        Start by generating LinkedIn post hooks. They'll appear here automatically
-        so you can access them anytime.
-      </p>
-      <a
-        href="/generate"
-        className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
-      >
-        Generate Hooks
-        <svg
-          className="ml-2 w-5 h-5"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 7l5 5m0 0l-5 5m5-5H6"
-          />
-        </svg>
-      </a>
-    </div>
-  );
-
-  const renderLoadingState = () => (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse"
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className="space-y-2 flex-1">
-              <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-3 bg-gray-200 rounded w-1/3"></div>
-            </div>
-            <div className="h-8 w-24 bg-gray-200 rounded"></div>
-          </div>
-          <div className="space-y-2">
-            <div className="h-3 bg-gray-200 rounded w-full"></div>
-            <div className="h-3 bg-gray-200 rounded w-5/6"></div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-
-  const renderHookCard = (record: HookRecord) => {
-    const isExpanded = expandedRecord === record.id;
-    const displayHooks = isExpanded ? record.hooks : record.hooks.slice(0, 3);
-
-    return (
-      <div
-        key={record.id}
-        className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow"
-      >
-        {/* Header */}
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {record.hook_count} Hooks Generated
-                </h3>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {getLengthLabel(record.generation_params?.length)}
-                </span>
-              </div>
-              <p className="text-sm text-gray-500">
-                {formatRelativeTime(record.created_at)}
-              </p>
-            </div>
-            <button
-              onClick={handleRefresh}
-              className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-              title="Refresh"
-            >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Generation Parameters */}
-          {record.generation_params && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {record.generation_params.tone && (
-                <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-700">
-                  <span className="font-medium mr-1">Tone:</span>
-                  {record.generation_params.tone}
-                </span>
-              )}
-              {record.generation_params.audience && (
-                <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-700">
-                  <span className="font-medium mr-1">Audience:</span>
-                  {record.generation_params.audience}
-                </span>
-              )}
-              {record.generation_params.quantity && (
-                <span className="inline-flex items-center px-2 py-1 rounded text-xs bg-gray-100 text-gray-700">
-                  <span className="font-medium mr-1">Requested:</span>
-                  {record.generation_params.quantity}
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Hooks List */}
-        <div className="p-6">
-          <div className="space-y-4">
-            {displayHooks.map((hook, index) => {
-              const hookId = `${record.id}-${index}`;
-              const isCopied = copiedHook === hookId;
-
-              return (
-                <div
-                  key={index}
-                  className="group relative bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">
-                      {index + 1}
-                    </span>
-                    <p className="flex-1 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                      {hook}
-                    </p>
-                    <button
-                      onClick={() => handleCopyHook(hook, hookId)}
-                      className="flex-shrink-0 p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-white transition-colors opacity-0 group-hover:opacity-100"
-                      title="Copy to clipboard"
-                    >
-                      {isCopied ? (
-                        <svg
-                          className="w-5 h-5 text-green-600"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                          />
-                        </svg>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Show More/Less Button */}
-          {record.hooks.length > 3 && (
-            <button
-              onClick={() => toggleExpanded(record.id)}
-              className="mt-4 w-full py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-            >
-              {isExpanded
-                ? 'Show Less'
-                : `Show ${record.hooks.length - 3} More Hooks`}
-            </button>
-          )}
-        </div>
-      </div>
-    );
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    // Fallback to JWT token if user state not loaded yet
+    const jwtUser = session.getUser();
+    if (jwtUser?.first_name && jwtUser?.last_name) {
+      return `${jwtUser.first_name} ${jwtUser.last_name}`;
+    }
+    if (jwtUser?.first_name) {
+      return jwtUser.first_name;
+    }
+    return 'User';
   };
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                  Your LinkedIn Hooks
-                </h1>
-                <p className="text-gray-600">
-                  All your generated hooks in one place. Copy and use them anytime.
-                </p>
+      <div
+        className="min-h-screen px-4 py-8 sm:px-6 lg:px-8"
+        style={{
+          background:
+            'radial-gradient(75% 75% at 50% 52%, rgba(14, 19, 22, 0.78), transparent 55%), radial-gradient(120% 120% at 50% 20%, rgba(155, 198, 233, 0.18), transparent 70%), linear-gradient(145deg, var(--astro-midnight) 0%, var(--astro-indigo) 48%, var(--astro-lazuli) 100%)',
+        }}
+      >
+        <div className="max-w-7xl mx-auto">
+          {/* Top Header */}
+          <div className="flex items-center justify-between mb-8">
+            {/* Profile Section */}
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
+                <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
               </div>
+              <h1 className="text-2xl font-medium text-foreground">
+                {getUserName()}
+              </h1>
             </div>
 
-            {/* Stats Bar */}
-            {!isLoading && records.length > 0 && (
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">
-                    Total generations: <strong>{pagination.total}</strong>
-                  </span>
-                  <span className="text-gray-600">
-                    Showing {pagination.offset + 1} -{' '}
-                    {Math.min(
-                      pagination.offset + pagination.limit,
-                      pagination.total
-                    )}{' '}
-                    of {pagination.total}
-                  </span>
-                </div>
-              </div>
-            )}
+            {/* Action Buttons */}
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
+                List
+              </button>
+              <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Calendar
+              </button>
+              <a
+                href="/generate"
+                className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                New Post
+              </a>
+            </div>
           </div>
 
-          {/* Error State */}
-          {error && (
-            <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex items-start">
-                <svg
-                  className="w-5 h-5 text-red-600 mt-0.5 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <div>
-                  <h3 className="text-sm font-medium text-red-800">Error</h3>
-                  <p className="text-sm text-red-700 mt-1">{error}</p>
+          {/* Tabs */}
+          <div className="flex items-center gap-8 mb-6 border-b border-white/20">
+            <button
+              onClick={() => setActiveTab('scheduled')}
+              className={`pb-3 px-1 text-base font-normal transition-colors relative ${
+                activeTab === 'scheduled'
+                  ? 'text-foreground border-b-2 border-green-500'
+                  : 'text-white/60 hover:text-white/80'
+              }`}
+            >
+              Scheduled <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('drafts')}
+              className={`pb-3 px-1 text-base font-normal transition-colors relative ${
+                activeTab === 'drafts'
+                  ? 'text-foreground border-b-2 border-green-500'
+                  : 'text-white/60 hover:text-white/80'
+              }`}
+            >
+              Drafts <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">{flattenedHooks.length}</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('sent')}
+              className={`pb-3 px-1 text-base font-normal transition-colors relative ${
+                activeTab === 'sent'
+                  ? 'text-foreground border-b-2 border-green-500'
+                  : 'text-white/60 hover:text-white/80'
+              }`}
+            >
+              Sent <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
+            </button>
+          </div>
+
+          {/* Content Grid */}
+          {isLoading ? (
+            <div className="text-center py-20">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+              <p className="mt-4 text-white/80">Loading your drafts...</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Create New Card */}
+              <a
+                href="/generate"
+                className="aspect-[4/5] rounded-xl border-2 border-dashed border-white/40 hover:border-white/60 flex flex-col items-center justify-center gap-6 transition-colors cursor-pointer group"
+              >
+                <div className="w-20 h-20 rounded-xl border-2 border-white/60 group-hover:border-white flex items-center justify-center transition-colors">
+                  <svg className="w-10 h-10 text-white/80 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
                 </div>
-              </div>
+                <p className="text-foreground text-2xl font-medium text-center px-8">
+                  Create<br />something<br />new
+                </p>
+              </a>
+
+              {/* Hook Cards */}
+              {flattenedHooks.map((hook) => (
+                <div
+                  key={hook.id}
+                  className="aspect-[4/5] rounded-xl bg-white p-6 flex flex-col shadow-lg hover:shadow-xl transition-shadow"
+                >
+                  {/* Profile Header */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                      <svg className="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-900 text-sm">{getUserName()}</div>
+                      <div className="text-gray-500 text-xs">LinkedIn Header</div>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="flex-1 overflow-y-auto mb-4">
+                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
+                      {hook.content}
+                    </p>
+                  </div>
+
+                  {/* Edit Button */}
+                  <button className="w-full py-3 bg-brand-dark hover:bg-brand-blue text-foreground font-medium rounded-lg transition-colors">
+                    Edit
+                  </button>
+                </div>
+              ))}
             </div>
           )}
 
-          {/* Content */}
-          {isLoading ? (
-            renderLoadingState()
-          ) : records.length === 0 ? (
-            renderEmptyState()
-          ) : (
-            <>
-              <div className="space-y-6 mb-8">
-                {records.map((record) => renderHookCard(record))}
-              </div>
-
-              {/* Pagination */}
-              {pagination.total > pagination.limit && (
-                <div className="flex items-center justify-between bg-white rounded-lg border border-gray-200 p-4">
-                  <button
-                    onClick={handlePrevPage}
-                    disabled={pagination.offset === 0}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4 mr-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
-                    Previous
-                  </button>
-                  <span className="text-sm text-gray-600">
-                    Page{' '}
-                    {Math.floor(pagination.offset / pagination.limit) + 1} of{' '}
-                    {Math.ceil(pagination.total / pagination.limit)}
-                  </span>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={!pagination.has_more}
-                    className="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  >
-                    Next
-                    <svg
-                      className="w-4 h-4 ml-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </>
+          {/* Error State */}
+          {error && (
+            <div className="mt-6 bg-red-500/10 border border-red-500/30 rounded-lg p-4 max-w-3xl mx-auto">
+              <p className="text-sm text-red-200">{error}</p>
+            </div>
           )}
         </div>
       </div>
