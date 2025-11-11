@@ -2,19 +2,21 @@ import { StepCard } from './StepCard';
 import { FaLock } from 'react-icons/fa';
 
 interface FinalStepProps {
-  formData: {
-    companyMission: string;
-    targetAudience: string;
-    topicsToPost: string;
-    selectedGoals: string[];
-    selectedHooks: string[];
-  };
+  userName: string;
+  userRole: string;
+  userCompany: string;
   generatedPostText: string | null;
   onUnlock: () => void;
   onBack: () => void;
 }
 
-export const FinalStep = ({ generatedPostText, onUnlock }: FinalStepProps) => {
+export const FinalStep = ({
+  generatedPostText,
+  userName,
+  userRole,
+  userCompany,
+  onUnlock,
+}: FinalStepProps) => {
   const handleUnlock = () => {
     // Call the unlock handler (localStorage saving is now handled in the hook)
     onUnlock();
@@ -38,7 +40,9 @@ export const FinalStep = ({ generatedPostText, onUnlock }: FinalStepProps) => {
             <div className="space-y-4 p-6">
               {/* Post Content - Visible in background */}
               <div className="text-white">
-                <p className="whitespace-pre-wrap">{generatedPostText}</p>
+                <p className="whitespace-pre-wrap">
+                  {userName} {userRole} {userCompany} {generatedPostText}
+                </p>
               </div>
             </div>
 

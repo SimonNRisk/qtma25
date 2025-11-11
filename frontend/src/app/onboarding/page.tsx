@@ -78,13 +78,9 @@ export default function Onboarding() {
             ) : null
           ) : currentStep === 8 && !isGeneratingPost && generatedPostText ? (
             <FinalStep
-              formData={{
-                companyMission: formData.companyMission,
-                targetAudience: formData.targetAudience,
-                topicsToPost: formData.topicsToPost,
-                selectedGoals: formData.selectedGoals,
-                selectedHooks: formData.selectedHooks,
-              }}
+              userName={formData.name}
+              userRole={formData.role}
+              userCompany={formData.company}
               generatedPostText={generatedPostText}
               onUnlock={handleUnlock}
               onBack={handleBack}
