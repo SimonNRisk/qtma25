@@ -2,12 +2,13 @@ import { StepCard } from './StepCard';
 import { NavigationButtons } from './NavigationButtons';
 import { HookCard } from './HookCard';
 import { useGenerateFirstPost } from '../hooks/useGenerateFirstPost';
+import { FaSpinner } from 'react-icons/fa';
 
 interface HooksSelectionStepProps {
   selectedHooks: string[];
   onHookToggle: (hook: string) => void;
   onBack: () => void;
-  onNext: () => void;
+  onNext: (generatePostFn: () => Promise<string | null>) => void;
 }
 
 export const HooksSelectionStep = ({
@@ -16,7 +17,7 @@ export const HooksSelectionStep = ({
   onBack,
   onNext,
 }: HooksSelectionStepProps) => {
-  const { generateFirstPost } = useGenerateFirstPost();
+  const { generateFirstPost, isLoading, error } = useGenerateFirstPost();
 
   const hooks = [
     {
@@ -56,7 +57,20 @@ export const HooksSelectionStep = ({
   return (
     <div className="w-[900px] mx-auto mt-8">
       <StepCard>
-        <div className="space-y-6">
+        <div className="space-y-6 relative">
+          {/* Loading Overlay */}
+          {isLoading && (
+            <div className="absolute inset-0 bg-black bg-opacity-70 rounded-[32px] flex flex-col items-center justify-center z-50">
+              <div className="text-white text-center">
+                <div className="mb-4">
+                  <FaSpinner className="animate-spin h-12 w-12 mx-auto text-white" />
+                </div>
+                <h3 className="text-xl font-semibold mb-2">Generating your post...</h3>
+                <p className="text-white/80">This may take a few moments</p>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <h2 className="text-xl font-semibold text-white">
             Select at least 3 hooks that resemble your tone and style.
@@ -79,8 +93,7 @@ export const HooksSelectionStep = ({
           <NavigationButtons
             onBack={onBack}
             onNext={() => {
-              onNext();
-              generateFirstPost();
+              onNext(generateFirstPost);
             }}
             showBack={true}
             showNext={true}
@@ -88,6 +101,7 @@ export const HooksSelectionStep = ({
             backText="← Back"
             nextDisabled={selectedHooks.length < 3}
           />
+          {error && <p className="text-red-500 text-sm">Error: {error}</p>}
         </div>
       </StepCard>
     </div>

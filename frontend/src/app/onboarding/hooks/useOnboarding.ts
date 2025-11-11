@@ -14,6 +14,8 @@ export interface OnboardingFormData {
 
 export const useOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [generatedPostText, setGeneratedPostText] = useState<string | null>(null);
+  const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const [formData, setFormData] = useState<OnboardingFormData>({
     name: '',
     company: '',
@@ -130,6 +132,24 @@ export const useOnboarding = () => {
     window.location.href = '/signup';
   };
 
+  const handleGeneratePostAndNext = async (generatePostFn: () => Promise<string | null>) => {
+    setIsGeneratingPost(true);
+    try {
+      const postText = await generatePostFn();
+      if (postText) {
+        setGeneratedPostText(postText);
+        setIsGeneratingPost(false);
+        handleNext();
+      } else {
+        setIsGeneratingPost(false);
+        console.error('Failed to generate post');
+      }
+    } catch (err) {
+      setIsGeneratingPost(false);
+      console.error('Failed to generate post:', err);
+    }
+  };
+
   const isFormValid = () => {
     return !!(formData.name && formData.company && formData.role && formData.industry);
   };
@@ -137,12 +157,15 @@ export const useOnboarding = () => {
   return {
     currentStep,
     formData,
+    generatedPostText,
+    isGeneratingPost,
     handleInputChange,
     handleNext,
     handleBack,
     handleGoalToggle,
     handleHookToggle,
     handleUnlock,
+    handleGeneratePostAndNext,
     isFormValid,
   };
 };

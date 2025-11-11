@@ -40,12 +40,12 @@ export const useGenerateFirstPost = () => {
   const [error, setError] = useState<string | null>(null);
   const [postText, setPostText] = useState<string | null>(null);
 
-  const generateFirstPost = async () => {
+  const generateFirstPost = async (): Promise<string | null> => {
     // Get onboarding data
     const onboardingData = getOnboardingData();
     if (!onboardingData) {
       setError('No onboarding data found');
-      return;
+      return null;
     }
 
     setIsLoading(true);
@@ -77,10 +77,12 @@ export const useGenerateFirstPost = () => {
       const data = await response.json();
       setPostText(data.post_text);
       console.log(data.post_text);
+      return data.post_text;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to generate post';
       setError(errorMessage);
       console.error('Error generating first post:', err);
+      return null;
     } finally {
       setIsLoading(false);
     }
