@@ -1,8 +1,12 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
 from openai import OpenAI
+from typing import Annotated
+from fastapi import Depends
 import os
 from dotenv import load_dotenv
+
+from auth import get_current_user
 
 load_dotenv()
 
@@ -23,8 +27,12 @@ class FirstPostRequest(BaseModel):
 class FirstPostResponse(BaseModel):
     post_text: str
 
+# Gets current user from JWT token (Authorization header) before generating the post
 @router.post("/first-post", response_model=FirstPostResponse)
-async def generate_first_post(request: FirstPostRequest):
+async def generate_first_post(
+    request: FirstPostRequest,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
     system_prompt = (
         "You are an expert LinkedIn ghostwriter. "
         "Write engaging, professional posts that feel authentic to the person."
