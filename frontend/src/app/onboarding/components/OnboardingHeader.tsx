@@ -1,4 +1,4 @@
-import { FaRocket } from 'react-icons/fa';
+import Image from 'next/image';
 
 interface OnboardingHeaderProps {
   currentStep: number;
@@ -14,10 +14,7 @@ export const OnboardingHeader = ({ currentStep, totalSteps }: OnboardingHeaderPr
         <div className="flex items-center justify-center gap-8">
           {/* Logo and Name */}
           <div className="flex items-center gap-3">
-            <FaRocket className="text-white text-2xl" />
-            <span className="text-white font-['Helvetica_Neue'] text-[25px] font-normal">
-              Astro
-            </span>
+            <Image src="/astro-white.png" alt="Astro" width={100} height={48} />
           </div>
 
           {/* Progress Bar */}
