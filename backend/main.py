@@ -24,7 +24,7 @@ SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_ANON_KEY = os.environ["SUPABASE_ANON_KEY"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")  # optional, but recommended for server writes
 FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000")
-OPENAI_API_KEY = os.environ.get("OPENAI_KEY")
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
 
 # Initialize OpenAI client
 openai_client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
@@ -311,7 +311,10 @@ async def get_linkedin_status(current_user: Annotated[dict, Depends(get_current_
         raise HTTPException(status_code=500, detail=f"Error checking LinkedIn status: {str(e)}")
 # LinkedIn post generation endpoint
 @app.post("/api/linkedin/generate-posts")
-async def generate_linkedin_posts(request: LinkedInPostGenerationRequest):
+async def generate_linkedin_posts(
+    request: LinkedInPostGenerationRequest,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
     """
     Generate multiple LinkedIn post hooks/content using OpenAI
     
@@ -328,7 +331,7 @@ async def generate_linkedin_posts(request: LinkedInPostGenerationRequest):
     if not openai_client:
         raise HTTPException(
             status_code=500, 
-            detail="OpenAI API key not configured. Please set OPENAI_KEY in your .env file"
+            detail="OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file"
         )
     
     # Validate quantity
@@ -390,7 +393,14 @@ Output ONLY the posts, numbered 1-{request.quantity}, with no additional comment
             max_tokens=4000 if request.length == 3 else 2500 if request.length == 2 else 1500
         )
         
-        posts_text = response.choices[0].message.content
+        # Safely extract content with null safety
+        posts_text = response.choices[0].message.content if response.choices and response.choices[0].message.content else ""
+        
+        if not posts_text:
+            raise HTTPException(
+                status_code=500,
+                detail="OpenAI returned empty response. Please try again."
+            )
         
         # Parse the posts (split by numbers)
         posts_list = re.split(r'\n(?=\d+[\.\:\)])', posts_text)
@@ -405,7 +415,27 @@ Output ONLY the posts, numbered 1-{request.quantity}, with no additional comment
                 if post:
                     cleaned_posts.append(post)
         
-        return {
+        # Store hooks in database
+        stored_record = None
+        storage_error = None
+        try:
+            stored_record = await linkedin_supabase_service.store_generated_hooks(
+                user_id=current_user["id"],
+                hooks=cleaned_posts,
+                generation_params={
+                    "quantity": request.quantity,
+                    "context": request.context,
+                    "length": request.length,
+                    "tone": request.tone,
+                    "audience": request.audience
+                }
+            )
+        except Exception as e:
+            # Log error but don't fail the request
+            storage_error = str(e)
+            print(f"Warning: Failed to store hooks in database: {storage_error}")
+        
+        response = {
             "success": True,
             "quantity": len(cleaned_posts),
             "posts": cleaned_posts,
@@ -417,10 +447,91 @@ Output ONLY the posts, numbered 1-{request.quantity}, with no additional comment
                 "audience": request.audience
             }
         }
+        
+        # Include storage info if successful
+        if stored_record:
+            response["storage"] = {
+                "id": stored_record.get("id"),
+                "created_at": stored_record.get("created_at"),
+                "stored": True
+            }
+        else:
+            response["storage"] = {
+                "stored": False,
+                "error": storage_error
+            }
+        
+        return response
     
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Error generating posts: {str(e)}"
         )
+
+# ============================================================================
+# LinkedIn Hooks Retrieval Endpoints
+# ============================================================================
+
+@app.get("/api/linkedin/hooks")
+async def get_user_hooks(
+    current_user: Annotated[dict, Depends(get_current_user)],
+    limit: int = 10,
+    offset: int = 0
+):
+    """
+    Retrieve generated LinkedIn hooks for the authenticated user.
+    
+    Query Parameters:
+    - limit: Number of records to return (default: 10, max: 50)
+    - offset: Number of records to skip for pagination (default: 0)
+    
+    Returns:
+    - List of hook generation records with metadata
+    - Total count for pagination
+    """
+    try:
+        # Validate parameters
+        if limit < 1 or limit > 50:
+            raise HTTPException(
+                status_code=400,
+                detail="Limit must be between 1 and 50"
+            )
+        
+        if offset < 0:
+            raise HTTPException(
+                status_code=400,
+                detail="Offset must be non-negative"
+            )
+        
+        # Get hooks and total count
+        hooks_data = await linkedin_supabase_service.get_user_hooks(
+            user_id=current_user["id"],
+            limit=limit,
+            offset=offset
+        )
+        
+        total_count = await linkedin_supabase_service.get_hooks_count(
+            user_id=current_user["id"]
+        )
+        
+        return {
+            "success": True,
+            "data": hooks_data,
+            "pagination": {
+                "limit": limit,
+                "offset": offset,
+                "total": total_count,
+                "has_more": (offset + limit) < total_count
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error retrieving hooks: {str(e)}"
+        )
+
 
