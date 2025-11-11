@@ -140,8 +140,7 @@ export default function HooksPage() {
       <div
         className="min-h-screen px-4 py-8 sm:px-6 lg:px-8"
         style={{
-          background:
-            'radial-gradient(75% 75% at 50% 52%, rgba(14, 19, 22, 0.78), transparent 55%), radial-gradient(120% 120% at 50% 20%, rgba(155, 198, 233, 0.18), transparent 70%), linear-gradient(145deg, var(--astro-midnight) 0%, var(--astro-indigo) 48%, var(--astro-lazuli) 100%)',
+          background: 'var(--astro-hero-gradient)',
         }}
       >
         <div className="max-w-7xl mx-auto">
