@@ -2,212 +2,190 @@
 
 import { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
-import { session } from '@/lib/session';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+type TabType = 'trending' | 'repackage' | 'chat';
 
 export default function GeneratePage() {
-  const [context, setContext] = useState('');
-  const [quantity, setQuantity] = useState(10);
-  const [length, setLength] = useState(2); // 1=short, 2=medium, 3=long
-  const [tone, setTone] = useState('');
-  const [audience, setAudience] = useState('');
-  const [generatedPosts, setGeneratedPosts] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [query, setQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<TabType>('chat');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleQuickPrompt = (prompt: string) => {
+    setQuery(prompt);
+  };
 
-    const token = session.access();
-    if (!token) {
-      setError('Please log in to generate hooks');
-      return;
-    }
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    // No-op: functionality removed
+  };
 
-    setIsLoading(true);
-    setError('');
-    setGeneratedPosts([]);
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/linkedin/generate-posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          quantity,
-          context: context || null,
-          length,
-          tone: tone || null,
-          audience: audience || null,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setGeneratedPosts(data.posts);
-        if (data.storage?.stored) {
-          console.log('Hooks stored successfully with ID:', data.storage.id);
-        }
-      } else {
-        console.error('Error:', data.detail || data.error);
-        setError(data.detail || 'Error generating posts. Please try again.');
-      }
-    } catch (error) {
-      console.error('Request failed:', error);
-      setError('Failed to connect to server. Please try again.');
-    } finally {
-      setIsLoading(false);
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
     }
   };
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-2">Generate LinkedIn Hooks</h1>
-          <p className="text-gray-600 mb-8">Create engaging LinkedIn post hooks with AI</p>
+      <div
+        className="min-h-screen px-4 py-20 sm:px-6 lg:px-8"
+        style={{
+          background:
+            'radial-gradient(75% 75% at 50% 52%, rgba(14, 19, 22, 0.78), transparent 55%), radial-gradient(120% 120% at 50% 20%, rgba(155, 198, 233, 0.18), transparent 70%), linear-gradient(145deg, var(--astro-midnight) 0%, var(--astro-indigo) 48%, var(--astro-lazuli) 100%)',
+        }}
+      >
+        <div className="max-w-5xl mx-auto text-white">
+          {/* Header */}
+          <div className="text-center mb-14">
+            <h1 className="text-left text-4xl sm:text-5xl font-medium tracking-tight mb-6 leading-tight text-foreground">
+              Keep your content ideas
+              <br />
+              flowing.
+            </h1>
+            <div className="h-px w-full max-w-3xl mr-auto bg-white/30 mb-6" />
 
-          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-sm p-6 mb-8">
-            {/* Context */}
-            <div className="mb-6">
-              <label htmlFor="context" className="block text-sm font-medium mb-2 text-gray-700">
-                Context (Optional)
-              </label>
-              <textarea
-                id="context"
-                value={context}
-                onChange={e => setContext(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                placeholder="E.g., I'm building a SaaS product for startups..."
-                rows={3}
-                disabled={isLoading}
-              />
+            {/* Tab Pills */}
+            <div className="flex items-center justify-start gap-4 mb-12">
+              <button
+                onClick={() => setActiveTab('trending')}
+                className={`px-6 py-2 rounded-xl text-sm font-normal transition-all border ${
+                  activeTab === 'trending'
+                    ? 'border-foreground bg-white/20 text-foreground shadow-[0_8px_20px_rgba(12,31,45,0.35)]'
+                    : 'border-white/40 text-white/80 hover:border-white/70'
+                }`}
+              >
+                Trending Stories
+              </button>
+              <button
+                onClick={() => setActiveTab('repackage')}
+                className={`px-6 py-2 rounded-xl text-sm font-normal transition-all border ${
+                  activeTab === 'repackage'
+                    ? 'border-foreground bg-white/20 text-foreground shadow-[0_8px_20px_rgba(12,31,45,0.35)]'
+                    : 'border-white/40 text-white/80 hover:border-white/70'
+                }`}
+              >
+                Repackage
+              </button>
+              <button
+                onClick={() => setActiveTab('chat')}
+                className={`px-6 py-2 rounded-xl text-sm font-normal transition-all border ${
+                  activeTab === 'chat'
+                    ? 'border-foreground bg-white/20 text-foreground shadow-[0_8px_20px_rgba(12,31,45,0.35)]'
+                    : 'border-white/40 text-white/80 hover:border-white/70'
+                }`}
+              >
+                Chat
+              </button>
             </div>
 
-            {/* Quantity and Length */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <label htmlFor="quantity" className="block text-sm font-medium mb-2 text-gray-700">
-                  Number of Hooks
-                </label>
-                <input
-                  type="number"
-                  id="quantity"
-                  min="3"
-                  max="50"
-                  value={quantity}
-                  onChange={e => setQuantity(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="length" className="block text-sm font-medium mb-2 text-gray-700">
-                  Post Length
-                </label>
-                <select
-                  id="length"
-                  value={length}
-                  onChange={e => setLength(parseInt(e.target.value))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  disabled={isLoading}
-                >
-                  <option value={1}>Short (~150 words)</option>
-                  <option value={2}>Medium (~300 words)</option>
-                  <option value={3}>Long (~500 words)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Tone and Audience */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              <div>
-                <label htmlFor="tone" className="block text-sm font-medium mb-2 text-gray-700">
-                  Tone (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="tone"
-                  value={tone}
-                  onChange={e => setTone(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  placeholder="E.g., professional, casual, friendly"
-                  disabled={isLoading}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="audience" className="block text-sm font-medium mb-2 text-gray-700">
-                  Target Audience (Optional)
-                </label>
-                <input
-                  type="text"
-                  id="audience"
-                  value={audience}
-                  onChange={e => setAudience(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
-                  placeholder="E.g., startup founders, developers"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 rounded-md p-3">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full px-6 py-3 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
-            >
-              {isLoading ? 'Generating...' : 'Generate Hooks'}
-            </button>
-          </form>
-
-          {/* Generated Posts */}
-          {generatedPosts.length > 0 && (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Generated Hooks ({generatedPosts.length})
-                </h2>
-                <a
-                  href="/hooks"
-                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                >
-                  View All Saved Hooks →
-                </a>
-              </div>
-              
-              <div className="space-y-4">
-                {generatedPosts.map((post, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors"
+            {/* Main Input Box */}
+            <div className="mb-8">
+              <div className="relative max-w-3xl mx-auto">
+                <div className="flex items-center bg-white rounded-full shadow-[0_25px_55px_rgba(21,55,83,0.55)] overflow-hidden border" style={{ borderColor: 'var(--astro-sky)' }}>
+                  {/* Microphone Icon */}
+                  <button
+                    type="button"
+                    className="pl-6 pr-4 py-4 text-brand-dark hover:opacity-80 transition-colors"
+                    aria-label="Voice input"
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-600 text-white text-xs font-semibold">
-                        {index + 1}
-                      </span>
-                      <p className="flex-1 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                        {post}
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                    <svg
+                      className="w-6 h-6"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* Input Field */}
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="Ask Astro Anything..."
+                    className="flex-1 py-4 px-2 text-base placeholder-gray-500 focus:outline-none bg-transparent" style={{ color: 'var(--astro-midnight)' }}
+                  />
+
+                  {/* Submit Button */}
+                  <button
+                    onClick={() => handleSubmit()}
+                    className="mr-3 p-2.5 bg-brand-dark hover:bg-brand-blue rounded-full transition-colors border border-brand-dark shadow-[0_10px_25px_rgba(20,56,84,0.45)]"
+                    aria-label="Submit"
+                  >
+                    <svg
+                      className="w-5 h-5 text-white"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 3a1 1 0 0 1 .894.553l3 6A1 1 0 0 1 13 11h-2v5a1 1 0 1 1-2 0v-5H7a1 1 0 0 1-.894-1.447l3-6A1 1 0 0 1 10 3z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
-          )}
+
+            {/* Quick Prompts */}
+            <div className="flex flex-wrap items-center justify-center gap-5 text-white/90 text-sm">
+              <button
+                onClick={() => handleQuickPrompt('Write me a post in my style')}
+                className="flex items-center gap-2 hover:text-white transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
+                </svg>
+                <span>Write me a post in my style</span>
+              </button>
+              <button
+                onClick={() => handleQuickPrompt('Refine my draft')}
+                className="flex items-center gap-2 hover:text-white transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                >
+                  <path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.786 1.402 8.171L12 18.896l-7.336 3.872 1.402-8.171L.132 9.211l8.2-1.193L12 .587z" />
+                </svg>
+                <span>Refine my draft</span>
+              </button>
+              <button
+                onClick={() => handleQuickPrompt('Tell me how my recent post did')}
+                className="flex items-center gap-2 hover:text-white transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z" />
+                </svg>
+                <span>Tell me how my recent post did</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </AuthGuard>
