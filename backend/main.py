@@ -12,6 +12,8 @@ from linkedin_oauth import LinkedInOAuth
 from linkedin_supabase_service import SupabaseService
 from auth import auth_router, get_current_user
 
+from api.openai import router as openai_router
+
 # Load environment variables
 load_dotenv()
 
@@ -61,7 +63,7 @@ class OnboardingData(BaseModel):
 
 # Include auth router
 app.include_router(auth_router)
-
+app.include_router(openai_router)
 # ---------- Routes ----------
 @app.get("/me")
 def get_current_user_profile(current_user: Annotated[dict, Depends(get_current_user)]):
