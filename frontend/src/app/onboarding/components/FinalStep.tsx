@@ -37,12 +37,25 @@ export const FinalStep = ({
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-[900px] mx-auto relative">
           <StepCard>
-            <div className="space-y-4 p-6">
-              {/* Post Content - Visible in background */}
-              <div className="text-white">
-                <p className="whitespace-pre-wrap">
-                  {userName} {userRole} {userCompany} {generatedPostText}
-                </p>
+            {/* LinkedIn-style Post */}
+            <div className="bg-white rounded-lg p-6">
+              {/* Profile Header */}
+              <div className="flex items-start space-x-3 mb-4">
+                {/* Empty Profile Picture */}
+                <div className="w-12 h-12 bg-gray-300 rounded-full flex-shrink-0"></div>
+                {/* Name and Title */}
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-gray-900 leading-tight">
+                    {userName}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-tight">
+                    {userRole} @ {userCompany}
+                  </p>
+                </div>
+              </div>
+              {/* Post Content */}
+              <div className="text-gray-900">
+                <p className="whitespace-pre-wrap leading-relaxed">{generatedPostText}</p>
               </div>
             </div>
 
