@@ -8,13 +8,6 @@ import { getJSON } from '@/lib/api';
 interface HookRecord {
   id: string;
   hooks: string[];
-  generation_params: {
-    quantity?: number;
-    context?: string;
-    length?: number;
-    tone?: string;
-    audience?: string;
-  };
   hook_count: number;
   created_at: string;
   updated_at: string;

@@ -87,15 +87,12 @@ class SupabaseService:
             print(f"Error deleting LinkedIn token: {e}")
             return False
     
-    # ========================================================================
     # LinkedIn Hooks Storage Methods
-    # ========================================================================
     
     async def store_generated_hooks(
         self,
         user_id: str,
-        hooks: List[str],
-        generation_params: Optional[Dict[str, Any]] = None
+        hooks: List[str]
     ) -> Dict[str, Any]:
         """
         Store AI-generated LinkedIn hooks for a user.
@@ -103,7 +100,6 @@ class SupabaseService:
         Args:
             user_id: UUID of the user
             hooks: List of generated hook strings
-            generation_params: Optional dict with generation parameters
             
         Returns:
             Dict containing the stored record with id, created_at, etc.
@@ -119,8 +115,8 @@ class SupabaseService:
         if not all(isinstance(hook, str) and hook.strip() for hook in hooks):
             raise ValueError("All hooks must be non-empty strings")
         
-        if len(hooks) > 100:
-            raise ValueError("Maximum 100 hooks allowed per generation")
+        if len(hooks) > 20:
+            raise ValueError("Maximum 20 hooks allowed per generation")
         
         try:
             now_iso = datetime.utcnow().isoformat()
@@ -129,7 +125,6 @@ class SupabaseService:
             payload = {
                 'user_id': user_id,
                 'hooks': hooks,
-                'generation_params': generation_params or {},
                 'hook_count': len(hooks),
                 'updated_at': now_iso,
             }

@@ -421,14 +421,7 @@ Output ONLY the posts, numbered 1-{request.quantity}, with no additional comment
         try:
             stored_record = await linkedin_supabase_service.store_generated_hooks(
                 user_id=current_user["id"],
-                hooks=cleaned_posts,
-                generation_params={
-                    "quantity": request.quantity,
-                    "context": request.context,
-                    "length": request.length,
-                    "tone": request.tone,
-                    "audience": request.audience
-                }
+                hooks=cleaned_posts
             )
         except Exception as e:
             # Log error but don't fail the request
