@@ -1,6 +1,7 @@
 import { StepCard } from './StepCard';
 import { NavigationButtons } from './NavigationButtons';
 import { HookCard } from './HookCard';
+import { useGenerateFirstPost } from '../hooks/useGenerateFirstPost';
 
 interface HooksSelectionStepProps {
   selectedHooks: string[];
@@ -15,6 +16,8 @@ export const HooksSelectionStep = ({
   onBack,
   onNext,
 }: HooksSelectionStepProps) => {
+  const { generateFirstPost } = useGenerateFirstPost();
+
   const hooks = [
     {
       text: "I pitched to 20 investors before our first yes. Here's what changed.",
@@ -75,7 +78,10 @@ export const HooksSelectionStep = ({
           {/* Navigation */}
           <NavigationButtons
             onBack={onBack}
-            onNext={onNext}
+            onNext={() => {
+              onNext();
+              generateFirstPost();
+            }}
             showBack={true}
             showNext={true}
             nextText="Next →"
