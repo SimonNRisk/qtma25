@@ -1,18 +1,22 @@
 import { StepCard } from './StepCard';
+import { FaLock } from 'react-icons/fa';
 
 interface FinalStepProps {
-  formData: {
-    companyMission: string;
-    targetAudience: string;
-    topicsToPost: string;
-    selectedGoals: string[];
-    selectedHooks: string[];
-  };
+  userName: string;
+  userRole: string;
+  userCompany: string;
+  generatedPostText: string | null;
   onUnlock: () => void;
   onBack: () => void;
 }
 
-export const FinalStep = ({ onUnlock }: FinalStepProps) => {
+export const FinalStep = ({
+  generatedPostText,
+  userName,
+  userRole,
+  userCompany,
+  onUnlock,
+}: FinalStepProps) => {
   const handleUnlock = () => {
     // Call the unlock handler (localStorage saving is now handled in the hook)
     onUnlock();
@@ -33,61 +37,32 @@ export const FinalStep = ({ onUnlock }: FinalStepProps) => {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-[900px] mx-auto relative">
           <StepCard>
-            <div className="space-y-4 p-6">
-              {/* Post Header */}
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                <div>
-                  <p className="font-semibold text-gray-900">First Name Last Name</p>
-                  <p className="text-sm text-gray-600">Industry Company Name</p>
+            {/* LinkedIn-style Post */}
+            <div className="bg-white rounded-lg p-6">
+              {/* Profile Header */}
+              <div className="flex items-start space-x-3 mb-4">
+                {/* Empty Profile Picture */}
+                <div className="w-12 h-12 bg-gray-300 rounded-full flex-shrink-0"></div>
+                {/* Name and Title */}
+                <div className="flex-1">
+                  <h3 className="text-base font-semibold text-gray-900 leading-tight">
+                    {userName}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-tight">
+                    {userRole} @ {userCompany}
+                  </p>
                 </div>
               </div>
-
               {/* Post Content */}
-              <div className="space-y-3">
-                <p className="text-gray-800">
-                  When I first started building [Company Name], I thought customer growth was
-                  measured by volume. Send more cold emails. Run more ads. Post more often. But
-                  after months of hustle, I had...3 paying customers. It wasn&apos;t until a mentor
-                  asked me one question that everything clicked: &quot;Have you actually tried
-                  talking to the people you&apos;re trying to serve?&quot; That hit me hard. I
-                  realized I&apos;d been pitching features, not listening to problems. So I changed
-                  my approach completely. I reached out to 20
-                </p>
-                <p className="text-gray-500 text-sm">
-                  Instead I asked:
-                  <br />
-                  • What is your biggest headache area?
-                  <br />• How are you solving it today?
-                </p>
-              </div>
-
-              {/* Tags */}
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="text-gray-500">Tags:</span>
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full">
-                  Personal Story
-                </span>
+              <div className="text-gray-900">
+                <p className="whitespace-pre-wrap leading-relaxed">{generatedPostText}</p>
               </div>
             </div>
 
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center p-6 rounded-lg">
+            {/* Unlock Overlay - lighter background so post is visible */}
+            <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center p-6 rounded-lg">
               <div className="text-white text-opacity-80 mb-4">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-12 w-12 mx-auto"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
+                <FaLock className="h-12 w-12 mx-auto" />
               </div>
               <h2 className="text-white text-3xl font-bold text-center mb-6">
                 Sign up to unlock this post&apos;s full potential
@@ -101,17 +76,7 @@ export const FinalStep = ({ onUnlock }: FinalStepProps) => {
                   Unlock
                 </button>
               </div>
-              <div className="mt-6 text-white text-opacity-50 text-sm text-center">
-                How do you feel about this post?
-                <div className="flex justify-center space-x-4 mt-2">
-                  <button className="opacity-50 cursor-not-allowed px-3 py-1 rounded border border-white border-opacity-30">
-                    I like it
-                  </button>
-                  <button className="opacity-50 cursor-not-allowed px-3 py-1 rounded border border-white border-opacity-30">
-                    Try again
-                  </button>
-                </div>
-              </div>
+              <div className="mt-6 text-white text-opacity-50 text-sm text-center"></div>
             </div>
           </StepCard>
         </div>
