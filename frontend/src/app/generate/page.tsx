@@ -80,19 +80,17 @@ export default function GeneratePage() {
             {/* Main Input Box */}
             <div className="mb-8">
               <div className="relative max-w-3xl mx-auto">
-                <div className="flex items-center bg-white rounded-full shadow-[0_25px_55px_rgba(21,55,83,0.55)] overflow-hidden border" style={{ borderColor: 'var(--astro-sky)' }}>
+                <div
+                  className="flex items-center bg-white rounded-full shadow-[0_25px_55px_rgba(21,55,83,0.55)] overflow-hidden border"
+                  style={{ borderColor: 'var(--astro-sky)' }}
+                >
                   {/* Microphone Icon */}
                   <button
                     type="button"
                     className="pl-6 pr-4 py-4 text-brand-dark hover:opacity-80 transition-colors"
                     aria-label="Voice input"
                   >
-                    <svg
-                      className="w-6 h-6"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -106,10 +104,11 @@ export default function GeneratePage() {
                   <input
                     type="text"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={e => setQuery(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Ask Astro Anything..."
-                    className="flex-1 py-4 px-2 text-base placeholder-gray-500 focus:outline-none bg-transparent" style={{ color: 'var(--astro-midnight)' }}
+                    className="flex-1 py-4 px-2 text-base placeholder-gray-500 focus:outline-none bg-transparent"
+                    style={{ color: 'var(--astro-midnight)' }}
                   />
 
                   {/* Submit Button */}
@@ -118,11 +117,7 @@ export default function GeneratePage() {
                     className="mr-3 p-2.5 bg-brand-dark hover:bg-brand-blue rounded-full transition-colors border border-brand-dark shadow-[0_10px_25px_rgba(20,56,84,0.45)]"
                     aria-label="Submit"
                   >
-                    <svg
-                      className="w-5 h-5 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
+                    <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path d="M10 3a1 1 0 0 1 .894.553l3 6A1 1 0 0 1 13 11h-2v5a1 1 0 1 1-2 0v-5H7a1 1 0 0 1-.894-1.447l3-6A1 1 0 0 1 10 3z" />
                     </svg>
                   </button>
@@ -155,12 +150,7 @@ export default function GeneratePage() {
                 onClick={() => handleQuickPrompt('Refine my draft')}
                 className="flex items-center gap-2 hover:text-white transition-colors"
               >
-                <svg
-                  className="w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  aria-hidden="true"
-                >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M12 .587l3.668 7.431 8.2 1.193-5.934 5.786 1.402 8.171L12 18.896l-7.336 3.872 1.402-8.171L.132 9.211l8.2-1.193L12 .587z" />
                 </svg>
                 <span>Refine my draft</span>
