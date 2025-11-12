@@ -70,7 +70,6 @@ Frontend Setup:
 API Endpoints
 
 - GET / : Base endpoint (does nothing at the moment)
-- GET /api/hello : Example endpoint to test frontend-backend communication
 - Additional endpoints will handle content generation, analytics fetching, and user management
 
 Contributing

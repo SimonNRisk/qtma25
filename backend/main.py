@@ -70,10 +70,6 @@ def get_current_user_profile(current_user: Annotated[dict, Depends(get_current_u
 def read_root():
     return {"message": "Hello from FastAPI"}
 
-@app.get("/api/hello")
-def say_hello():
-    return {"message": "Hello from /api/hello"}
-
 @app.get("/api/onboarding/data")
 async def get_onboarding_data(current_user: Annotated[dict, Depends(get_current_user)]):
     """
