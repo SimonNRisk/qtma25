@@ -11,8 +11,8 @@ from linkedin_service import LinkedInService
 from linkedin_oauth import LinkedInOAuth
 from linkedin_supabase_service import SupabaseService
 from auth import auth_router, get_current_user
-
 from api.openai import router as openai_router
+from config import FRONTEND_ORIGIN, get_cors_origins
 
 # Load environment variables
 load_dotenv()
@@ -20,7 +20,6 @@ load_dotenv()
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_ANON_KEY = os.environ["SUPABASE_ANON_KEY"]
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")  # optional, but recommended for server writes
-FRONTEND_ORIGIN = os.environ.get("FRONTEND_ORIGIN", "http://localhost:3000")
 
 # Public client (anon key): good for auth flows and reads with RLS
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
@@ -38,8 +37,7 @@ linkedin_supabase_service = SupabaseService()
 # Enable CORS so frontend can talk to backend
 app.add_middleware(
     CORSMiddleware,
-    # In local development, you need to add localhost to this list
-    allow_origins=[FRONTEND_ORIGIN],
+    allow_origins=get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
