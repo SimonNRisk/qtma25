@@ -95,16 +95,14 @@ function EditPostContent() {
           <div className="flex flex-col lg:flex-row gap-6 items-start">
             {/* Left Side - Form */}
             <div className="flex-1 w-full">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 mb-6">
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
-                    <label htmlFor="postText" className="block text-sm font-medium text-white/90">
-                      What do you want to post?
-                    </label>
+              {/* Textarea Input Box - Matching Generate Page Style */}
+              <div className="mb-8">
+                <div className="relative max-w-3xl mx-auto">
+                  <div className="flex items-start gap-3 mb-3">
                     {canGoBack && (
                       <button
                         onClick={handleGoBack}
-                        className="flex items-center gap-2 px-3 py-1.5 text-sm text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors"
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm text-white/80 hover:text-white hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
                         title="Restore previous version"
                       >
                         <svg
@@ -125,40 +123,57 @@ function EditPostContent() {
                       </button>
                     )}
                   </div>
-                  <textarea
-                    id="postText"
-                    value={postText}
-                    onChange={e => setCurrentPost(e.target.value)}
-                    placeholder="Enter your LinkedIn post content here..."
-                    className="w-full h-48 p-4 bg-white rounded-lg border focus:ring-2 focus:ring-brand-blue focus:border-transparent resize-none placeholder-gray-500"
-                    style={{ color: 'var(--astro-midnight)' }}
-                  />
-                  <div className="text-sm text-white/60 mt-2">{postText.length} characters</div>
-                </div>
-
-                <div className="mb-6">
-                  <label
-                    htmlFor="imageUpload"
-                    className="block text-sm font-medium text-white/90 mb-2"
+                  <div
+                    className="flex items-start bg-white rounded-xl shadow-[0_25px_55px_rgba(21,55,83,0.55)] overflow-hidden border p-4"
+                    style={{ borderColor: 'var(--astro-sky)' }}
                   >
-                    Upload an image (optional)
-                  </label>
+                    <textarea
+                      id="postText"
+                      value={postText}
+                      onChange={e => setCurrentPost(e.target.value)}
+                      placeholder="Enter your LinkedIn post content here..."
+                      className="flex-1 py-2 px-2 text-base placeholder-gray-500 focus:outline-none bg-transparent resize-none min-h-[200px]"
+                      style={{ color: 'var(--astro-midnight)' }}
+                    />
+                  </div>
+                  <div className="text-sm text-white/60 mt-2 ml-1">
+                    {postText.length} characters
+                  </div>
+                </div>
+              </div>
+
+              {/* Image Upload */}
+              <div className="mb-8 max-w-3xl mx-auto">
+                <label
+                  htmlFor="imageUpload"
+                  className="block text-sm font-medium text-white/90 mb-3"
+                >
+                  Upload an image (optional)
+                </label>
+                <div
+                  className="flex items-center bg-white rounded-xl shadow-[0_25px_55px_rgba(21,55,83,0.55)] overflow-hidden border p-4"
+                  style={{ borderColor: 'var(--astro-sky)' }}
+                >
                   <input
                     id="imageUpload"
                     type="file"
                     accept="image/*"
                     onChange={handleFileChange}
-                    className="w-full p-2 bg-white rounded-lg border border-white/20 focus:ring-2 focus:ring-brand-blue focus:border-transparent text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-brand-blue"
+                    className="flex-1 text-base focus:outline-none bg-transparent file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-dark file:text-white hover:file:bg-brand-blue cursor-pointer"
+                    style={{ color: 'var(--astro-midnight)' }}
                   />
-                  {selectedFile && (
-                    <div className="mt-2 text-sm text-white/70">
-                      Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)}{' '}
-                      MB)
-                    </div>
-                  )}
                 </div>
+                {selectedFile && (
+                  <div className="mt-2 text-sm text-white/70 ml-1">
+                    Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)}{' '}
+                    MB)
+                  </div>
+                )}
+              </div>
 
-                <div className="text-center">
+              {/* Post Button */}
+              <div className="mb-8 max-w-3xl mx-auto">
+                <div className="flex justify-center">
                   <button
                     onClick={handlePost}
                     disabled={isPosting || !postText.trim()}
@@ -179,19 +194,22 @@ function EditPostContent() {
                 </div>
               </div>
 
+              {/* Result Message */}
               {result && (
-                <div className="mb-6 p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
-                  <p className="text-white/90 mb-2">{result}</p>
-                  {linkedinUrl && (
-                    <a
-                      href={linkedinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center text-white/90 hover:text-white underline font-medium"
-                    >
-                      View your post on LinkedIn →
-                    </a>
-                  )}
+                <div className="mb-6 max-w-3xl mx-auto">
+                  <div className="p-4 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20">
+                    <p className="text-white/90 mb-2">{result}</p>
+                    {linkedinUrl && (
+                      <a
+                        href={linkedinUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center text-white/90 hover:text-white underline font-medium"
+                      >
+                        View your post on LinkedIn →
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
