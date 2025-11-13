@@ -1,12 +1,14 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { AuthGuard } from '@/components/AuthGuard';
 import { LINKEDIN_VIEW_POST_URL } from './utils/constants';
 import { AiAssistant } from './components/ai-assistant';
 import { usePostHistory } from '@/hooks/usePostHistory';
 import { API_URL } from '@/lib/api';
 
-export default function LinkedInPost() {
+function LinkedInPostContent() {
+  const searchParams = useSearchParams();
   const [isPosting, setIsPosting] = useState(false);
   const [result, setResult] = useState('');
   const [linkedinUrl, setLinkedinUrl] = useState('');
@@ -20,6 +22,15 @@ export default function LinkedInPost() {
     goBack,
     canGoBack,
   } = usePostHistory('');
+
+  // Check for text query parameter and pre-fill the post
+  useEffect(() => {
+    const textParam = searchParams.get('text');
+    if (textParam) {
+      const decodedText = decodeURIComponent(textParam);
+      setCurrentPost(decodedText);
+    }
+  }, [searchParams, setCurrentPost]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -174,5 +185,13 @@ export default function LinkedInPost() {
         </div>
       </main>
     </AuthGuard>
+  );
+}
+
+export default function LinkedInPost() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LinkedInPostContent />
+    </Suspense>
   );
 }

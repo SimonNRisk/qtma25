@@ -35,6 +35,9 @@ class LinkedInPostGenerationRequest(BaseModel):
     tone: Optional[str] = None  # Optional: professional, casual, friendly, etc.
     audience: Optional[str] = None  # Optional: more specific audience targeting
 
+class BookmarkHookRequest(BaseModel):
+    hook: str
+
 # LinkedIn OAuth endpoints
 @router.get("/auth")
 def linkedin_auth(current_user: Annotated[dict, Depends(get_current_user)]):
@@ -394,6 +397,47 @@ async def get_user_hooks(
         raise HTTPException(
             status_code=500,
             detail=f"Error retrieving hooks: {str(e)}"
+        )
+
+@router.post("/hooks/bookmark")
+async def bookmark_hook(
+    request: BookmarkHookRequest,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
+    """
+    Bookmark a single hook by saving it to the database.
+    
+    Request Body:
+    - hook: The hook text to bookmark
+    
+    Returns:
+    - Success status and stored record
+    """
+    try:
+        if not request.hook or not request.hook.strip():
+            raise HTTPException(
+                status_code=400,
+                detail="Hook text is required and must be a non-empty string"
+            )
+        
+        # Store the single hook using the existing service method
+        stored_record = await linkedin_supabase_service.store_generated_hooks(
+            user_id=current_user["id"],
+            hooks=[request.hook.strip()]
+        )
+        
+        return {
+            "success": True,
+            "message": "Hook bookmarked successfully",
+            "data": stored_record
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error bookmarking hook: {str(e)}"
         )
 
 
