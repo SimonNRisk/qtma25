@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { FaMicrophone, FaPaperPlane, FaEdit, FaStar, FaComments } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 
 type TabType = 'trending' | 'repackage' | 'chat';
 
 export default function GeneratePage() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<TabType>('chat');
 
@@ -18,6 +20,10 @@ export default function GeneratePage() {
     if (e) e.preventDefault();
     // No-op: functionality removed
   };
+
+  useEffect(() => {
+    router.replace('/');
+  }, []);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
