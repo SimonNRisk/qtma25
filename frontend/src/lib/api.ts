@@ -1,4 +1,6 @@
-export const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+import { getApiUrl } from './env';
+
+export const API_URL = getApiUrl();
 
 export async function postJSON(path: string, body: unknown, token?: string) {
   const res = await fetch(`${API_URL}${path}`, {

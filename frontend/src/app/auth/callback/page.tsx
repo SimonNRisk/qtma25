@@ -4,12 +4,21 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
+import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
 
 function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
+
+  // Check if we're on the wrong domain (production when we should be on localhost)
+  useEffect(() => {
+    if (shouldRedirectToLocalhost()) {
+      window.location.href = getLocalhostUrl();
+      return;
+    }
+  }, []);
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -64,7 +73,11 @@ function AuthCallbackContent() {
 
               // Redirect to profile page after a short delay
               setTimeout(() => {
-                router.push('/me');
+                if (shouldRedirectToLocalhost()) {
+                  window.location.href = 'http://localhost:3000/me';
+                } else {
+                  router.push('/me');
+                }
               }, 2000);
             } else {
               const errorText = await response.text();
@@ -107,7 +120,11 @@ function AuthCallbackContent() {
 
               // Redirect to profile page after a short delay
               setTimeout(() => {
-                router.push('/me');
+                if (shouldRedirectToLocalhost()) {
+                  window.location.href = 'http://localhost:3000/me';
+                } else {
+                  router.push('/me');
+                }
               }, 2000);
             } else {
               const errorText = await response.text();

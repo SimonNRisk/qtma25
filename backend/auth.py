@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Header
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from config import FRONTEND_ORIGIN
 
 load_dotenv()
 
@@ -255,9 +256,7 @@ def oauth_login(provider: str):
         raise HTTPException(status_code=400, detail="Unsupported OAuth provider")
     
     try:
-        # Get OAuth URL from Supabase
-        frontend_origin = os.environ.get('FRONTEND_ORIGIN', 'http://localhost:3000')
-        redirect_url = f"{frontend_origin}/auth/callback"
+        redirect_url = f"{FRONTEND_ORIGIN}/auth/callback"
                 
         if provider == "google":
             res = supabase.auth.sign_in_with_oauth({

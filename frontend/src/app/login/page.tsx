@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { postJSON } from '@/lib/api';
+import { postJSON, API_URL } from '@/lib/api';
 import { session } from '@/lib/session';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -19,7 +19,7 @@ function LoginForm() {
     setOauthLoading(provider);
     setMsg(null);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/oauth/${provider}`);
+      const response = await fetch(`${API_URL}/auth/oauth/${provider}`);
       const data = await response.json();
 
       if (data.url) {
