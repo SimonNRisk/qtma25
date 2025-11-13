@@ -52,7 +52,7 @@ export const useGenerateFirstPost = () => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:8000/api/openai/first-post`, {
+      const response = await fetch(`${API_URL}/api/openai/first-post`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

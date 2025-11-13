@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { FaPaperPlane } from 'react-icons/fa';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -94,19 +95,19 @@ Just return the complete edited post exactly as it should appear.`;
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] w-96 bg-white rounded-lg shadow-lg">
+    <div className="flex flex-col h-[calc(100vh-12rem)] w-full">
       {/* Header */}
-      <div className="bg-brand-blue text-white p-4 rounded-t-lg">
-        <h2 className="text-xl font-bold">AI Post Editor</h2>
-        <p className="text-sm text-brand-light">Edit your LinkedIn post with AI</p>
+      <div className="mb-4">
+        <h2 className="text-xl font-medium text-white/90 mb-1">AI Post Editor</h2>
+        <p className="text-sm text-white/60">Edit your LinkedIn post with AI</p>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto mb-4 space-y-4 pr-2">
         {messages.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-gray-500 text-center">
+          <div className="flex items-center justify-center h-full text-white/60 text-center">
             <div>
-              <p className="text-lg mb-2">✏️ Edit your post</p>
+              <p className="text-base mb-2">✏️ Edit your post</p>
               <p className="text-sm">Ask me to improve, shorten, or rewrite your post!</p>
             </div>
           </div>
@@ -117,21 +118,23 @@ Just return the complete edited post exactly as it should appear.`;
               className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                className={`max-w-[85%] rounded-xl px-4 py-3 ${
                   message.role === 'user'
-                    ? 'bg-brand-blue text-white rounded-br-none'
-                    : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                    ? 'bg-white/20 text-white rounded-br-sm'
+                    : 'bg-white/10 text-white/90 rounded-bl-sm border border-white/20'
                 }`}
               >
-                <div className="text-sm font-medium mb-1">
+                <div className="text-xs font-medium mb-1.5 text-white/70 uppercase tracking-wide">
                   {message.role === 'user' ? 'You' : 'Edited Post'}
                 </div>
-                <div className="whitespace-pre-wrap break-words">{message.content}</div>
+                <div className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                  {message.content}
+                </div>
                 {message.role === 'assistant' && message.editedPost && (
-                  <div className="mt-3 pt-3 border-t border-gray-300">
+                  <div className="mt-3 pt-3 border-t border-white/20">
                     <button
                       onClick={() => handleInsertPost(message.editedPost!)}
-                      className="w-full bg-brand-blue text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-600 transition-colors text-sm"
+                      className="w-full bg-brand-dark hover:bg-brand-blue text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm shadow-[0_10px_25px_rgba(20,56,84,0.45)]"
                     >
                       Insert into Post
                     </button>
@@ -143,20 +146,20 @@ Just return the complete edited post exactly as it should appear.`;
         )}
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-800 rounded-lg rounded-bl-none px-4 py-2">
+            <div className="bg-white/10 text-white/90 rounded-xl rounded-bl-sm px-4 py-3 border border-white/20">
               <div className="flex items-center space-x-2">
                 <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-white/60 rounded-full animate-bounce"></div>
                   <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
                     style={{ animationDelay: '0.1s' }}
                   ></div>
                   <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-white/60 rounded-full animate-bounce"
                     style={{ animationDelay: '0.2s' }}
                   ></div>
                 </div>
-                <span className="text-sm text-gray-600">Thinking...</span>
+                <span className="text-sm text-white/70">Thinking...</span>
               </div>
             </div>
           </div>
@@ -165,23 +168,34 @@ Just return the complete edited post exactly as it should appear.`;
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gray-200 p-4">
+      <div className="border-t border-white/20 pt-4">
         <form onSubmit={handleSubmitPrompt} className="flex gap-2">
-          <input
-            type="text"
-            placeholder="e.g., Make it shorter, add emojis, improve tone..."
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-blue focus:border-transparent text-gray-800"
-            disabled={isLoading}
-          />
-          <button
-            type="submit"
-            disabled={isLoading || !prompt.trim()}
-            className="bg-brand-blue text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          <div
+            className="flex-1 flex items-center bg-white rounded-full shadow-[0_25px_55px_rgba(21,55,83,0.55)] overflow-hidden border"
+            style={{ borderColor: 'var(--astro-sky)' }}
           >
-            Send
-          </button>
+            <input
+              type="text"
+              placeholder="e.g., Make it shorter, add emojis..."
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              className="flex-1 py-3 px-4 text-base placeholder-gray-500 focus:outline-none bg-transparent"
+              style={{ color: 'var(--astro-midnight)' }}
+              disabled={isLoading}
+            />
+            <button
+              type="submit"
+              disabled={isLoading || !prompt.trim()}
+              className="mr-3 p-2.5 bg-brand-dark hover:bg-brand-blue rounded-full transition-colors border border-brand-dark shadow-[0_10px_25px_rgba(20,56,84,0.45)] disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Send"
+            >
+              {isLoading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <FaPaperPlane className="w-5 h-5 text-white" />
+              )}
+            </button>
+          </div>
         </form>
       </div>
     </div>

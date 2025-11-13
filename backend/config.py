@@ -2,6 +2,10 @@
 Environment configuration utilities
 """
 import os
+from dotenv import load_dotenv
+
+# Load environment variables before checking them
+load_dotenv()
 
 # Environment detection
 ENVIRONMENT = os.environ.get("ENVIRONMENT", "prod").lower()

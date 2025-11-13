@@ -1,7 +1,11 @@
 import os
 from supabase import create_client, Client
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 from datetime import datetime, timedelta
+import logging
+
+# Configure logging
+logger = logging.getLogger(__name__)
 
 class SupabaseService:
     def __init__(self):
@@ -82,3 +86,138 @@ class SupabaseService:
         except Exception as e:
             print(f"Error deleting LinkedIn token: {e}")
             return False
+    
+    # LinkedIn Hooks Storage Methods
+    
+    async def store_generated_hooks(
+        self,
+        user_id: str,
+        hooks: List[str]
+    ) -> Dict[str, Any]:
+        """
+        Store AI-generated LinkedIn hooks for a user.
+        
+        Args:
+            user_id: UUID of the user
+            hooks: List of generated hook strings
+            
+        Returns:
+            Dict containing the stored record with id, created_at, etc.
+            
+        Raises:
+            ValueError: If hooks list is empty or invalid
+            Exception: If database operation fails
+        """
+        # Validation
+        if not hooks or not isinstance(hooks, list):
+            raise ValueError("Hooks must be a non-empty list")
+        
+        if not all(isinstance(hook, str) and hook.strip() for hook in hooks):
+            raise ValueError("All hooks must be non-empty strings")
+        
+        if len(hooks) > 20:
+            raise ValueError("Maximum 20 hooks allowed per generation")
+        
+        try:
+            now_iso = datetime.utcnow().isoformat()
+            
+            # Prepare payload
+            payload = {
+                'user_id': user_id,
+                'hooks': hooks,
+                'hook_count': len(hooks),
+                'updated_at': now_iso,
+            }
+            
+            # Insert new record (each generation is a new record)
+            payload['created_at'] = now_iso
+            result = self.supabase.table('linkedin_generated_hooks').insert(payload).execute()
+            
+            if not result.data or len(result.data) == 0:
+                raise Exception("Database returned no data after insert")
+            
+            logger.info(f"Successfully stored {len(hooks)} hooks for user {user_id}")
+            return result.data[0]
+            
+        except ValueError as ve:
+            logger.error(f"Validation error storing hooks: {ve}")
+            raise
+        except Exception as e:
+            logger.error(f"Error storing generated hooks for user {user_id}: {e}")
+            raise Exception(f"Failed to store hooks: {str(e)}")
+    
+    async def get_user_hooks(
+        self,
+        user_id: str,
+        limit: int = 10,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve generated hooks for a user with pagination.
+        
+        Args:
+            user_id: UUID of the user
+            limit: Maximum number of records to return (default 10, max 50)
+            offset: Number of records to skip for pagination
+            
+        Returns:
+            List of hook generation records, ordered by created_at DESC
+            
+        Raises:
+            ValueError: If parameters are invalid
+            Exception: If database operation fails
+        """
+        # Validation
+        if limit < 1 or limit > 50:
+            raise ValueError("Limit must be between 1 and 50")
+        
+        if offset < 0:
+            raise ValueError("Offset must be non-negative")
+        
+        try:
+            result = (
+                self.supabase
+                .table('linkedin_generated_hooks')
+                .select('*')
+                .eq('user_id', user_id)
+                .order('created_at', desc=True)
+                .range(offset, offset + limit - 1)
+                .execute()
+            )
+            
+            logger.info(f"Retrieved {len(result.data) if result.data else 0} hook records for user {user_id}")
+            return result.data if result.data else []
+            
+        except Exception as e:
+            logger.error(f"Error retrieving hooks for user {user_id}: {e}")
+            raise Exception(f"Failed to retrieve hooks: {str(e)}")
+    
+    async def get_hooks_count(self, user_id: str) -> int:
+        """
+        Get the total number of hook generations for a user.
+        
+        Args:
+            user_id: UUID of the user
+            
+        Returns:
+            Integer count of hook generation records
+            
+        Raises:
+            Exception: If database operation fails
+        """
+        try:
+            result = (
+                self.supabase
+                .table('linkedin_generated_hooks')
+                .select('id', count='exact')
+                .eq('user_id', user_id)
+                .execute()
+            )
+            
+            count = result.count if hasattr(result, 'count') and result.count is not None else 0
+            logger.info(f"User {user_id} has {count} hook generations")
+            return count
+            
+        except Exception as e:
+            logger.error(f"Error counting hooks for user {user_id}: {e}")
+            raise Exception(f"Failed to count hooks: {str(e)}")
