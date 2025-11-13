@@ -31,6 +31,19 @@ interface FlattenedHook {
   createdAt: string;
 }
 
+interface UserResponse {
+  user: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    user_metadata: {
+      first_name: string;
+      last_name: string;
+    };
+  };
+}
+
 type TabType = 'scheduled' | 'drafts' | 'sent';
 
 export default function HooksPage() {
@@ -95,7 +108,7 @@ export default function HooksPage() {
     const token = session.access();
     if (token) {
       getJSON('/me', token)
-        .then((data: any) => {
+        .then((data: UserResponse) => {
           setUser(data.user);
         })
         .catch(err => {
