@@ -195,7 +195,7 @@ export default function HooksPage() {
                 Calendar
               </button>
               <a
-                href="/generate"
+                href="/create/generate"
                 className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -258,7 +258,7 @@ export default function HooksPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Create New Card */}
               <a
-                href="/generate"
+                href="/create/generate"
                 className="aspect-[4/5] rounded-xl border-2 border-dashed border-white/40 hover:border-white/60 flex flex-col items-center justify-center gap-6 transition-colors cursor-pointer group"
               >
                 <div className="w-20 h-20 rounded-xl border-2 border-white/60 group-hover:border-white flex items-center justify-center transition-colors">

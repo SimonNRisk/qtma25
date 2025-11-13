@@ -17,7 +17,7 @@ export function GeneratedPostCard({ post, copiedId, onBookmark, onCopy }: Genera
   const handlePostClick = () => {
     // Only navigate if not bookmarked
     if (!post.isBookmarked) {
-      router.push(`/create?text=${encodeURIComponent(post.content)}`);
+      router.push(`/create/edit?text=${encodeURIComponent(post.content)}`);
     }
   };
 
@@ -28,7 +28,7 @@ export function GeneratedPostCard({ post, copiedId, onBookmark, onCopy }: Genera
 
   const handleUsePost = (e: React.MouseEvent) => {
     e.stopPropagation();
-    router.push(`/create?text=${encodeURIComponent(post.content)}`);
+    router.push(`/create/edit?text=${encodeURIComponent(post.content)}`);
   };
 
   return (
@@ -41,7 +41,9 @@ export function GeneratedPostCard({ post, copiedId, onBookmark, onCopy }: Genera
       }`}
     >
       <div className="flex items-start justify-between gap-4 mb-3">
-        <p className="text-white/90 whitespace-pre-wrap leading-relaxed flex-1">{post.content}</p>
+        <p className="text-white/90 whitespace-pre-wrap leading-relaxed flex-1 pointer-events-none">
+          {post.content}
+        </p>
         <button
           onClick={e => onBookmark(post, e)}
           className={`flex-shrink-0 p-2 rounded-lg transition-colors ${
