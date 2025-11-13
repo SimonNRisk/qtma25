@@ -132,13 +132,15 @@ export default function HooksPage() {
     if (user?.email) {
       return user.email.split('@')[0];
     }
-    // Fallback to JWT token if user state not loaded yet
-    const jwtUser = session.getUser();
-    if (jwtUser?.first_name && jwtUser?.last_name) {
-      return `${jwtUser.first_name} ${jwtUser.last_name}`;
-    }
-    if (jwtUser?.first_name) {
-      return jwtUser.first_name;
+
+    if (typeof window !== 'undefined') {
+      const jwtUser = session.getUser();
+      if (jwtUser?.first_name && jwtUser?.last_name) {
+        return `${jwtUser.first_name} ${jwtUser.last_name}`;
+      }
+      if (jwtUser?.first_name) {
+        return jwtUser.first_name;
+      }
     }
     return 'User';
   };
