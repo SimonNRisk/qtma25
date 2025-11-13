@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 from typing import Optional, Annotated, List, Dict, Any
 from openai import OpenAI
 from linkedin_supabase_service import SupabaseService
-from linkedin_oauth import LinkedInOAuth, LinkedInService
+from linkedin_oauth import LinkedInOAuth
+from linkedin_service import LinkedInService
 from auth import get_current_user
 
 load_dotenv()
