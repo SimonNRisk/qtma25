@@ -1,17 +1,23 @@
-from fastapi import APIRouter, Request, HTTPException, status
+from fastapi import APIRouter, Request, HTTPException, status, Depends
 from pydantic import BaseModel
 from openai import OpenAI
 import os
+import re
 from dotenv import load_dotenv
 from collections import defaultdict
 from datetime import datetime, timedelta
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Annotated, Optional
+from auth import get_current_user
+from linkedin_supabase_service import SupabaseService
 
 load_dotenv()
 
 router = APIRouter(prefix="/api/openai", tags=["openai"])
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Initialize LinkedIn Supabase service for storing generated hooks
+linkedin_supabase_service = SupabaseService()
 
 # Simple in-memory rate limiter: IP -> (count, reset_time)
 rate_limit_store: Dict[str, Tuple[int, datetime]] = defaultdict(lambda: (0, datetime.now()))
@@ -58,6 +64,13 @@ class FirstPostRequest(BaseModel):
 
 class FirstPostResponse(BaseModel):
     post_text: str
+
+class LinkedInPostGenerationRequest(BaseModel):
+    quantity: int = 10
+    context: Optional[str] = None
+    length: int = 2  # 1=short, 2=medium, 3=long
+    tone: Optional[str] = None  # Optional: professional, casual, friendly, etc.
+    audience: Optional[str] = None  # Optional: more specific audience targeting
 
 @router.post("/first-post", response_model=FirstPostResponse)
 async def generate_first_post(
@@ -109,3 +122,155 @@ async def generate_first_post(
             detail="Failed to generate post content"
         )
     return FirstPostResponse(post_text=post_text)
+
+@router.post("/generate-posts")
+async def generate_linkedin_posts(
+    request: LinkedInPostGenerationRequest,
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
+    """
+    Generate multiple LinkedIn post hooks/content using OpenAI
+    
+    Parameters:
+    - quantity: Number of posts to generate (default: 10, minimum: 3)
+    - context: Optional user context to personalize posts (default: null for generic posts)
+    - length: Post length - 1=short (~150 words), 2=medium (~300 words), 3=long (~500 words) (default: 2)
+    - tone: Optional tone (professional, casual, friendly, etc.)
+    - audience: Optional specific audience targeting
+    
+    Returns a list of unique LinkedIn post suggestions in different styles.
+    """
+    # Validate OpenAI API key
+    if not client:
+        raise HTTPException(
+            status_code=500, 
+            detail="OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file"
+        )
+    
+    # Validate quantity
+    if request.quantity < 3:
+        raise HTTPException(
+            status_code=400, 
+            detail="Quantity must be at least 3"
+        )
+    
+    # Validate length
+    if request.length not in [1, 2, 3]:
+        raise HTTPException(
+            status_code=400, 
+            detail="Length must be 1 (short), 2 (medium), or 3 (long)"
+        )
+    
+    # Determine word count based on length
+    word_counts = {1: "about 150", 2: "about 300", 3: "about 500"}
+    target_words = word_counts[request.length]
+    
+    # Build the prompt
+    context_part = ""
+    if request.context:
+        context_part = f"\n\nUser Context: {request.context}\nMake the posts specific and relevant to this context."
+    else:
+        context_part = "\n\nUser Context: Not provided. Create generic but engaging startup-focused posts that would work for any founder/entrepreneur."
+    
+    tone_part = ""
+    if request.tone:
+        tone_part = f"\nTone: {request.tone}"
+    
+    audience_part = ""
+    if request.audience:
+        audience_part = f"\nTarget Audience: {request.audience}"
+    
+    system_prompt = f"""You are an expert LinkedIn content creator specializing in helping startups and entrepreneurs gain traction.
+
+Your task is to generate {request.quantity} unique LinkedIn posts, each with a DIFFERENT style and approach. Each post should be approximately {target_words} words.{context_part}{tone_part}{audience_part}
+
+Requirements:
+1. Each post must be UNIQUE in style - use different formats like: storytelling, tips/advice, thought leadership, engagement questions, case studies, personal anecdotes, etc.
+2. Posts should be engaging and designed to get traction for startup founders/entrepreneurs
+3. Include relevant hashtags at the end of each post (3-5 hashtags)
+4. Make posts actionable and valuable
+5. Each post should stand alone and not reference the others
+6. Posts should encourage engagement (comments, shares, reactions)
+
+Output ONLY the posts, numbered 1-{request.quantity}, with no additional commentary.
+"""
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Generate {request.quantity} unique LinkedIn posts with different styles."}
+            ],
+            temperature=0.9,  # Higher temperature for more creative and varied outputs
+            max_tokens=4000 if request.length == 3 else 2500 if request.length == 2 else 1500
+        )
+        
+        # Safely extract content with null safety
+        posts_text = response.choices[0].message.content if response.choices and response.choices[0].message.content else ""
+        
+        if not posts_text:
+            raise HTTPException(
+                status_code=500,
+                detail="OpenAI returned empty response. Please try again."
+            )
+        
+        # Parse the posts (split by numbers)
+        posts_list = re.split(r'\n(?=\d+[\.\:\)])', posts_text)
+        
+        # Clean up each post
+        cleaned_posts = []
+        for post in posts_list:
+            if post.strip():
+                # Remove leading numbers and formatting
+                post = re.sub(r'^\d+[\.\:\)]\s*', '', post)
+                post = post.strip()
+                if post:
+                    cleaned_posts.append(post)
+        
+        # Store hooks in database
+        stored_record = None
+        storage_error = None
+        try:
+            stored_record = await linkedin_supabase_service.store_generated_hooks(
+                user_id=current_user["id"],
+                hooks=cleaned_posts
+            )
+        except Exception as e:
+            # Log error but don't fail the request
+            storage_error = str(e)
+            print(f"Warning: Failed to store hooks in database: {storage_error}")
+        
+        response = {
+            "success": True,
+            "quantity": len(cleaned_posts),
+            "posts": cleaned_posts,
+            "parameters": {
+                "quantity": request.quantity,
+                "context": request.context,
+                "length": request.length,
+                "tone": request.tone,
+                "audience": request.audience
+            }
+        }
+        
+        # Include storage info if successful
+        if stored_record:
+            response["storage"] = {
+                "id": stored_record.get("id"),
+                "created_at": stored_record.get("created_at"),
+                "stored": True
+            }
+        else:
+            response["storage"] = {
+                "stored": False,
+                "error": storage_error
+            }
+        
+        return response
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generating posts: {str(e)}"
+        )

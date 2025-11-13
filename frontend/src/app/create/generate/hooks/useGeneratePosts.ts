@@ -37,7 +37,7 @@ export const useGeneratePosts = (options: UseGeneratePostsOptions = {}) => {
         throw new Error('Authentication required. Please log in.');
       }
 
-      const response = await fetch(`${API_URL}/api/linkedin/generate-posts`, {
+      const response = await fetch(`${API_URL}/api/openai/generate-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
