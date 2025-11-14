@@ -104,7 +104,7 @@ export async function updateOnboardingData(updates: Partial<OnboardingContext>):
     }
 
     // Use backend API for updates
-    const response = await fetch(`${API_URL}/api/onboarding/submit`, {
+    const response = await fetch(`${API_URL}/api/onboarding/data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
     }
 
     // Use backend API instead of direct Supabase
-    const response = await fetch(`${API_URL}/api/onboarding/submit`, {
+    const response = await fetch(`${API_URL}/api/onboarding/data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
