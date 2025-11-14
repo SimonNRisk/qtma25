@@ -1,6 +1,4 @@
 import { useRouter } from 'next/navigation';
-
-import { GeneratedPost } from '@/app/create/generate/hooks/useGeneratePosts';
 import { session } from '@/lib/session';
 
 interface User {
