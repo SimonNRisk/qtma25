@@ -1,5 +1,6 @@
 import { FaUser } from 'react-icons/fa';
-import { getUserName } from './utils/utils';
+import { useRouter } from 'next/navigation';
+import { getUserName, handlePostClick } from './utils/utils';
 
 interface HookCardProps {
   hook: {
@@ -14,6 +15,7 @@ interface HookCardProps {
 }
 
 export const HookCard = ({ hook, user }: HookCardProps) => {
+  const router = useRouter();
   return (
     <div
       key={hook.id}
@@ -36,7 +38,10 @@ export const HookCard = ({ hook, user }: HookCardProps) => {
       </div>
 
       {/* Edit Button */}
-      <button className="w-full py-3 bg-brand-dark hover:bg-brand-blue text-foreground font-medium rounded-lg transition-colors">
+      <button
+        className="w-full py-3 bg-brand-dark hover:bg-brand-blue text-foreground font-medium rounded-lg transition-colors"
+        onClick={() => handlePostClick({ content: hook.content }, router)}
+      >
         Edit
       </button>
     </div>

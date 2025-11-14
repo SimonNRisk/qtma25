@@ -1,3 +1,6 @@
+import { useRouter } from 'next/navigation';
+
+import { GeneratedPost } from '@/app/create/generate/hooks/useGeneratePosts';
 import { session } from '@/lib/session';
 
 interface User {
@@ -27,4 +30,11 @@ export const getUserName = (user: User | null) => {
     }
   }
   return 'User';
+};
+
+export const handlePostClick = (
+  { content }: { content: string },
+  router: ReturnType<typeof useRouter>
+) => {
+  router.push(`/create/edit?text=${encodeURIComponent(content)}`);
 };
