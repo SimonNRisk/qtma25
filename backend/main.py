@@ -12,6 +12,7 @@ from api.openai import router as openai_router
 from config import FRONTEND_ORIGIN, get_cors_origins
 from openai import OpenAI
 from api.linkedin import router as linkedin_router
+from api.hooks import router as hooks_router
 
 # Load environment variables
 load_dotenv()
@@ -61,6 +62,7 @@ class OnboardingData(BaseModel):
 app.include_router(auth_router)
 app.include_router(openai_router)
 app.include_router(linkedin_router)
+app.include_router(hooks_router)
 # ---------- Routes ----------
 @app.get("/me")
 def get_current_user_profile(current_user: Annotated[dict, Depends(get_current_user)]):

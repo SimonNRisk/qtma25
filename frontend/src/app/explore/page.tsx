@@ -1,9 +1,13 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { FaUser, FaBars, FaCalendar, FaPlus } from 'react-icons/fa';
 import { AuthGuard } from '@/components/AuthGuard';
 import { session } from '@/lib/session';
 import { getJSON } from '@/lib/api';
+
+import { getUserName } from './components/utils/utils';
+import { HookCard } from './components/HookCard';
 
 interface HookRecord {
   id: string;
@@ -44,14 +48,14 @@ interface UserResponse {
   };
 }
 
-type TabType = 'scheduled' | 'drafts' | 'sent';
+type TabType = 'repackage' | 'trending';
 
 export default function HooksPage() {
   // State
   const [flattenedHooks, setFlattenedHooks] = useState<FlattenedHook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('drafts');
+  const [activeTab, setActiveTab] = useState<TabType>('repackage');
   const [user, setUser] = useState<{
     first_name?: string;
     last_name?: string;
@@ -71,7 +75,7 @@ export default function HooksPage() {
 
     try {
       const response = (await getJSON(
-        `/api/linkedin/hooks?limit=50&offset=${offset}`,
+        `/api/hooks/get-user-hooks?limit=50&offset=${offset}`,
         token
       )) as HooksResponse;
 
@@ -122,29 +126,6 @@ export default function HooksPage() {
     }
   }, [fetchHooks]);
 
-  const getUserName = () => {
-    if (user?.first_name && user?.last_name) {
-      return `${user.first_name} ${user.last_name}`;
-    }
-    if (user?.first_name) {
-      return user.first_name;
-    }
-    if (user?.email) {
-      return user.email.split('@')[0];
-    }
-
-    if (typeof window !== 'undefined') {
-      const jwtUser = session.getUser();
-      if (jwtUser?.first_name && jwtUser?.last_name) {
-        return `${jwtUser.first_name} ${jwtUser.last_name}`;
-      }
-      if (jwtUser?.first_name) {
-        return jwtUser.first_name;
-      }
-    }
-    return 'User';
-  };
-
   return (
     <AuthGuard>
       <div
@@ -159,53 +140,26 @@ export default function HooksPage() {
             {/* Profile Section */}
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <FaUser className="w-8 h-8 text-gray-600" />
               </div>
-              <h1 className="text-2xl font-medium text-foreground">{getUserName()}</h1>
+              <h1 className="text-2xl font-medium text-foreground">{getUserName(user)}</h1>
             </div>
 
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
+                <FaBars className="w-5 h-5" />
                 List
               </button>
               <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <FaCalendar className="w-5 h-5" />
                 Calendar
               </button>
               <a
                 href="/create/generate"
                 className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
+                <FaPlus className="w-5 h-5" />
                 New Post
               </a>
             </div>
@@ -214,37 +168,27 @@ export default function HooksPage() {
           {/* Tabs */}
           <div className="flex items-center gap-8 mb-6 border-b border-white/20">
             <button
-              onClick={() => setActiveTab('scheduled')}
+              onClick={() => setActiveTab('repackage')}
               className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'scheduled'
+                activeTab === 'repackage'
                   ? 'text-foreground border-b-2 border-green-500'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Scheduled <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('drafts')}
-              className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'drafts'
-                  ? 'text-foreground border-b-2 border-green-500'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-            >
-              Drafts{' '}
+              Repackage{' '}
               <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">
                 {flattenedHooks.length}
               </span>
             </button>
             <button
-              onClick={() => setActiveTab('sent')}
+              onClick={() => setActiveTab('trending')}
               className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'sent'
+                activeTab === 'trending'
                   ? 'text-foreground border-b-2 border-green-500'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Sent <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
+              Trending <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
             </button>
           </div>
 
@@ -262,69 +206,21 @@ export default function HooksPage() {
                 className="aspect-[4/5] rounded-xl border-2 border-dashed border-white/40 hover:border-white/60 flex flex-col items-center justify-center gap-6 transition-colors cursor-pointer group"
               >
                 <div className="w-20 h-20 rounded-xl border-2 border-white/60 group-hover:border-white flex items-center justify-center transition-colors">
-                  <svg
-                    className="w-10 h-10 text-white/80 group-hover:text-white transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+                  <FaPlus className="w-10 h-10 text-white/80 group-hover:text-white transition-colors" />
                 </div>
-                <p className="text-foreground text-2xl font-medium text-center px-8">
-                  Create
-                  <br />
-                  something
-                  <br />
-                  new
+                <p className="text-foreground text-2xl font-medium text-center px-8 whitespace-pre-line">
+                  Create{'\n'}something{'\n'}new
                 </p>
               </a>
 
               {/* Hook Cards */}
-              {flattenedHooks.map(hook => (
-                <div
-                  key={hook.id}
-                  className="aspect-[4/5] rounded-xl bg-white p-6 flex flex-col shadow-lg hover:shadow-xl transition-shadow"
-                >
-                  {/* Profile Header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-6 h-6 text-gray-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900 text-sm">{getUserName()}</div>
-                      <div className="text-gray-500 text-xs">LinkedIn Header</div>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 overflow-y-auto mb-4">
-                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
-                      {hook.content}
-                    </p>
-                  </div>
-
-                  {/* Edit Button */}
-                  <button className="w-full py-3 bg-brand-dark hover:bg-brand-blue text-foreground font-medium rounded-lg transition-colors">
-                    Edit
-                  </button>
+              {activeTab === 'repackage' &&
+                flattenedHooks.map(hook => <HookCard key={hook.id} hook={hook} user={user} />)}
+              {activeTab === 'trending' && (
+                <div>
+                  <p>Trending</p>
                 </div>
-              ))}
+              )}
             </div>
           )}
 
