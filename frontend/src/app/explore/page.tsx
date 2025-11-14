@@ -5,6 +5,9 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { session } from '@/lib/session';
 import { getJSON } from '@/lib/api';
 
+import { getUserName } from './components/utils/utils';
+import { HookCard } from './components/HookCard';
+
 interface HookRecord {
   id: string;
   hooks: string[];
@@ -44,14 +47,14 @@ interface UserResponse {
   };
 }
 
-type TabType = 'scheduled' | 'drafts' | 'sent';
+type TabType = 'repackage' | 'trending';
 
 export default function HooksPage() {
   // State
   const [flattenedHooks, setFlattenedHooks] = useState<FlattenedHook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('drafts');
+  const [activeTab, setActiveTab] = useState<TabType>('repackage');
   const [user, setUser] = useState<{
     first_name?: string;
     last_name?: string;
@@ -122,29 +125,6 @@ export default function HooksPage() {
     }
   }, [fetchHooks]);
 
-  const getUserName = () => {
-    if (user?.first_name && user?.last_name) {
-      return `${user.first_name} ${user.last_name}`;
-    }
-    if (user?.first_name) {
-      return user.first_name;
-    }
-    if (user?.email) {
-      return user.email.split('@')[0];
-    }
-
-    if (typeof window !== 'undefined') {
-      const jwtUser = session.getUser();
-      if (jwtUser?.first_name && jwtUser?.last_name) {
-        return `${jwtUser.first_name} ${jwtUser.last_name}`;
-      }
-      if (jwtUser?.first_name) {
-        return jwtUser.first_name;
-      }
-    }
-    return 'User';
-  };
-
   return (
     <AuthGuard>
       <div
@@ -167,7 +147,7 @@ export default function HooksPage() {
                   />
                 </svg>
               </div>
-              <h1 className="text-2xl font-medium text-foreground">{getUserName()}</h1>
+              <h1 className="text-2xl font-medium text-foreground">{getUserName(user)}</h1>
             </div>
 
             {/* Action Buttons */}
@@ -214,37 +194,27 @@ export default function HooksPage() {
           {/* Tabs */}
           <div className="flex items-center gap-8 mb-6 border-b border-white/20">
             <button
-              onClick={() => setActiveTab('scheduled')}
+              onClick={() => setActiveTab('repackage')}
               className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'scheduled'
+                activeTab === 'repackage'
                   ? 'text-foreground border-b-2 border-green-500'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Scheduled <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
-            </button>
-            <button
-              onClick={() => setActiveTab('drafts')}
-              className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'drafts'
-                  ? 'text-foreground border-b-2 border-green-500'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-            >
-              Drafts{' '}
+              Repackage{' '}
               <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">
                 {flattenedHooks.length}
               </span>
             </button>
             <button
-              onClick={() => setActiveTab('sent')}
+              onClick={() => setActiveTab('trending')}
               className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'sent'
+                activeTab === 'trending'
                   ? 'text-foreground border-b-2 border-green-500'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Sent <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
+              Trending <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
             </button>
           </div>
 
@@ -287,43 +257,7 @@ export default function HooksPage() {
 
               {/* Hook Cards */}
               {flattenedHooks.map(hook => (
-                <div
-                  key={hook.id}
-                  className="aspect-[4/5] rounded-xl bg-white p-6 flex flex-col shadow-lg hover:shadow-xl transition-shadow"
-                >
-                  {/* Profile Header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
-                      <svg
-                        className="w-6 h-6 text-gray-600"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                    <div>
-                      <div className="font-semibold text-gray-900 text-sm">{getUserName()}</div>
-                      <div className="text-gray-500 text-xs">LinkedIn Header</div>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 overflow-y-auto mb-4">
-                    <p className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap">
-                      {hook.content}
-                    </p>
-                  </div>
-
-                  {/* Edit Button */}
-                  <button className="w-full py-3 bg-brand-dark hover:bg-brand-blue text-foreground font-medium rounded-lg transition-colors">
-                    Edit
-                  </button>
-                </div>
+                <HookCard key={hook.id} hook={hook} user={user} />
               ))}
             </div>
           )}
