@@ -88,7 +88,7 @@ export const useGeneratePosts = (options: UseGeneratePostsOptions = {}) => {
         throw new Error('Authentication required. Please log in.');
       }
 
-      const response = await fetch(`${API_URL}/api/linkedin/hooks/bookmark`, {
+      const response = await fetch(`${API_URL}/api/hooks/bookmark-hook`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

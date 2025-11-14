@@ -71,7 +71,7 @@ export default function HooksPage() {
 
     try {
       const response = (await getJSON(
-        `/api/linkedin/hooks?limit=50&offset=${offset}`,
+        `/api/hooks/get-user-hooks?limit=50&offset=${offset}`,
         token
       )) as HooksResponse;
 
