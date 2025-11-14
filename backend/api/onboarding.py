@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from typing import Annotated
+from typing import Annotated, Optional
 from auth import get_current_user
 from supabase import create_client, Client
 import os
@@ -27,7 +27,7 @@ class OnboardingData(BaseModel):
     selected_hooks: list[str]
 
 # Admin client (service role): bypasses RLS for trusted server-side writes
-admin: Client | None = None
+admin: Optional[Client] = None
 if SUPABASE_SERVICE_ROLE_KEY:
     admin = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
 
