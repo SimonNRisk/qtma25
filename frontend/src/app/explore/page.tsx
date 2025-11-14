@@ -214,9 +214,13 @@ export default function HooksPage() {
               </a>
 
               {/* Hook Cards */}
-              {flattenedHooks.map(hook => (
-                <HookCard key={hook.id} hook={hook} user={user} />
-              ))}
+              {activeTab === 'repackage' &&
+                flattenedHooks.map(hook => <HookCard key={hook.id} hook={hook} user={user} />)}
+              {activeTab === 'trending' && (
+                <div>
+                  <p>Trending</p>
+                </div>
+              )}
             </div>
           )}
 
