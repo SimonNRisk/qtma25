@@ -208,12 +208,8 @@ export default function HooksPage() {
                 <div className="w-20 h-20 rounded-xl border-2 border-white/60 group-hover:border-white flex items-center justify-center transition-colors">
                   <FaPlus className="w-10 h-10 text-white/80 group-hover:text-white transition-colors" />
                 </div>
-                <p className="text-foreground text-2xl font-medium text-center px-8">
-                  Create
-                  <br />
-                  something
-                  <br />
-                  new
+                <p className="text-foreground text-2xl font-medium text-center px-8 whitespace-pre-line">
+                  Create{'\n'}something{'\n'}new
                 </p>
               </a>
 
