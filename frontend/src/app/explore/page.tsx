@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { FaUser, FaBars, FaCalendar, FaPlus } from 'react-icons/fa';
 import { AuthGuard } from '@/components/AuthGuard';
 import { session } from '@/lib/session';
 import { getJSON } from '@/lib/api';
@@ -139,13 +140,7 @@ export default function HooksPage() {
             {/* Profile Section */}
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center">
-                <svg className="w-8 h-8 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path
-                    fillRule="evenodd"
-                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                    clipRule="evenodd"
-                  />
-                </svg>
+                <FaUser className="w-8 h-8 text-gray-600" />
               </div>
               <h1 className="text-2xl font-medium text-foreground">{getUserName(user)}</h1>
             </div>
@@ -153,39 +148,18 @@ export default function HooksPage() {
             {/* Action Buttons */}
             <div className="flex items-center gap-3">
               <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
+                <FaBars className="w-5 h-5" />
                 List
               </button>
               <button className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <FaCalendar className="w-5 h-5" />
                 Calendar
               </button>
               <a
                 href="/create/generate"
                 className="flex items-center gap-2 px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/30 rounded-lg transition-colors"
               >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
+                <FaPlus className="w-5 h-5" />
                 New Post
               </a>
             </div>
@@ -232,19 +206,7 @@ export default function HooksPage() {
                 className="aspect-[4/5] rounded-xl border-2 border-dashed border-white/40 hover:border-white/60 flex flex-col items-center justify-center gap-6 transition-colors cursor-pointer group"
               >
                 <div className="w-20 h-20 rounded-xl border-2 border-white/60 group-hover:border-white flex items-center justify-center transition-colors">
-                  <svg
-                    className="w-10 h-10 text-white/80 group-hover:text-white transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
+                  <FaPlus className="w-10 h-10 text-white/80 group-hover:text-white transition-colors" />
                 </div>
                 <p className="text-foreground text-2xl font-medium text-center px-8">
                   Create
