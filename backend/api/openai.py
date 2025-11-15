@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Dict, Tuple, Annotated, Optional
-from auth import get_current_user
+from auth import get_current_user, get_current_user_or_api_key
 from linkedin_supabase_service import SupabaseService
 
 load_dotenv()
@@ -126,7 +126,7 @@ async def generate_first_post(
 @router.post("/generate-posts")
 async def generate_linkedin_posts(
     request: LinkedInPostGenerationRequest,
-    current_user: Annotated[dict, Depends(get_current_user)]
+    current_user: Annotated[dict, Depends(get_current_user_or_api_key)]
 ):
     """
     Generate multiple LinkedIn post hooks/content using OpenAI

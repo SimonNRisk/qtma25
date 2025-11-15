@@ -1,7 +1,7 @@
 import os
 import jwt
 from datetime import datetime, timedelta
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException, status, Header
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
@@ -17,6 +17,31 @@ if not JWT_SECRET_KEY:
 JWT_ALGORITHM = "HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7
+
+# API Key Configuration
+# API keys are stored in environment variables as: API_KEY_<name>=<key_value>:<user_id>
+# Example: API_KEY_CRON_JOB=sk_live_abc123xyz:user-uuid-here
+def load_api_keys() -> Dict[str, Dict[str, str]]:
+    """Load API keys from environment variables"""
+    api_keys = {}
+    for key, value in os.environ.items():
+        if key.startswith("API_KEY_"):
+            # Format: API_KEY_<name>=<key_value>:<user_id>
+            parts = value.split(":", 1)
+            if len(parts) == 2:
+                key_name = key.replace("API_KEY_", "").lower()
+                api_keys[parts[0]] = {
+                    "name": key_name,
+                    "user_id": parts[1]
+                }
+    return api_keys
+
+def verify_api_key(api_key: str) -> Optional[Dict[str, str]]:
+    """Verify API key and return user info if valid"""
+    api_keys = load_api_keys()
+    if api_key in api_keys:
+        return api_keys[api_key]
+    return None
 
 # Supabase Configuration
 SUPABASE_URL = os.environ["SUPABASE_URL"]
@@ -93,6 +118,19 @@ def _extract_bearer_token(authorization: Optional[str]) -> str:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Authorization header")
     return parts[1]
 
+def _extract_api_key(authorization: Optional[str]) -> Optional[str]:
+    """Extract API key from Authorization header (supports both Bearer and ApiKey schemes)"""
+    if not authorization:
+        return None
+    parts = authorization.split()
+    if len(parts) == 2:
+        scheme = parts[0].lower()
+        token = parts[1]
+        # Support both "Bearer <token>" and "ApiKey <key>" formats
+        if scheme == "apikey" or (scheme == "bearer" and token.startswith("sk_")):
+            return token
+    return None
+
 async def get_current_user(authorization: Annotated[Optional[str], Header()] = None):
     """Get current user from JWT token"""
     token = _extract_bearer_token(authorization)
@@ -113,6 +151,52 @@ async def get_current_user(authorization: Annotated[Optional[str], Header()] = N
             "last_name": payload.get("last_name", "")
         }
     }
+
+async def get_current_user_or_api_key(authorization: Annotated[Optional[str], Header()] = None):
+    """
+    Get current user from either JWT token or API key.
+    Tries API key first, then falls back to JWT token.
+    """
+    # Try API key first
+    api_key = _extract_api_key(authorization)
+    if api_key:
+        api_key_info = verify_api_key(api_key)
+        if api_key_info:
+            user_id = api_key_info["user_id"]
+            # Try to get user info from Supabase profiles table
+            try:
+                if admin:
+                    profile_res = admin.table("profiles").select("*").eq("id", user_id).execute()
+                    if profile_res.data and len(profile_res.data) > 0:
+                        profile = profile_res.data[0]
+                        return {
+                            "id": user_id,
+                            "email": profile.get("email", ""),
+                            "first_name": profile.get("first_name", ""),
+                            "last_name": profile.get("last_name", ""),
+                            "user_metadata": {
+                                "first_name": profile.get("first_name", ""),
+                                "last_name": profile.get("last_name", "")
+                            },
+                            "auth_type": "api_key",
+                            "api_key_name": api_key_info["name"]
+                        }
+            except Exception:
+                pass
+            
+            # Fallback: return minimal user info if we can't fetch from Supabase
+            return {
+                "id": user_id,
+                "email": "",
+                "first_name": "",
+                "last_name": "",
+                "user_metadata": {},
+                "auth_type": "api_key",
+                "api_key_name": api_key_info["name"]
+            }
+    
+    # Fall back to JWT token authentication
+    return await get_current_user(authorization)
 
 # ---------- Auth Routes ----------
 @auth_router.post("/signup")
