@@ -1,0 +1,15 @@
+name: Backend cron
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # or whatever you'll use on main later
+  workflow_dispatch:        # 👈 this is what lets you test on a branch
+
+jobs:
+  call-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call daily job endpoint
+        run: |
+          curl -X POST "https://tryastro.onrender.com/" \
+            -sSf || echo "Request failed"
