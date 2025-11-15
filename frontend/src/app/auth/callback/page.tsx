@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
 import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
+import { getOnboardingData } from '@/lib/onboarding';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -72,11 +73,13 @@ function AuthCallbackContent() {
               setMessage('Successfully logged in! Welcome to your account.');
 
               // Redirect to profile page after a short delay
-              setTimeout(() => {
+              setTimeout(async () => {
+                const onboardingData = await getOnboardingData();
+                const redirectPath = onboardingData ? '/me' : '/onboarding';
                 if (shouldRedirectToLocalhost()) {
-                  window.location.href = 'http://localhost:3000/me';
+                  window.location.href = `http://localhost:3000${redirectPath}`;
                 } else {
-                  router.push('/me');
+                  router.push(redirectPath);
                 }
               }, 2000);
             } else {
@@ -118,12 +121,15 @@ function AuthCallbackContent() {
               setStatus('success');
               setMessage('Successfully logged in! Welcome to your account.');
 
-              // Redirect to profile page after a short delay
-              setTimeout(() => {
+              // Check if user has completed onboarding
+              setTimeout(async () => {
+                const onboardingData = await getOnboardingData();
+                const redirectPath = onboardingData ? '/me' : '/onboarding';
+
                 if (shouldRedirectToLocalhost()) {
-                  window.location.href = 'http://localhost:3000/me';
+                  window.location.href = `http://localhost:3000${redirectPath}`;
                 } else {
-                  router.push('/me');
+                  router.push(redirectPath);
                 }
               }, 2000);
             } else {
