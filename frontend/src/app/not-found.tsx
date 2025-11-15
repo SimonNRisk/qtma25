@@ -1,37 +1,56 @@
 'use client';
+
+import Image from 'next/image';
 import Link from 'next/link';
 
 export default function NotFound() {
+  const handleGoBack = () => {
+    if (typeof window === 'undefined') return;
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.assign('/');
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-brand-light flex items-center justify-center p-4">
-      <div className="max-w-md w-full text-center">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
-          <div className="w-20 h-20 bg-brand-blue rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="text-4xl font-bold text-white">404</span>
+    <div className="not-found-page">
+      <div className="not-found-content centered">
+        <div className="not-found-digits">
+          <span className="not-found-digit">4</span>
+          <div className="not-found-illustration">
+            <Image src="/404.png" width={220} height={220} alt="Lost astronaut" priority />
+            <p className="not-found-subtext">
+              This Page Is Under Construction.
+              <br />
+              <span>Come Back Soon!</span>
+            </p>
           </div>
-
-          <h1 className="text-3xl font-bold text-brand-dark mb-4">Page Not Found</h1>
-          <p className="text-gray-600 mb-8">
-            Sorry, we couldn&apos;t find the page you&apos;re looking for. It might have been moved,
-            deleted, or doesn&apos;t exist.
-          </p>
-
-          <div className="space-y-4">
-            <Link
-              href="/"
-              className="inline-block w-full bg-brand-blue hover:bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
-            >
-              Go Home
-            </Link>
-
-            <button
-              onClick={() => window.history.back()}
-              className="w-full bg-brand-dark hover:bg-gray-800 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
-            >
-              Go Back
-            </button>
-          </div>
+          <span className="not-found-digit">4</span>
         </div>
+      </div>
+
+      <div className="not-found-floating-actions">
+        <button
+          type="button"
+          onClick={handleGoBack}
+          aria-label="Go Back"
+          className="not-found-icon-button"
+        >
+          ↩
+        </button>
+        <Link href="/" aria-label="Go Home" className="not-found-icon-button">
+          <svg viewBox="0 0 48 48" className="not-found-home-icon" aria-hidden="true">
+            <path
+              d="M8 21L24 8l16 13v17H8V21Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="4"
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+          </svg>
+        </Link>
       </div>
     </div>
   );
