@@ -8,11 +8,8 @@ on:
 jobs:
   call-backend:
     runs-on: ubuntu-latest
-    env:
-      CRON_API_KEY: ${{ secrets.CRON_API_KEY }}
     steps:
       - name: Call daily job endpoint
         run: |
           curl -X POST "https://tryastro.onrender.com/" \
-            -H "X-Cron-Secret: $CRON_API_KEY" \
             -sSf || echo "Request failed"
