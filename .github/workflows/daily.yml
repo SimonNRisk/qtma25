@@ -2,8 +2,8 @@ name: Backend cron
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # or whatever you'll use on main later
-  workflow_dispatch:        # 👈 this is what lets you test on a branch
+    - cron: "* * * * *"    # attempt to run every minute (UTC)
+  workflow_dispatch:        # still lets you trigger manually
 
 jobs:
   call-backend:
@@ -11,5 +11,5 @@ jobs:
     steps:
       - name: Call daily job endpoint
         run: |
-          curl -X POST "https://tryastro.onrender.com/" \
+          curl -X GET "https://tryastro.onrender.com/" \
             -sSf || echo "Request failed"
