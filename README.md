@@ -13,7 +13,7 @@ It combines a Next.js frontend for an interactive UI with a FastAPI backend for 
 
 - Frontend: Next.js (React, TypeScript, Tailwind CSS)
 - Backend: FastAPI (Python)
-- Database: TBU
+- Database: Supabase
 - AI/ML Services: OpenAI API
 - Deployment: TBU
 
