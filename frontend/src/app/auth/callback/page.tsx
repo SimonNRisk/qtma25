@@ -6,6 +6,8 @@ import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
 import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
 import { getOnboardingData } from '@/lib/onboarding';
+import Image from 'next/image';
+import { HiCheck, HiXMark } from 'react-icons/hi2';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -164,71 +166,74 @@ function AuthCallbackContent() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)] flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        <div className="rounded-[32px] border border-white/60 px-10 py-12 text-white shadow-[0_30px_60px_rgba(0,0,0,0.55)] bg-gradient-to-b from-[var(--login-card-start)] via-[var(--login-card-mid)] to-[var(--login-card-end)] text-center">
+          {/* Logo */}
+          <div className="mb-8 flex justify-center">
+            <Image src="/astro-white.png" alt="Astro" width={120} height={58} className="opacity-90" />
+          </div>
+
           {status === 'loading' && (
             <>
-              <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-6"></div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Confirming Email...</h1>
-              <p className="text-gray-600">Please wait while we verify your email address.</p>
+              <div className="relative mb-8">
+                <div className="animate-spin rounded-full h-20 w-20 border-[3px] border-white/30 border-t-white mx-auto"></div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-3 h-3 bg-white rounded-full animate-pulse"></div>
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold text-white mb-3">Almost there!</h1>
+              <p className="text-white/80 text-lg mb-2">Securing your connection...</p>
+              <p className="text-white/60 text-sm">Just a moment while we verify everything ✨</p>
             </>
           )}
 
           {status === 'success' && (
             <>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg
-                  className="w-8 h-8 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
+              <div className="relative mb-8">
+                <div className="w-24 h-24 mx-auto">
+                  <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
+                  <div className="relative w-24 h-24 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/40">
+                    <HiCheck className="w-12 h-12 text-white animate-[scale-in_0.5s_ease-out]" />
+                  </div>
+                </div>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Welcome!</h1>
-              <p className="text-gray-600 mb-6">{message}</p>
-              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-                Redirecting to your profile...
+              <h1 className="text-3xl font-bold text-white mb-3 animate-[fade-in_0.6s_ease-out]">
+                Welcome aboard! 🚀
+              </h1>
+              <p className="text-white/80 text-lg mb-6">{message}</p>
+              <div className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-6 py-4 rounded-xl">
+                <div className="flex items-center justify-center gap-2">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className="text-sm font-medium">Taking you to your dashboard...</span>
+                </div>
               </div>
             </>
           )}
 
           {status === 'error' && (
             <>
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg
-                  className="w-8 h-8 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
+              <div className="mb-8">
+                <div className="w-20 h-20 mx-auto bg-white/10 rounded-full flex items-center justify-center border-2 border-white/30">
+                  <HiXMark className="w-10 h-10 text-white" />
+                </div>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">Confirmation Failed</h1>
-              <p className="text-gray-600 mb-6">{message}</p>
+              <h1 className="text-3xl font-bold text-white mb-3">Oops! Something went wrong</h1>
+              <p className="text-white/80 text-lg mb-8">{message}</p>
               <div className="space-y-3">
                 <button
                   onClick={() => router.push('/login')}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
+                  className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Go to Login
+                  Try Again
                 </button>
                 <button
                   onClick={() => router.push('/')}
-                  className="w-full bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
+                  className="w-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 font-medium py-3 px-6 rounded-xl transition-all duration-200 hover:text-white"
                 >
                   Back to Home
                 </button>
@@ -245,10 +250,15 @@ export default function AuthCallbackPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)] flex items-center justify-center p-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-6"></div>
-            <p className="text-gray-600">Loading...</p>
+            <div className="relative mb-6">
+              <div className="animate-spin rounded-full h-16 w-16 border-[3px] border-white/30 border-t-white mx-auto"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <p className="text-white/80">Loading...</p>
           </div>
         </div>
       }
