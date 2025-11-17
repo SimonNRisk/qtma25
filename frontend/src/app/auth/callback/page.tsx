@@ -7,6 +7,7 @@ import { API_URL } from '@/lib/api';
 import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
 import { getOnboardingData } from '@/lib/onboarding';
 import Image from 'next/image';
+import { HiCheck, HiXMark } from 'react-icons/hi2';
 
 function AuthCallbackContent() {
   const router = useRouter();
@@ -193,31 +194,11 @@ function AuthCallbackContent() {
                 <div className="w-24 h-24 mx-auto">
                   <div className="absolute inset-0 bg-white/20 rounded-full animate-ping"></div>
                   <div className="relative w-24 h-24 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border-2 border-white/40">
-                    <svg
-                      className="w-12 h-12 text-white"
-                      style={{
-                        animation: 'scale-in 0.5s ease-out',
-                      }}
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                    <HiCheck className="w-12 h-12 text-white animate-[scale-in_0.5s_ease-out]" />
                   </div>
                 </div>
               </div>
-              <h1
-                className="text-3xl font-bold text-white mb-3"
-                style={{
-                  animation: 'fade-in 0.6s ease-out',
-                }}
-              >
+              <h1 className="text-3xl font-bold text-white mb-3 animate-[fade-in_0.6s_ease-out]">
                 Welcome aboard! 🚀
               </h1>
               <p className="text-white/80 text-lg mb-6">{message}</p>
@@ -238,19 +219,7 @@ function AuthCallbackContent() {
             <>
               <div className="mb-8">
                 <div className="w-20 h-20 mx-auto bg-white/10 rounded-full flex items-center justify-center border-2 border-white/30">
-                  <svg
-                    className="w-10 h-10 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
+                  <HiXMark className="w-10 h-10 text-white" />
                 </div>
               </div>
               <h1 className="text-3xl font-bold text-white mb-3">Oops! Something went wrong</h1>
@@ -273,31 +242,6 @@ function AuthCallbackContent() {
           )}
         </div>
       </div>
-
-      <style dangerouslySetInnerHTML={{
-        __html: `
-          @keyframes scale-in {
-            from {
-              transform: scale(0);
-              opacity: 0;
-            }
-            to {
-              transform: scale(1);
-              opacity: 1;
-            }
-          }
-          @keyframes fade-in {
-            from {
-              opacity: 0;
-              transform: translateY(-10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
-          }
-        `,
-      }} />
     </div>
   );
 }
