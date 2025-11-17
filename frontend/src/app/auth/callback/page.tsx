@@ -166,7 +166,7 @@ function AuthCallbackContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)] flex items-center justify-center p-4">
-      <div className="max-w-md w-full"> #sets boundaries for the container, small vs. big screen
+      <div className="max-w-md w-full">
         <div className="rounded-[32px] border border-white/60 px-10 py-12 text-white shadow-[0_30px_60px_rgba(0,0,0,0.55)] bg-gradient-to-b from-[var(--login-card-start)] via-[var(--login-card-mid)] to-[var(--login-card-end)] text-center">
           {/* Logo */}
           <div className="mb-8 flex justify-center">
