@@ -1,15 +1,40 @@
-name: Backend cron
+name: Daily Posts Generation
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # or whatever you'll use on main later
+    # Runs daily at 9 AM UTC
+    - cron: "0 9 * * *"
   workflow_dispatch:        # 👈 this is what lets you test on a branch
 
 jobs:
-  call-backend:
+  generate-daily-posts:
     runs-on: ubuntu-latest
     steps:
-      - name: Call daily job endpoint
+      - name: Generate Daily Posts for All Users
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          API_KEY: ${{ secrets.API_KEY_DAILY_POSTS }}
         run: |
-          curl -X POST "https://tryastro.onrender.com/" \
-            -sSf || echo "Request failed"
+          if [ -z "$API_URL" ] || [ -z "$API_KEY" ]; then
+            echo "Error: API_URL and API_KEY_DAILY_POSTS secrets must be set"
+            exit 1
+          fi
+          
+          echo "Calling daily posts generation endpoint..."
+          response=$(curl -X POST "$API_URL/api/openai/generate-daily-posts" \
+            -H "Authorization: Bearer $API_KEY" \
+            -H "Content-Type: application/json" \
+            -sSf)
+          
+          http_code=$(echo "$response" | grep -o "HTTP_CODE:[0-9]*" | cut -d: -f2)
+          body=$(echo "$response" | sed 's/HTTP_CODE:[0-9]*$//')
+          
+          echo "Response:"
+          echo "$body" | jq '.' || echo "$body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "Request failed with HTTP code: $http_code"
+            exit 1
+          fi
+          
+          echo "Daily posts generation completed successfully"
