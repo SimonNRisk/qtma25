@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { FaHome, FaArrowLeft } from 'react-icons/fa';
 
 export default function NotFound() {
   const handleGoBack = () => {
@@ -14,42 +15,41 @@ export default function NotFound() {
   };
 
   return (
-    <div className="not-found-page">
-      <div className="not-found-content centered">
-        <div className="not-found-digits">
-          <span className="not-found-digit">4</span>
-          <div className="not-found-illustration">
+    <div className="min-h-screen bg-gradient-to-br from-[var(--login-bg-start)] via-[var(--login-bg-mid)] to-[var(--login-bg-end)] flex items-center justify-center relative p-8">
+      <div className="w-full max-w-7xl flex justify-center items-center">
+        <div className="flex items-center justify-center gap-8 flex-wrap">
+          <span className="text-6xl md:text-[12rem] font-bold text-white leading-none [text-shadow:0_0_40px_rgba(155,198,233,0.5)]">
+            4
+          </span>
+          <div className="flex flex-col items-center gap-6">
             <Image src="/404.png" width={220} height={220} alt="Lost astronaut" priority />
-            <p className="not-found-subtext">
+            <p className="text-white text-base md:text-xl text-center leading-relaxed opacity-90">
               This Page Is Under Construction.
               <br />
-              <span>Come Back Soon!</span>
+              <span className="opacity-80">Come Back Soon!</span>
             </p>
           </div>
-          <span className="not-found-digit">4</span>
+          <span className="text-6xl md:text-[12rem] font-bold text-white leading-none [text-shadow:0_0_40px_rgba(155,198,233,0.5)]">
+            4
+          </span>
         </div>
       </div>
 
-      <div className="not-found-floating-actions">
+      <div className="fixed bottom-4 right-4 md:bottom-8 md:right-8 flex flex-col gap-4 z-10">
         <button
           type="button"
           onClick={handleGoBack}
           aria-label="Go Back"
-          className="not-found-icon-button"
+          className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/30 text-white flex items-center justify-center cursor-pointer transition-all duration-200 backdrop-blur-sm hover:bg-white/20 hover:border-white/50 hover:scale-105"
         >
-          ↩
+          <FaArrowLeft className="w-5 h-5 md:w-6 md:h-6" />
         </button>
-        <Link href="/" aria-label="Go Home" className="not-found-icon-button">
-          <svg viewBox="0 0 48 48" className="not-found-home-icon" aria-hidden="true">
-            <path
-              d="M8 21L24 8l16 13v17H8V21Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="4"
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-          </svg>
+        <Link
+          href="/"
+          aria-label="Go Home"
+          className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white/10 border border-white/30 text-white flex items-center justify-center cursor-pointer transition-all duration-200 backdrop-blur-sm no-underline hover:bg-white/20 hover:border-white/50 hover:scale-105"
+        >
+          <FaHome className="w-5 h-5 md:w-6 md:h-6" />
         </Link>
       </div>
     </div>
