@@ -13,14 +13,11 @@ interface PersonalInfoStepProps {
 
 const industries = [
   'Technology',
-  'Healthcare',
   'Finance',
-  'Education',
-  'Marketing',
-  'Consulting',
-  'Real Estate',
-  'Manufacturing',
+  'Healthcare',
+  'Energy',
   'Retail',
+  'Transportation',
   'Other',
 ];
 
