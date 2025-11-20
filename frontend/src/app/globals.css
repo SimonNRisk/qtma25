@@ -1,13 +1,58 @@
 @import 'tailwindcss';
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --astro-midnight: #0e1316;
+  --astro-indigo: #1e506c;
+  --astro-lazuli: #3c698e;
+  --astro-sky: #9bc6e9;
+  --astro-white: #ffffff;
+  --astro-panel-shadow: 0 40px 120px rgba(14, 19, 22, 0.65);
+  --astro-accent-glow: 0 0 60px rgba(155, 198, 233, 0.45);
+  --astro-hero-gradient:
+    radial-gradient(120% 120% at 50% 12%, rgba(155, 198, 233, 0.28), transparent 70%),
+    linear-gradient(145deg, #0e1316 0%, #1e506c 48%, #3c698e 100%);
+
+  --background: var(--astro-midnight);
+  --foreground: var(--astro-white);
+  --brand-dark: var(--astro-indigo);
+  --brand-light: var(--astro-sky);
+  --brand-blue: var(--astro-lazuli);
+
+  --profile-bg-gradient: radial-gradient(
+    circle at 50% 50%,
+    rgba(0, 0, 0, 0.65) 0%,
+    rgba(3, 34, 54, 0.75) 35%,
+    #0f4662 70%,
+    #0a324b 100%
+  );
+
+  --login-bg-start: #041626;
+  --login-bg-mid: #072f46;
+  --login-bg-end: #0b4c6c;
+  --login-card-start: #1c537a;
+  --login-card-mid: #174261;
+  --login-card-end: #112f45;
+  --login-button-start: #133045;
+  --login-button-mid: #05090f;
+  --login-button-end: #010305;
+  --login-button-border: #9ed0ff;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-light: var(--brand-light);
+  --color-brand-blue: var(--brand-blue);
+  --color-astro-midnight: var(--astro-midnight);
+  --color-astro-indigo: var(--astro-indigo);
+  --color-astro-lazuli: var(--astro-lazuli);
+  --color-astro-sky: var(--astro-sky);
+  --color-astro-white: var(--astro-white);
+  --shadow-astro-panel: var(--astro-panel-shadow);
+  --shadow-astro-glow: var(--astro-accent-glow);
+  --radius-astro-pill: 9999px;
+  --gradient-astro-hero: var(--astro-hero-gradient);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
