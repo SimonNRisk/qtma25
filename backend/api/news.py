@@ -20,7 +20,6 @@ class Article(BaseModel):
     url: str
     published_at: Optional[str] = Field(default=None, alias="publishedAt")
     source: Optional[str] = None
-    image_url: Optional[str] = None
 
 
 class IndustryNewsResponse(BaseModel):
@@ -78,7 +77,6 @@ def _parse_gnews(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("url"),
                 "published_at": item.get("publishedAt"),
                 "source": (item.get("source") or {}).get("name"),
-                "image_url": item.get("image"),
             }
         )
     return articles
@@ -94,7 +92,6 @@ def _parse_fmp(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("url"),
                 "published_at": item.get("publishedDate"),
                 "source": item.get("site"),
-                "image_url": item.get("image"),
             }
         )
     return articles
@@ -110,7 +107,6 @@ def _parse_newsdata(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("link"),
                 "published_at": item.get("pubDate"),
                 "source": item.get("source_id"),
-                "image_url": item.get("image_url"),
             }
         )
     return articles
@@ -126,7 +122,6 @@ def _parse_gdelt(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("url"),
                 "published_at": item.get("seendate"),
                 "source": item.get("sourceCommonName") or item.get("sourceCountry"),
-                "image_url": None,
             }
         )
     return articles
@@ -145,7 +140,6 @@ def _parse_guardian(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("webUrl"),
                 "published_at": item.get("webPublicationDate"),
                 "source": "The Guardian",
-                "image_url": None,
             }
         )
     return articles
@@ -162,7 +156,6 @@ def _parse_newsapi(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("url"),
                 "published_at": item.get("publishedAt"),
                 "source": source.get("name"),
-                "image_url": item.get("urlToImage"),
             }
         )
     return articles
@@ -178,7 +171,6 @@ def _parse_alphavantage(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
                 "url": item.get("url"),
                 "published_at": item.get("time_published"),
                 "source": item.get("source"),
-                "image_url": item.get("banner_image"),
             }
         )
     return articles[:10]
