@@ -78,7 +78,7 @@ class IndustryAPIConfig:
 INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
     IndustryAPIConfig(
         slug="technology",
-        industry="Technology & AI",
+        industry="Technology",
         provider="GNews",
         documentation_url="https://gnews.io/docs/v4",
         endpoint="https://gnews.io/api/v4/top-headlines",
@@ -94,7 +94,7 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
     ),
     IndustryAPIConfig(
         slug="finance",
-        industry="Financial Markets",
+        industry="Finance",
         provider="Alpha Vantage",
         documentation_url="https://www.alphavantage.co/documentation/#news",
         endpoint="https://www.alphavantage.co/query",
@@ -111,7 +111,7 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
     ),
     IndustryAPIConfig(
         slug="healthcare",
-        industry="Healthcare & Life Sciences",
+        industry="Healthcare",
         provider="NewsData.io",
         documentation_url="https://newsdata.io/documentation",
         endpoint="https://newsdata.io/api/1/news",
@@ -126,7 +126,7 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
     ),
     IndustryAPIConfig(
         slug="energy",
-        industry="Energy & Climate",
+        industry="Energy",
         provider="GDELT Project",
         documentation_url="https://blog.gdeltproject.org/gdelt-2-0-our-global-world-in-realtime/",
         endpoint="https://api.gdeltproject.org/api/v2/doc/doc",
@@ -143,7 +143,7 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
     ),
     IndustryAPIConfig(
         slug="consumer",
-        industry="Retail & Consumer",
+        industry="Retail",
         provider="The Guardian Open Platform",
         documentation_url="https://open-platform.theguardian.com/documentation/",
         endpoint="https://content.guardianapis.com/search",
@@ -161,7 +161,7 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
     ),
     IndustryAPIConfig(
         slug="mobility",
-        industry="Mobility & Transportation",
+        industry="Transportation",
         provider="NewsAPI.org",
         documentation_url="https://newsapi.org/docs",
         endpoint="https://newsapi.org/v2/everything",
