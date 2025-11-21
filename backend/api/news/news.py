@@ -34,7 +34,6 @@ class IndustryNewsResponse(BaseModel):
     industry: str
     slug: str
     provider: str
-    documentation_url: str
     articles: List[Article]
     summary: str
     coverage_notes: str
@@ -49,7 +48,6 @@ class IndustryInfo(BaseModel):
     slug: str
     industry: str
     provider: str
-    documentation_url: str
     requires_api_key: bool
     api_key_env: Optional[str] = None
     coverage_notes: str
@@ -65,7 +63,6 @@ class IndustryAPIConfig:
     slug: str
     industry: str
     provider: str
-    documentation_url: str
     endpoint: str
     coverage_notes: str
     params_builder: Callable[[Optional[str]], Dict[str, Any]]
@@ -80,7 +77,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         slug="technology",
         industry="Technology",
         provider="GNews",
-        documentation_url="https://gnews.io/docs/v4",
         endpoint="https://gnews.io/api/v4/top-headlines",
         coverage_notes="Global English-language technology coverage sourced by GNews' curated feeds.",
         api_key_env="GNEWS_API_KEY",
@@ -96,7 +92,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         slug="finance",
         industry="Finance",
         provider="Alpha Vantage",
-        documentation_url="https://www.alphavantage.co/documentation/#news",
         endpoint="https://www.alphavantage.co/query",
         coverage_notes="Alpha Vantage's news sentiment feed covering global equities, ETFs, and macro signals.",
         api_key_env="ALPHAVANTAGE_API_KEY",
@@ -113,7 +108,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         slug="healthcare",
         industry="Healthcare",
         provider="NewsData.io",
-        documentation_url="https://newsdata.io/documentation",
         endpoint="https://newsdata.io/api/1/news",
         coverage_notes="Healthcare-specific stream leveraging NewsData categories for hospitals, biotech, and payor topics.",
         api_key_env="NEWSDATA_API_KEY",
@@ -128,7 +122,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         slug="energy",
         industry="Energy",
         provider="GDELT Project",
-        documentation_url="https://blog.gdeltproject.org/gdelt-2-0-our-global-world-in-realtime/",
         endpoint="https://api.gdeltproject.org/api/v2/doc/doc",
         coverage_notes="Worldwide climate, renewables, and oil & gas sentiment feed from the open GDELT event graph.",
         requires_api_key=False,
@@ -142,10 +135,9 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         parser=_parse_gdelt,
     ),
     IndustryAPIConfig(
-        slug="consumer",
+        slug="retail",
         industry="Retail",
         provider="The Guardian Open Platform",
-        documentation_url="https://open-platform.theguardian.com/documentation/",
         endpoint="https://content.guardianapis.com/search",
         coverage_notes="Retail-focused lens on the Guardian business desk including earnings, DTC, and CPG.",
         api_key_env="GUARDIAN_API_KEY",
@@ -160,10 +152,9 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         parser=_parse_guardian,
     ),
     IndustryAPIConfig(
-        slug="mobility",
+        slug="transportation",
         industry="Transportation",
         provider="NewsAPI.org",
-        documentation_url="https://newsapi.org/docs",
         endpoint="https://newsapi.org/v2/everything",
         coverage_notes="Broader surface area over logistics, EV, and transportation infrastructure signals filtered by NewsAPI.",
         api_key_env="NEWSAPI_KEY",
@@ -262,7 +253,6 @@ class IndustryNewsService:
                     slug=config.slug,
                     industry=config.industry,
                     provider=config.provider,
-                    documentation_url=config.documentation_url,
                     requires_api_key=config.requires_api_key,
                     api_key_env=config.api_key_env,
                     coverage_notes=config.coverage_notes,
@@ -328,7 +318,6 @@ class IndustryNewsService:
             industry=config.industry,
             slug=config.slug,
             provider=config.provider,
-            documentation_url=config.documentation_url,
             articles=articles,
             summary=summary,
             coverage_notes=config.coverage_notes,
