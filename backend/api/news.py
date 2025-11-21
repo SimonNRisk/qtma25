@@ -65,13 +65,7 @@ class IndustryAPIConfig:
     parser: Callable[[Dict[str, Any]], List[Dict[str, Any]]]
     requires_api_key: bool = True
     api_key_env: Optional[str] = None
-    headers_builder: Optional[Callable[[Optional[str]], Dict[str, str]]] = None
     timeout: float = 10.0
-
-    def build_headers(self, api_key: Optional[str]) -> Dict[str, str]:
-        if self.headers_builder:
-            return self.headers_builder(api_key)
-        return {}
 
 
 def _parse_gnews(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -459,10 +453,9 @@ class IndustryNewsService:
             raise MissingAPIKey
 
         params = config.params_builder(api_key)
-        headers = config.build_headers(api_key)
 
         async with httpx.AsyncClient(timeout=config.timeout) as client:
-            response = await client.get(config.endpoint, params=params, headers=headers)
+            response = await client.get(config.endpoint, params=params)
             response.raise_for_status()
             return response.json()
 
