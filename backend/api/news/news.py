@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from utils.rate_limit import news_rate_limiter, get_client_ip
 from utils.simple_auth import verify_api_token
+from linkedin_supabase_service import SupabaseService
 
 from .parsers import (
     _parse_alphavantage,
@@ -169,6 +170,9 @@ news_service = IndustryNewsService(INDUSTRY_CONFIGS, summary_builder)
 
 # OpenAI client for generating hooks
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
+
+# Supabase service for storing news hooks
+supabase_service = SupabaseService()
 
 
 class IndustryHooksResponse(BaseModel):
@@ -450,6 +454,18 @@ async def generate_news_hooks(
                 industry=result.industry,
                 num_hooks=4
             )
+            
+            # Store in Supabase
+            try:
+                await supabase_service.store_news_hooks(
+                    industry=result.industry,
+                    industry_slug=result.slug,
+                    summary=result.summary,
+                    hooks=hooks
+                )
+            except Exception as e:
+                # Log error but don't fail the request
+                print(f"Warning: Failed to store news hooks for {result.industry} in database: {str(e)}")
             
             industry_hooks.append(
                 IndustryHooksResponse(
