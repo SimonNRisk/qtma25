@@ -2,8 +2,10 @@ import asyncio
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field
+
+from utils.rate_limit import news_rate_limiter, get_client_ip
 
 from .parsers import (
     _parse_alphavantage,
@@ -163,18 +165,33 @@ news_service = IndustryNewsService(INDUSTRY_CONFIGS, summary_builder)
 
 
 @router.get("/industries", response_model=List[IndustryInfo])
-async def list_industries() -> List[IndustryInfo]:
+async def list_industries(request: Request) -> List[IndustryInfo]:
+    # Rate limiting check
+    client_ip = get_client_ip(request)
+    if not news_rate_limiter.check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please try again later.",
+        )
     return news_service.list_industries()
 
 
 @router.get("/", response_model=BulkIndustryNewsResponse)
 async def fetch_multiple_industries(
+    request: Request,
     industries: Optional[str] = Query(
         default=None,
         description="Comma-separated list of industry slugs (default = all).",
     ),
     refresh_cache: bool = False,
 ) -> BulkIndustryNewsResponse:
+    # Rate limiting check
+    client_ip = get_client_ip(request)
+    if not news_rate_limiter.check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please try again later.",
+        )
     slugs = news_service.resolve_slugs(industries)
     tasks: List[Awaitable[IndustryNewsResponse]] = [
         news_service.get_industry_news(slug, refresh_cache=refresh_cache)
@@ -210,7 +227,16 @@ async def fetch_multiple_industries(
 
 @router.get("/{industry_slug}", response_model=IndustryNewsResponse)
 async def fetch_industry_news(
-    industry_slug: str, refresh_cache: bool = False
+    industry_slug: str,
+    request: Request,
+    refresh_cache: bool = False,
 ) -> IndustryNewsResponse:
+    # Rate limiting check
+    client_ip = get_client_ip(request)
+    if not news_rate_limiter.check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please try again later.",
+        )
     return await news_service.get_industry_news(industry_slug, refresh_cache)
 
