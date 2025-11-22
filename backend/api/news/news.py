@@ -36,7 +36,6 @@ class IndustryNewsResponse(BaseModel):
     provider: str
     articles: List[Article]
     summary: str
-    coverage_notes: str
 
 
 class BulkIndustryNewsResponse(BaseModel):
@@ -50,7 +49,6 @@ class IndustryInfo(BaseModel):
     provider: str
     requires_api_key: bool
     api_key_env: Optional[str] = None
-    coverage_notes: str
     is_configured: bool
 
 
@@ -64,7 +62,6 @@ class IndustryAPIConfig:
     industry: str
     provider: str
     endpoint: str
-    coverage_notes: str
     params_builder: Callable[[Optional[str]], Dict[str, Any]]
     parser: Callable[[Dict[str, Any]], List[Dict[str, Any]]]
     requires_api_key: bool = True
@@ -78,7 +75,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         industry="Technology",
         provider="GNews",
         endpoint="https://gnews.io/api/v4/top-headlines",
-        coverage_notes="Global English-language technology coverage sourced by GNews' curated feeds.",
         api_key_env="GNEWS_API_KEY",
         params_builder=lambda api_key: {
             "topic": "technology",
@@ -93,7 +89,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         industry="Finance",
         provider="Alpha Vantage",
         endpoint="https://www.alphavantage.co/query",
-        coverage_notes="Alpha Vantage's news sentiment feed covering global equities, ETFs, and macro signals.",
         api_key_env="ALPHAVANTAGE_API_KEY",
         params_builder=lambda api_key: {
             "function": "NEWS_SENTIMENT",
@@ -109,7 +104,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         industry="Healthcare",
         provider="NewsData.io",
         endpoint="https://newsdata.io/api/1/news",
-        coverage_notes="Healthcare-specific stream leveraging NewsData categories for hospitals, biotech, and payor topics.",
         api_key_env="NEWSDATA_API_KEY",
         params_builder=lambda api_key: {
             "category": "health",
@@ -123,7 +117,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         industry="Energy",
         provider="GDELT Project",
         endpoint="https://api.gdeltproject.org/api/v2/doc/doc",
-        coverage_notes="Worldwide climate, renewables, and oil & gas sentiment feed from the open GDELT event graph.",
         requires_api_key=False,
         params_builder=lambda _api_key: {
             "query": "energy OR renewable energy OR oil market",
@@ -139,7 +132,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         industry="Retail",
         provider="The Guardian Open Platform",
         endpoint="https://content.guardianapis.com/search",
-        coverage_notes="Retail-focused lens on the Guardian business desk including earnings, DTC, and CPG.",
         api_key_env="GUARDIAN_API_KEY",
         params_builder=lambda api_key: {
             "section": "business",
@@ -156,7 +148,6 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
         industry="Transportation",
         provider="NewsAPI.org",
         endpoint="https://newsapi.org/v2/everything",
-        coverage_notes="Broader surface area over logistics, EV, and transportation infrastructure signals filtered by NewsAPI.",
         api_key_env="NEWSAPI_KEY",
         params_builder=lambda api_key: {
             "q": "transportation OR logistics OR electric vehicle OR autonomous driving",
@@ -255,7 +246,6 @@ class IndustryNewsService:
                     provider=config.provider,
                     requires_api_key=config.requires_api_key,
                     api_key_env=config.api_key_env,
-                    coverage_notes=config.coverage_notes,
                     is_configured=api_key_present,
                 )
             )
@@ -320,7 +310,6 @@ class IndustryNewsService:
             provider=config.provider,
             articles=articles,
             summary=summary,
-            coverage_notes=config.coverage_notes,
         )
 
         self._cache[slug] = {"timestamp": time.time(), "payload": response}
