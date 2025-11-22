@@ -1,17 +1,24 @@
 import asyncio
 import json
 import os
-from dataclasses import dataclass
-from typing import Annotated, Any, Awaitable, Callable, Dict, List, Optional
+from typing import Annotated, Any, Awaitable, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, status
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from utils.rate_limit import news_rate_limiter, get_client_ip
 from utils.simple_auth import verify_api_token
 from linkedin_supabase_service import SupabaseService
 
+from .models import (
+    Article,
+    BulkIndustryNewsResponse,
+    IndustryAPIConfig,
+    IndustryInfo,
+    IndustryNewsResponse,
+    MissingAPIKey,
+)
 from .parsers import (
     _parse_alphavantage,
     _parse_gdelt,
@@ -24,53 +31,6 @@ from .service import IndustryNewsService
 from .summary_builder import NewsSummaryBuilder
 
 router = APIRouter(prefix="/api/news", tags=["news"])
-
-
-class Article(BaseModel):
-    title: str
-    description: Optional[str] = None
-    url: str
-    published_at: Optional[str] = Field(default=None, alias="publishedAt")
-    source: Optional[str] = None
-
-
-class IndustryNewsResponse(BaseModel):
-    industry: str
-    slug: str
-    provider: str
-    articles: List[Article]
-    summary: str
-
-
-class BulkIndustryNewsResponse(BaseModel):
-    results: List[IndustryNewsResponse]
-    errors: List[Dict[str, Any]]
-
-
-class IndustryInfo(BaseModel):
-    slug: str
-    industry: str
-    provider: str
-    requires_api_key: bool
-    api_key_env: Optional[str] = None
-    is_configured: bool
-
-
-class MissingAPIKey(Exception):
-    """Raised when an API requires a key that is not configured."""
-
-
-@dataclass
-class IndustryAPIConfig:
-    slug: str
-    industry: str
-    provider: str
-    endpoint: str
-    params_builder: Callable[[Optional[str]], Dict[str, Any]]
-    parser: Callable[[Dict[str, Any]], List[Dict[str, Any]]]
-    requires_api_key: bool = True
-    api_key_env: Optional[str] = None
-    timeout: float = 10.0
 
 
 INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
