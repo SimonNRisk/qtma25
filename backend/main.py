@@ -13,6 +13,7 @@ from api.openai import router as openai_router
 from api.linkedin import router as linkedin_router
 from api.hooks import router as hooks_router
 from api.onboarding import router as onboarding_router
+from api.news import router as news_router
 # Load environment variables
 load_dotenv()
 
@@ -38,6 +39,7 @@ app.include_router(openai_router)
 app.include_router(linkedin_router)
 app.include_router(hooks_router)
 app.include_router(onboarding_router)
+app.include_router(news_router)
 # ---------- Routes ----------
 @app.get("/me")
 def get_current_user_profile(current_user: Annotated[dict, Depends(get_current_user)]):

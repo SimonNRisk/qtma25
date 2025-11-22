@@ -4,11 +4,10 @@ from openai import OpenAI
 import os
 import re
 from dotenv import load_dotenv
-from collections import defaultdict
-from datetime import datetime, timedelta
-from typing import Dict, Tuple, Annotated, Optional
+from typing import Annotated, Optional
 from auth import get_current_user
 from linkedin_supabase_service import SupabaseService
+from utils.rate_limit import openai_rate_limiter, get_client_ip
 
 load_dotenv()
 
@@ -18,39 +17,6 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Initialize LinkedIn Supabase service for storing generated hooks
 linkedin_supabase_service = SupabaseService()
-
-# Simple in-memory rate limiter: IP -> (count, reset_time)
-rate_limit_store: Dict[str, Tuple[int, datetime]] = defaultdict(lambda: (0, datetime.now()))
-
-# Rate limit: 10 requests per hour per IP
-RATE_LIMIT_MAX_REQUESTS = 10
-RATE_LIMIT_WINDOW_SECONDS = 3600  # 1 hour
-
-def check_rate_limit(ip: str) -> bool:
-    """Check if IP has exceeded rate limit. Returns True if allowed, False if rate limited."""
-    now = datetime.now()
-    count, reset_time = rate_limit_store[ip]
-    
-    # Reset if window has passed
-    if now >= reset_time:
-        rate_limit_store[ip] = (1, now + timedelta(seconds=RATE_LIMIT_WINDOW_SECONDS))
-        return True
-    
-    # Check if limit exceeded
-    if count >= RATE_LIMIT_MAX_REQUESTS:
-        return False
-    
-    # Increment count
-    rate_limit_store[ip] = (count + 1, reset_time)
-    return True
-
-def get_client_ip(request: Request) -> str:
-    """Get client IP address from request."""
-    # Check for forwarded IP (if behind proxy)
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.client.host if request.client else "unknown"
 
 class FirstPostRequest(BaseModel):
     full_name: str
@@ -79,7 +45,7 @@ async def generate_first_post(
 ):
     # Rate limiting check
     client_ip = get_client_ip(http_request)
-    if not check_rate_limit(client_ip):
+    if not openai_rate_limiter.check_rate_limit(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded. Please try again later."

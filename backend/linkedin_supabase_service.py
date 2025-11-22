@@ -221,3 +221,121 @@ class SupabaseService:
         except Exception as e:
             logger.error(f"Error counting hooks for user {user_id}: {e}")
             raise Exception(f"Failed to count hooks: {str(e)}")
+    
+    # News Hooks Storage Methods
+    
+    async def store_news_hooks(
+        self,
+        industry: str,
+        industry_slug: str,
+        summary: str,
+        hooks: List[str]
+    ) -> Dict[str, Any]:
+        """
+        Store news summary and generated hooks for an industry.
+        
+        Args:
+            industry: Industry display name (e.g., "Technology")
+            industry_slug: Industry slug identifier (e.g., "technology")
+            summary: News summary text
+            hooks: List of generated LinkedIn hook strings
+            
+        Returns:
+            Dict containing the stored record with id, created_at, etc.
+            
+        Raises:
+            ValueError: If parameters are invalid
+            Exception: If database operation fails
+        """
+        # Validation
+        if not industry or not isinstance(industry, str):
+            raise ValueError("Industry must be a non-empty string")
+        
+        if not industry_slug or not isinstance(industry_slug, str):
+            raise ValueError("Industry slug must be a non-empty string")
+        
+        if not summary or not isinstance(summary, str):
+            raise ValueError("Summary must be a non-empty string")
+        
+        if not hooks or not isinstance(hooks, list):
+            raise ValueError("Hooks must be a non-empty list")
+        
+        if not all(isinstance(hook, str) and hook.strip() for hook in hooks):
+            raise ValueError("All hooks must be non-empty strings")
+        
+        try:
+            now_iso = datetime.utcnow().isoformat()
+            
+            # Prepare payload
+            payload = {
+                'industry': industry,
+                'industry_slug': industry_slug,
+                'summary': summary,
+                'hooks': hooks,
+                'created_at': now_iso,
+            }
+            
+            # Insert new record
+            result = self.supabase.table('news_hooks').insert(payload).execute()
+            
+            if not result.data or len(result.data) == 0:
+                raise Exception("Database returned no data after insert")
+            
+            logger.info(f"Successfully stored news hooks for industry: {industry}")
+            return result.data[0]
+            
+        except ValueError as ve:
+            logger.error(f"Validation error storing news hooks: {ve}")
+            raise
+        except Exception as e:
+            logger.error(f"Error storing news hooks for {industry}: {e}")
+            raise Exception(f"Failed to store news hooks: {str(e)}")
+    
+    async def get_news_hooks(
+        self,
+        industry_slug: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0
+    ) -> List[Dict[str, Any]]:
+        """
+        Retrieve news hooks, optionally filtered by industry.
+        
+        Args:
+            industry_slug: Optional industry slug to filter by
+            limit: Maximum number of records to return (default 50, max 100)
+            offset: Number of records to skip for pagination
+            
+        Returns:
+            List of news hook records, ordered by created_at DESC
+            
+        Raises:
+            ValueError: If parameters are invalid
+            Exception: If database operation fails
+        """
+        # Validation
+        if limit < 1 or limit > 100:
+            raise ValueError("Limit must be between 1 and 100")
+        
+        if offset < 0:
+            raise ValueError("Offset must be non-negative")
+        
+        try:
+            query = (
+                self.supabase
+                .table('news_hooks')
+                .select('*')
+                .order('created_at', desc=True)
+                .range(offset, offset + limit - 1)
+            )
+            
+            if industry_slug:
+                query = query.eq('industry_slug', industry_slug)
+            
+            result = query.execute()
+            
+            logger.info(f"Retrieved {len(result.data) if result.data else 0} news hook records")
+            return result.data if result.data else []
+            
+        except Exception as e:
+            logger.error(f"Error retrieving news hooks: {e}")
+            raise Exception(f"Failed to retrieve news hooks: {str(e)}")
