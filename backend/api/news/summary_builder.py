@@ -5,7 +5,7 @@ from fastapi.concurrency import run_in_threadpool
 from openai import OpenAI
 
 if TYPE_CHECKING:
-    from .news import Article
+    from .models import Article
 
 
 class NewsSummaryBuilder:

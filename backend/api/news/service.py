@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional
 import httpx
 from fastapi import HTTPException, status
 
-from .news import (
+from .models import (
     Article,
     IndustryAPIConfig,
     IndustryInfo,
