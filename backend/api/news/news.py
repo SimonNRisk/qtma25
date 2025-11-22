@@ -422,20 +422,20 @@ async def generate_news_hooks(
                     num_hooks=4
                 )
                 
-            # Store in Supabase
-            if supabase_service:
-                try:
-                    await supabase_service.store_news_hooks(
-                        industry=result.industry,
-                        industry_slug=result.slug,
-                        summary=result.summary,
-                        hooks=hooks
-                    )
-                except Exception as e:
-                    # Log error but don't fail the request
-                    print(f"Warning: Failed to store news hooks for {result.industry} in database: {str(e)}")
-            else:
-                print("Warning: SupabaseService not initialized, skipping database storage")
+                # Store in Supabase
+                if supabase_service:
+                    try:
+                        await supabase_service.store_news_hooks(
+                            industry=result.industry,
+                            industry_slug=result.slug,
+                            summary=result.summary,
+                            hooks=hooks
+                        )
+                    except Exception as e:
+                        # Log error but don't fail the request
+                        print(f"Warning: Failed to store news hooks for {result.industry} in database: {str(e)}")
+                else:
+                    print("Warning: SupabaseService not initialized, skipping database storage")
                 
                 industry_hooks.append(
                     IndustryHooksResponse(
