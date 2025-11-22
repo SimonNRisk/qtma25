@@ -177,13 +177,22 @@ Your task is to generate unique LinkedIn post hooks based on news summaries. Eac
 3. Be 1-2 sentences maximum
 4. Create curiosity or urgency
 5. Be professional but engaging
-6. Relate directly to the news summary provided"""
+6. Focus on generalizable business insights and industry trends
+7. Be applicable to any entrepreneur, founder, or business professional within this broad industry
+8. Avoid specific product names, company names, or overly specific details
+9. Emphasize strategic insights, market trends, and broader implications"""
 
     user_prompt = f"""Generate {num_hooks} unique LinkedIn post hooks based on this {industry} news summary:
 
 {summary}
 
-Each hook should be a strong opening line that would make someone want to read more. Make them diverse in style (questions, statements, insights, etc.)."""
+Each hook should:
+- Extract the broader business insight or industry trend from the news
+- Be generalizable and applicable to any business professional
+- Focus on strategic implications rather than specific products or companies
+- Use patterns like "Here's what [trend] tells us about [broader insight]" or "The [industry] shift that matters for every business"
+- Make them diverse in style (questions, statements, insights, etc.)
+- Avoid mentioning specific brand names, product launches, or company-specific details unless they illustrate a larger trend"""
 
     # Define the tool/function for structured output
     tools = [
