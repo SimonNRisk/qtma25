@@ -132,7 +132,11 @@ news_service = IndustryNewsService(INDUSTRY_CONFIGS, summary_builder)
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
 
 # Supabase service for storing news hooks
-supabase_service = SupabaseService()
+try:
+    supabase_service = SupabaseService()
+except Exception as e:
+    print(f"Warning: Failed to initialize SupabaseService: {str(e)}")
+    supabase_service = None
 
 
 class IndustryHooksResponse(BaseModel):
@@ -376,80 +380,101 @@ async def generate_news_hooks(
     
     Returns hooks organized by industry.
     """
-    # Simple token authentication
-    verify_api_token(authorization)
-    
-    # Rate limiting check
-    client_ip = get_client_ip(request)
-    if not news_rate_limiter.check_rate_limit(client_ip):
-        raise HTTPException(
-            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Rate limit exceeded. Please try again later.",
-        )
-    
-    # Fetch news from all industries
-    slugs = news_service.resolve_slugs(None)
-    tasks: List[Awaitable[IndustryNewsResponse]] = [
-        news_service.get_industry_news(slug, refresh_cache=refresh_cache)
-        for slug in slugs
-    ]
-    responses = await asyncio.gather(*tasks, return_exceptions=True)
-    
-    # Process each industry and generate hooks
-    industry_hooks: List[IndustryHooksResponse] = []
-    
-    for slug, result in zip(slugs, responses):
-        if isinstance(result, HTTPException):
-            # Skip industries that failed
-            continue
+    try:
+        # Simple token authentication
+        verify_api_token(authorization)
         
-        if not isinstance(result, IndustryNewsResponse):
-            # Skip other errors
-            continue
-        
-        # Generate 4 hooks from the summary
-        try:
-            hooks = await generate_hooks_from_summary(
-                summary=result.summary,
-                industry=result.industry,
-                num_hooks=4
+        # Rate limiting check
+        client_ip = get_client_ip(request)
+        if not news_rate_limiter.check_rate_limit(client_ip):
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Rate limit exceeded. Please try again later.",
             )
+        
+        # Fetch news from all industries
+        slugs = news_service.resolve_slugs(None)
+        tasks: List[Awaitable[IndustryNewsResponse]] = [
+            news_service.get_industry_news(slug, refresh_cache=refresh_cache)
+            for slug in slugs
+        ]
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+        
+        # Process each industry and generate hooks
+        industry_hooks: List[IndustryHooksResponse] = []
+        
+        for slug, result in zip(slugs, responses):
+            if isinstance(result, HTTPException):
+                # Skip industries that failed
+                print(f"Skipping {slug}: HTTPException - {result.detail}")
+                continue
             
-            # Store in Supabase
+            if not isinstance(result, IndustryNewsResponse):
+                # Skip other errors
+                print(f"Skipping {slug}: Unexpected error type - {type(result)}: {str(result)}")
+                continue
+            
+            # Generate 4 hooks from the summary
             try:
-                await supabase_service.store_news_hooks(
-                    industry=result.industry,
-                    industry_slug=result.slug,
+                hooks = await generate_hooks_from_summary(
                     summary=result.summary,
-                    hooks=hooks
+                    industry=result.industry,
+                    num_hooks=4
+                )
+                
+            # Store in Supabase
+            if supabase_service:
+                try:
+                    await supabase_service.store_news_hooks(
+                        industry=result.industry,
+                        industry_slug=result.slug,
+                        summary=result.summary,
+                        hooks=hooks
+                    )
+                except Exception as e:
+                    # Log error but don't fail the request
+                    print(f"Warning: Failed to store news hooks for {result.industry} in database: {str(e)}")
+            else:
+                print("Warning: SupabaseService not initialized, skipping database storage")
+                
+                industry_hooks.append(
+                    IndustryHooksResponse(
+                        industry=result.industry,
+                        slug=result.slug,
+                        summary=result.summary,
+                        hooks=hooks,
+                    )
                 )
             except Exception as e:
-                # Log error but don't fail the request
-                print(f"Warning: Failed to store news hooks for {result.industry} in database: {str(e)}")
-            
-            industry_hooks.append(
-                IndustryHooksResponse(
-                    industry=result.industry,
-                    slug=result.slug,
-                    summary=result.summary,
-                    hooks=hooks,
-                )
+                # Log error but continue with other industries
+                print(f"Error generating hooks for {result.industry}: {str(e)}")
+                import traceback
+                traceback.print_exc()
+                continue
+        
+        if not industry_hooks:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Failed to generate hooks for any industries. Check server logs for details.",
             )
-        except Exception as e:
-            # Log error but continue with other industries
-            print(f"Error generating hooks for {result.industry}: {str(e)}")
-            continue
-    
-    if not industry_hooks:
+        
+        total_hooks = sum(len(ih.hooks) for ih in industry_hooks)
+        
+        return NewsHooksResponse(
+            industries=industry_hooks,
+            total_hooks=total_hooks,
+        )
+    except HTTPException:
+        # Re-raise HTTP exceptions (auth, rate limit, etc.)
+        raise
+    except Exception as e:
+        # Catch any unexpected errors and provide better error message
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Unexpected error in generate_news_hooks: {str(e)}")
+        print(error_trace)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate hooks for any industries",
+            detail=f"Internal server error: {str(e)}",
         )
-    
-    total_hooks = sum(len(ih.hooks) for ih in industry_hooks)
-    
-    return NewsHooksResponse(
-        industries=industry_hooks,
-        total_hooks=total_hooks,
-    )
 
