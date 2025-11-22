@@ -1,11 +1,15 @@
 import asyncio
+import json
+import os
 from dataclasses import dataclass
-from typing import Any, Awaitable, Callable, Dict, List, Optional
+from typing import Annotated, Any, Awaitable, Callable, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, status
+from openai import OpenAI
 from pydantic import BaseModel, Field
 
 from utils.rate_limit import news_rate_limiter, get_client_ip
+from utils.simple_auth import verify_api_token
 
 from .parsers import (
     _parse_alphavantage,
@@ -163,6 +167,156 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
 summary_builder = NewsSummaryBuilder()
 news_service = IndustryNewsService(INDUSTRY_CONFIGS, summary_builder)
 
+# OpenAI client for generating hooks
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
+
+
+class IndustryHooksResponse(BaseModel):
+    industry: str
+    slug: str
+    summary: str
+    hooks: List[str]
+
+
+class NewsHooksResponse(BaseModel):
+    industries: List[IndustryHooksResponse]
+    total_hooks: int
+
+
+async def generate_hooks_from_summary(summary: str, industry: str, num_hooks: int = 4) -> List[str]:
+    """
+    Generate LinkedIn post hooks from a news summary using OpenAI tool calling.
+    
+    Args:
+        summary: News summary text
+        industry: Industry name for context
+        num_hooks: Number of hooks to generate (default: 4)
+    
+    Returns:
+        List of LinkedIn post hooks
+    """
+    if not openai_client:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="OpenAI API key not configured",
+        )
+
+    system_prompt = """You are an expert LinkedIn content creator specializing in creating engaging post hooks that grab attention and drive engagement.
+
+Your task is to generate unique LinkedIn post hooks based on news summaries. Each hook should:
+1. Be compelling and attention-grabbing
+2. Be suitable as the opening line of a LinkedIn post
+3. Be 1-2 sentences maximum
+4. Create curiosity or urgency
+5. Be professional but engaging
+6. Relate directly to the news summary provided"""
+
+    user_prompt = f"""Generate {num_hooks} unique LinkedIn post hooks based on this {industry} news summary:
+
+{summary}
+
+Each hook should be a strong opening line that would make someone want to read more. Make them diverse in style (questions, statements, insights, etc.)."""
+
+    # Define the tool/function for structured output
+    tools = [
+        {
+            "type": "function",
+            "function": {
+                "name": "generate_linkedin_hooks",
+                "description": "Generate LinkedIn post hooks from a news summary",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "hooks": {
+                            "type": "array",
+                            "items": {
+                                "type": "string",
+                                "description": "A LinkedIn post hook (1-2 sentences, attention-grabbing opening line)"
+                            },
+                            "description": f"List of exactly {num_hooks} unique LinkedIn post hooks",
+                            "minItems": num_hooks,
+                            "maxItems": num_hooks
+                        }
+                    },
+                    "required": ["hooks"]
+                }
+            }
+        }
+    ]
+
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_prompt},
+            ],
+            tools=tools,
+            tool_choice={"type": "function", "function": {"name": "generate_linkedin_hooks"}},
+            temperature=0.8,
+            max_tokens=500,
+        )
+
+        if not response.choices:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OpenAI returned no choices",
+            )
+
+        message = response.choices[0].message
+        if not message.tool_calls or len(message.tool_calls) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="OpenAI did not return tool call",
+            )
+
+        # Extract the function call result
+        tool_call = message.tool_calls[0]
+        if tool_call.function.name != "generate_linkedin_hooks":
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Unexpected tool call returned: {tool_call.function.name}",
+            )
+
+        # Parse the JSON arguments
+        try:
+            function_args = json.loads(tool_call.function.arguments)
+        except json.JSONDecodeError as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Error parsing tool call arguments: {str(e)}",
+            )
+        
+        hooks = function_args.get("hooks", [])
+
+        if not hooks or len(hooks) != num_hooks:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Expected {num_hooks} hooks, got {len(hooks)}",
+            )
+
+        # Clean and validate hooks
+        cleaned_hooks = [hook.strip() for hook in hooks if hook.strip()]
+        
+        if len(cleaned_hooks) != num_hooks:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Expected {num_hooks} valid hooks, got {len(cleaned_hooks)}",
+            )
+
+        return cleaned_hooks
+
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error parsing OpenAI response: {str(e)}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error generating hooks: {str(e)}",
+        )
+
 
 @router.get("/industries", response_model=List[IndustryInfo])
 async def list_industries(request: Request) -> List[IndustryInfo]:
@@ -239,4 +393,87 @@ async def fetch_industry_news(
             detail="Rate limit exceeded. Please try again later.",
         )
     return await news_service.get_industry_news(industry_slug, refresh_cache)
+
+
+@router.post("/generate-hooks", response_model=NewsHooksResponse)
+async def generate_news_hooks(
+    request: Request,
+    refresh_cache: bool = False,
+    authorization: Annotated[Optional[str], Header()] = None,
+):
+    """
+    Generate LinkedIn post hooks from news summaries for all industries.
+    
+    Requires API token authentication via Authorization header: "Bearer <token>"
+    
+    For each industry:
+    1. Fetches latest news and summary
+    2. Generates 4 LinkedIn post hooks based on the summary
+    
+    Returns hooks organized by industry.
+    """
+    # Simple token authentication
+    verify_api_token(authorization)
+    
+    # Rate limiting check
+    client_ip = get_client_ip(request)
+    if not news_rate_limiter.check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please try again later.",
+        )
+    
+    # Fetch news from all industries
+    slugs = news_service.resolve_slugs(None)
+    tasks: List[Awaitable[IndustryNewsResponse]] = [
+        news_service.get_industry_news(slug, refresh_cache=refresh_cache)
+        for slug in slugs
+    ]
+    responses = await asyncio.gather(*tasks, return_exceptions=True)
+    
+    # Process each industry and generate hooks
+    industry_hooks: List[IndustryHooksResponse] = []
+    
+    for slug, result in zip(slugs, responses):
+        if isinstance(result, HTTPException):
+            # Skip industries that failed
+            continue
+        
+        if not isinstance(result, IndustryNewsResponse):
+            # Skip other errors
+            continue
+        
+        # Generate 4 hooks from the summary
+        try:
+            hooks = await generate_hooks_from_summary(
+                summary=result.summary,
+                industry=result.industry,
+                num_hooks=4
+            )
+            
+            industry_hooks.append(
+                IndustryHooksResponse(
+                    industry=result.industry,
+                    slug=result.slug,
+                    summary=result.summary,
+                    hooks=hooks,
+                )
+            )
+        except Exception as e:
+            # Log error but continue with other industries
+            print(f"Error generating hooks for {result.industry}: {str(e)}")
+            continue
+    
+    if not industry_hooks:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate hooks for any industries",
+        )
+    
+    total_hooks = sum(len(ih.hooks) for ih in industry_hooks)
+    
+    return NewsHooksResponse(
+        industries=industry_hooks,
+        total_hooks=total_hooks,
+    )
 
