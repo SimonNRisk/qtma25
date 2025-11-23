@@ -1,14 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { StoryCard, StoryTag } from './components/StoryCard';
 import { FaChevronRight } from 'react-icons/fa';
 
 export default function ExplorePage() {
-  const [activeTab, setActiveTab] = useState('Trending Stories');
-
-  const tabs = ['Trending Stories', 'Repackage', 'Thought Prompts'];
 
   const stories = [
     {
@@ -57,21 +54,14 @@ export default function ExplorePage() {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-medium text-white mb-8">Never miss the moment.</h1>
 
-          {/* Tabs */}
-          <div className="flex items-center gap-4 mb-10">
-            {tabs.map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-full text-sm font-medium border transition-all ${
-                  activeTab === tab
-                    ? 'bg-brand-blue text-white border-brand-blue'
-                    : 'bg-transparent text-white/60 border-white/20 hover:bg-white/5 hover:text-white'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Divider */}
+          <div className="border-b border-white/20 mb-6"></div>
+
+          {/* Tab */}
+          <div className="mb-10">
+            <button className="px-5 py-2 rounded-full text-sm font-medium border transition-all bg-brand-blue text-white border-brand-blue">
+              Trending Stories
+            </button>
           </div>
 
           {/* Featured Story Section */}
