@@ -171,7 +171,13 @@ function AuthCallbackContent() {
         <div className="rounded-[32px] border border-white/60 px-10 py-12 text-white shadow-[0_30px_60px_rgba(0,0,0,0.55)] bg-gradient-to-b from-[var(--login-card-start)] via-[var(--login-card-mid)] to-[var(--login-card-end)] text-center">
           {/* Logo */}
           <div className="mb-8 flex justify-center">
-            <Image src="/astro-white.png" alt="Astro" width={120} height={58} className="opacity-90" />
+            <Image
+              src="/astro-white.png"
+              alt="Astro"
+              width={120}
+              height={58}
+              className="opacity-90"
+            />
           </div>
 
           {status === 'loading' && (
@@ -205,9 +211,18 @@ function AuthCallbackContent() {
               <div className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-6 py-4 rounded-xl">
                 <div className="flex items-center justify-center gap-2">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div
+                      className="w-2 h-2 bg-white rounded-full animate-bounce"
+                      style={{ animationDelay: '0ms' }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-white rounded-full animate-bounce"
+                      style={{ animationDelay: '150ms' }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-white rounded-full animate-bounce"
+                      style={{ animationDelay: '300ms' }}
+                    ></div>
                   </div>
                   <span className="text-sm font-medium">Taking you to your dashboard...</span>
                 </div>
