@@ -47,15 +47,15 @@ interface UserResponse {
     };
   };
 }
-
-type TabType = 'repackage' | 'trending';
+// in the future, we will add more tabs for scheduled and published posts
+type TabType = 'drafts';
 
 export default function HooksPage() {
   // State
   const [flattenedHooks, setFlattenedHooks] = useState<FlattenedHook[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabType>('repackage');
+  const [activeTab, setActiveTab] = useState<TabType>('drafts');
   const [user, setUser] = useState<{
     first_name?: string;
     last_name?: string;
@@ -168,27 +168,17 @@ export default function HooksPage() {
           {/* Tabs */}
           <div className="flex items-center gap-8 mb-6 border-b border-white/20">
             <button
-              onClick={() => setActiveTab('repackage')}
+              onClick={() => setActiveTab('drafts')}
               className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'repackage'
+                activeTab === 'drafts'
                   ? 'text-foreground border-b-2 border-green-500'
                   : 'text-white/60 hover:text-white/80'
               }`}
             >
-              Repackage{' '}
+              Drafts{' '}
               <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">
                 {flattenedHooks.length}
               </span>
-            </button>
-            <button
-              onClick={() => setActiveTab('trending')}
-              className={`pb-3 px-1 text-base font-normal transition-colors relative ${
-                activeTab === 'trending'
-                  ? 'text-foreground border-b-2 border-green-500'
-                  : 'text-white/60 hover:text-white/80'
-              }`}
-            >
-              Trending <span className="ml-2 text-sm bg-white/20 px-2 py-0.5 rounded-full">0</span>
             </button>
           </div>
 
@@ -214,13 +204,8 @@ export default function HooksPage() {
               </a>
 
               {/* Hook Cards */}
-              {activeTab === 'repackage' &&
+              {activeTab === 'drafts' &&
                 flattenedHooks.map(hook => <HookCard key={hook.id} hook={hook} user={user} />)}
-              {activeTab === 'trending' && (
-                <div>
-                  <p>Trending</p>
-                </div>
-              )}
             </div>
           )}
 
