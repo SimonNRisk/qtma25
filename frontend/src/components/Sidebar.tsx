@@ -2,7 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { FaRocket, FaComments, FaCompass, FaCalendar, FaChartBar, FaUser } from 'react-icons/fa';
+import Image from 'next/image';
+import { FaComments, FaCompass, FaCalendar, FaChartBar, FaUser } from 'react-icons/fa';
 
 interface SidebarItemProps {
   href: string;
@@ -72,9 +73,14 @@ export function Sidebar() {
               e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
-            <div className="text-white">
-              <FaRocket className="w-8 h-8" />
-            </div>
+            <Image
+              src="/astro-logo.png"
+              alt="Astro logo"
+              width={32}
+              height={32}
+              className="w-8 h-8 object-contain"
+              priority
+            />
           </Link>
         </div>
 
