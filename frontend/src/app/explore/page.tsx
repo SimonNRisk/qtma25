@@ -84,6 +84,15 @@ export default function ExplorePage() {
     };
   }, [fetchNews]);
 
+  useEffect(() => {
+    if (apiErrors.length > 0) {
+      const unavailableIndustries = apiErrors.map(error => error.slug).join(', ');
+      console.log(
+        `Some industries are temporarily unavailable: ${unavailableIndustries}. We'll keep trying to pull them in.`
+      );
+    }
+  }, [apiErrors]);
+
   const primaryIndustry = news[0];
   const secondaryIndustry = news[1] ?? news[0];
 
