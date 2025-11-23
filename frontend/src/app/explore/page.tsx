@@ -85,7 +85,7 @@ export default function ExplorePage() {
               <span>Date</span>
             </div>
 
-            {/* Story Grid 1 */}
+            {/* Story Grid */}
             <div className="relative">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {stories.map(story => (
@@ -93,7 +93,6 @@ export default function ExplorePage() {
                 ))}
               </div>
               
-              {/* Floating Action Button (from image) */}
               <div className="absolute top-1/2 -right-16 transform -translate-y-1/2 hidden xl:flex">
                 <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
                    <FaChevronRight />
@@ -121,7 +120,7 @@ export default function ExplorePage() {
                 ))}
               </div>
                
-               {/* Floating Action Button */}
+               {/* Action Button */}
               <div className="absolute top-1/2 -right-16 transform -translate-y-1/2 hidden xl:flex">
                 <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
                    <FaChevronRight />
