@@ -158,7 +158,7 @@ Requirements:
 5. Each post should stand alone and not reference the others
 6. Posts should encourage engagement (comments, shares, reactions)
 
-Output ONLY the posts, numbered 1-{request.quantity}, with no additional commentary.
+CRITICAL: Each post must start immediately with the post content - do NOT prefix posts with numbers (like "1." or "Post 1:"), titles / headings, or labels. Separate posts with blank lines.
 """
     
     try:
@@ -181,17 +181,15 @@ Output ONLY the posts, numbered 1-{request.quantity}, with no additional comment
                 detail="OpenAI returned empty response. Please try again."
             )
         
-        # Parse the posts (split by numbers)
-        posts_list = re.split(r'\n(?=\d+[\.\:\)])', posts_text)
+        # Parse the posts (split by blank lines)
+        posts_list = [p.strip() for p in posts_text.split('\n\n') if p.strip()]
         
-        # Clean up each post
+        # Simple cleanup - just remove leading prefixes like "1.", "Post 1:", etc.
         cleaned_posts = []
         for post in posts_list:
             if post.strip():
-                # Remove leading numbers and formatting
-                post = re.sub(r'^\d+[\.\:\)]\s*', '', post)
                 post = post.strip()
-                if post:
+                if post and len(post) > 10:
                     cleaned_posts.append(post)
         
         # Store hooks in database
