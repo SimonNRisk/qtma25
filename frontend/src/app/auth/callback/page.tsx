@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
 import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
-import { getOnboardingData } from '@/lib/onboarding';
+import { getOnboardingData, syncOnboardingDataAfterSignup } from '@/lib/onboarding';
 import Image from 'next/image';
 import { HiCheck, HiXMark } from 'react-icons/hi2';
 
@@ -71,6 +71,18 @@ function AuthCallbackContent() {
               // Save our JWT tokens to localStorage
               session.save(data.access_token, data.refresh_token);
 
+              // Sync onboarding data if it exists in localStorage
+              try {
+                const synced = await syncOnboardingDataAfterSignup();
+                if (synced) {
+                  console.log('Onboarding data synced successfully');
+                } else {
+                  console.log('No onboarding data to sync');
+                }
+              } catch (error) {
+                console.warn('Failed to sync onboarding data:', error);
+              }
+
               setStatus('success');
               setMessage('Successfully logged in! Welcome to your account.');
 
@@ -120,6 +132,19 @@ function AuthCallbackContent() {
               console.log('Backend response data:', data);
               // Save our JWT tokens to localStorage
               session.save(data.access_token, data.refresh_token);
+
+              // Sync onboarding data if it exists in localStorage
+              try {
+                const synced = await syncOnboardingDataAfterSignup();
+                if (synced) {
+                  console.log('Onboarding data synced successfully');
+                } else {
+                  console.log('No onboarding data to sync');
+                }
+              } catch (error) {
+                console.warn('Failed to sync onboarding data:', error);
+              }
+
               setStatus('success');
               setMessage('Successfully logged in! Welcome to your account.');
 
