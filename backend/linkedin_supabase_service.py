@@ -294,16 +294,14 @@ class SupabaseService:
     async def get_news_hooks(
         self,
         industry_slug: Optional[str] = None,
-        limit: int = 50,
-        offset: int = 0
+        created_after: Optional[str] = None
     ) -> List[Dict[str, Any]]:
         """
-        Retrieve news hooks, optionally filtered by industry.
+        Retrieve news hooks, optionally filtered by industry and creation date.
         
         Args:
             industry_slug: Optional industry slug to filter by
-            limit: Maximum number of records to return (default 50, max 100)
-            offset: Number of records to skip for pagination
+            created_after: Optional ISO date string - only return hooks created after this date
             
         Returns:
             List of news hook records, ordered by created_at DESC
@@ -312,24 +310,19 @@ class SupabaseService:
             ValueError: If parameters are invalid
             Exception: If database operation fails
         """
-        # Validation
-        if limit < 1 or limit > 100:
-            raise ValueError("Limit must be between 1 and 100")
-        
-        if offset < 0:
-            raise ValueError("Offset must be non-negative")
-        
         try:
             query = (
                 self.supabase
                 .table('news_hooks')
                 .select('*')
                 .order('created_at', desc=True)
-                .range(offset, offset + limit - 1)
             )
             
             if industry_slug:
                 query = query.eq('industry_slug', industry_slug)
+            
+            if created_after:
+                query = query.gte('created_at', created_after)
             
             result = query.execute()
             

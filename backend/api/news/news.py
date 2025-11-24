@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from utils.rate_limit import news_rate_limiter, get_client_ip
 from utils.simple_auth import verify_api_token
 from linkedin_supabase_service import SupabaseService
+from auth import get_current_user
 
 from .models import (
     Article,
@@ -485,5 +486,55 @@ async def generate_news_hooks(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}",
+        )
+
+
+@router.get("/hooks")
+async def get_news_hooks(
+    current_user: Annotated[dict, Depends(get_current_user)],
+    industry_slug: Optional[str] = Query(
+        default=None,
+        description="Optional industry slug to filter by (e.g., 'technology', 'finance')",
+    ),
+    created_after: Optional[str] = Query(
+        default=None,
+        description="Optional ISO date string (e.g., '2024-01-01T00:00:00Z') - only return hooks created after this date",
+    ),
+):
+    """
+    Retrieve news hooks from the database.
+    
+    Requires authentication. Returns news hooks stored in the news_hooks table, 
+    optionally filtered by industry and creation date. Results are ordered by created_at DESC (newest first).
+    In practice, we will filter for hooks made in the last week (for trending stories page)
+    
+    Query Parameters:
+    - industry_slug: Optional industry slug to filter by
+    - created_after: Optional ISO date string - only return hooks created after this date
+    """
+    try:
+        if not supabase_service:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Database service is not available",
+            )
+        
+        # Fetch news hooks from database
+        hooks_data = await supabase_service.get_news_hooks(
+            industry_slug=industry_slug,
+            created_after=created_after
+        )
+        
+        return {
+            "success": True,
+            "data": hooks_data,
+            "count": len(hooks_data),
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving news hooks: {str(e)}",
         )
 

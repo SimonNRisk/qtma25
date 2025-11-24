@@ -9,15 +9,10 @@ import { useGetIndustry } from './hooks/useGetIndustry';
 
 interface IndustryNewsResponse {
   industry: string;
-  slug: string;
-  provider: string;
+  industry_slug: string;
   summary: string;
-  articles: NewsArticle[];
-}
-
-interface BulkIndustryNewsResponse {
-  results: IndustryNewsResponse[];
-  errors: { slug: string; status_code: number; detail: unknown }[];
+  hooks: string[]; //actually just a single list of the hooks, like [hook1, hook2, hook3, hook4]
+  created_at: string;
 }
 
 const formatMetaDate = (value?: string | null) => {
@@ -33,7 +28,6 @@ const formatMetaDate = (value?: string | null) => {
 
 export default function ExplorePage() {
   const [news, setNews] = useState<IndustryNewsResponse[]>([]);
-  const [apiErrors, setApiErrors] = useState<BulkIndustryNewsResponse['errors']>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -51,78 +45,6 @@ export default function ExplorePage() {
     //actually, here we will just show all industries. but leaving that for now, as everyone should be onboarded
     console.log('No industry found - please reach out to our team');
   }
-
-  const fetchNews = useCallback(async (options: { initial?: boolean } = {}) => {
-    const { initial = false } = options;
-
-    if (initial) {
-      setIsLoading(true);
-    } else {
-      setIsRefreshing(true);
-    }
-
-    try {
-      const response = await fetch(`${API_URL}/api/news`, { cache: 'no-store' });
-      if (!response.ok) {
-        const payload = await response.text();
-        throw new Error(payload || `Failed to fetch news (HTTP ${response.status})`);
-      }
-
-      const data = (await response.json()) as BulkIndustryNewsResponse;
-      if (!mountedRef.current) return;
-      setNews(data.results ?? []);
-      setApiErrors(data.errors ?? []);
-      setErrorMessage(null);
-    } catch (err) {
-      if (!mountedRef.current) return;
-      setErrorMessage(
-        err instanceof Error ? err.message : 'Unable to load stories. Please try again.'
-      );
-    } finally {
-      if (!mountedRef.current) return;
-      if (initial) {
-        setIsLoading(false);
-      }
-      setIsRefreshing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    fetchNews({ initial: true });
-
-    const interval = setInterval(() => fetchNews(), 5 * 60 * 1000);
-    return () => {
-      mountedRef.current = false;
-      clearInterval(interval);
-    };
-  }, [fetchNews]);
-
-  useEffect(() => {
-    if (apiErrors.length > 0) {
-      const unavailableIndustries = apiErrors.map(error => error.slug).join(', ');
-      console.log(
-        `Some industries are temporarily unavailable: ${unavailableIndustries}. We'll keep trying to pull them in.`
-      );
-    }
-  }, [apiErrors]);
-
-  const primaryIndustry = news[0];
-  const secondaryIndustry = news[1] ?? news[0];
-
-  const primaryArticles = primaryIndustry?.articles?.slice(0, 3) ?? [];
-  const secondaryArticles =
-    secondaryIndustry && secondaryIndustry === primaryIndustry
-      ? (secondaryIndustry.articles?.slice(3, 6) ?? [])
-      : (secondaryIndustry?.articles?.slice(0, 3) ?? []);
-
-  const primaryMetaArticle = primaryIndustry?.articles?.[0];
-  const secondaryMetaArticle =
-    secondaryIndustry && secondaryIndustry !== primaryIndustry
-      ? secondaryIndustry.articles?.[0]
-      : (secondaryIndustry?.articles?.[3] ?? secondaryIndustry?.articles?.[0]);
-
-  const hasData = news.length > 0;
 
   const renderLoadingState = () => (
     <div className="flex flex-col items-center justify-center py-20 text-white/70 gap-4">
