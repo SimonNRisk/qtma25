@@ -1,19 +1,10 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
-import { StoryCard, NewsArticle } from './components/StoryCard';
-import { FaChevronRight, FaRedo } from 'react-icons/fa';
-import { API_URL } from '@/lib/api';
+import { FaRedo } from 'react-icons/fa';
 import { useGetIndustry } from './hooks/useGetIndustry';
-
-interface IndustryNewsResponse {
-  industry: string;
-  industry_slug: string;
-  summary: string;
-  hooks: string[]; //actually just a single list of the hooks, like [hook1, hook2, hook3, hook4]
-  created_at: string;
-}
+import { useGetNewsHooks } from './hooks/useGetNewsHooks';
 
 const formatMetaDate = (value?: string | null) => {
   if (!value) return 'Fresh off the press';
@@ -27,24 +18,26 @@ const formatMetaDate = (value?: string | null) => {
 };
 
 export default function ExplorePage() {
-  const [news, setNews] = useState<IndustryNewsResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { industry, loading: industryLoading } = useGetIndustry();
+  const {
+    newsHooks,
+    loading: newsHooksLoading,
+    error: newsHooksError,
+  } = useGetNewsHooks(industry || undefined);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const mountedRef = useRef(false);
 
-  const { industry, loading } = useGetIndustry();
+  const isLoading = industryLoading || newsHooksLoading;
+  const errorMessage = newsHooksError;
 
-  useEffect(() => {
-    if (loading) {
-      setIsLoading(true);
-    }
-  }, [loading]);
+  // Get the most recent news hook for the user's industry
+  const latestNewsHook = newsHooks.length > 0 ? newsHooks[0] : null;
 
-  if (!industry) {
-    //actually, here we will just show all industries. but leaving that for now, as everyone should be onboarded
-    console.log('No industry found - please reach out to our team');
-  }
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    // Force a re-fetch by triggering a state update
+    // The hooks will automatically refetch when dependencies change
+    window.location.reload();
+  }, []);
 
   const renderLoadingState = () => (
     <div className="flex flex-col items-center justify-center py-20 text-white/70 gap-4">
@@ -58,7 +51,7 @@ export default function ExplorePage() {
       <p className="font-medium mb-2">We couldn&apos;t load fresh stories.</p>
       <p className="text-sm text-white/80">{errorMessage}</p>
       <button
-        onClick={() => fetchNews()}
+        onClick={handleRefresh}
         className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm border border-white/20 transition-colors"
       >
         Try again
@@ -66,8 +59,8 @@ export default function ExplorePage() {
     </div>
   );
 
-  const renderTrendingSection = () => {
-    if (!primaryIndustry) {
+  const renderNewsSection = () => {
+    if (!latestNewsHook) {
       return (
         <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-white/80">
           No stories are available right now. Please try refreshing in a moment.
@@ -75,91 +68,40 @@ export default function ExplorePage() {
       );
     }
 
-    const headline =
-      primaryMetaArticle?.title || primaryIndustry.summary || `${primaryIndustry.industry} update`;
-    const metaSource = primaryMetaArticle?.source || primaryIndustry.provider;
-    const metaDate = formatMetaDate(primaryMetaArticle?.published_at);
+    const metaDate = formatMetaDate(latestNewsHook.created_at);
+    const industryName = latestNewsHook.industry || 'Industry';
 
     return (
       <section className="mb-12 animate-[fade-in_0.6s_ease-out]">
-        <h2 className="text-2xl font-normal text-white mb-2 leading-tight max-w-4xl">{headline}</h2>
         <div className="flex items-center gap-2 text-white/40 text-sm mb-6">
-          <span>{metaSource}</span>
+          <span className="uppercase tracking-wide">{industryName}</span>
           <span>|</span>
           <span>{metaDate}</span>
         </div>
-        <p className="text-white/70 max-w-4xl mb-8">{primaryIndustry.summary}</p>
 
-        <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {primaryArticles.length > 0 ? (
-              primaryArticles.map(article => (
-                <StoryCard
-                  key={`${primaryIndustry.slug}-${article.url}`}
-                  article={article}
-                  industry={primaryIndustry.industry}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-white/70">
-                No articles available for this industry.
-              </div>
-            )}
+        <h2 className="text-2xl font-normal text-white mb-6 leading-tight max-w-4xl">
+          {industryName} News Summary
+        </h2>
+
+        <p className="text-white/70 max-w-4xl mb-8 text-lg leading-relaxed">
+          {latestNewsHook.summary}
+        </p>
+
+        {latestNewsHook.hooks && latestNewsHook.hooks.length > 0 && (
+          <div className="mt-10">
+            <h3 className="text-xl font-medium text-white mb-6">LinkedIn Post Hooks</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {latestNewsHook.hooks.map((hook, index) => (
+                <div
+                  key={index}
+                  className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/40 transition-all duration-300"
+                >
+                  <p className="text-white/90 leading-relaxed">{hook}</p>
+                </div>
+              ))}
+            </div>
           </div>
-
-          <div className="absolute top-1/2 -right-16 transform -translate-y-1/2 hidden xl:flex">
-            <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-              <FaChevronRight />
-            </button>
-          </div>
-        </div>
-      </section>
-    );
-  };
-
-  const renderSecondarySection = () => {
-    if (!secondaryIndustry) return null;
-
-    const headline =
-      secondaryMetaArticle?.title ||
-      secondaryIndustry.summary ||
-      `${secondaryIndustry.industry} update`;
-    const metaSource = secondaryMetaArticle?.source || secondaryIndustry.provider;
-    const metaDate = formatMetaDate(secondaryMetaArticle?.published_at);
-
-    return (
-      <section className="mb-12 animate-[fade-in_0.6s_ease-out] delay-100">
-        <h2 className="text-2xl font-normal text-white mb-2 leading-tight">{headline}</h2>
-        <div className="flex items-center gap-2 text-white/40 text-sm mb-6">
-          <span>{metaSource}</span>
-          <span>|</span>
-          <span>{metaDate}</span>
-        </div>
-        <p className="text-white/70 max-w-4xl mb-8">{secondaryIndustry.summary}</p>
-
-        <div className="relative">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {secondaryArticles.length > 0 ? (
-              secondaryArticles.map(article => (
-                <StoryCard
-                  key={`${secondaryIndustry.slug}-${article.url}`}
-                  article={article}
-                  industry={secondaryIndustry.industry}
-                />
-              ))
-            ) : (
-              <div className="col-span-full text-white/70">
-                Not enough stories yet. We&apos;ll keep refreshing your feed.
-              </div>
-            )}
-          </div>
-
-          <div className="absolute top-1/2 -right-16 transform -translate-y-1/2 hidden xl:flex">
-            <button className="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors">
-              <FaChevronRight />
-            </button>
-          </div>
-        </div>
+        )}
       </section>
     );
   };
@@ -176,7 +118,7 @@ export default function ExplorePage() {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-4xl font-medium text-white">Never miss the moment.</h1>
             <button
-              onClick={() => fetchNews()}
+              onClick={handleRefresh}
               disabled={isRefreshing}
               className="w-10 h-10 flex items-center justify-center text-white border border-white/20 rounded-lg hover:bg-white/10 disabled:opacity-60 transition-colors"
               aria-label="Refresh feed"
@@ -195,28 +137,7 @@ export default function ExplorePage() {
 
           {isLoading && renderLoadingState()}
           {!isLoading && errorMessage && renderErrorState()}
-          {!isLoading && !errorMessage && (
-            <>
-              {hasData ? (
-                <>
-                  {renderTrendingSection()}
-                  {renderSecondarySection()}
-                </>
-              ) : (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-white/80">
-                  We&apos;re not seeing any curated stories right now. Please try refreshing or
-                  check back shortly.
-                </div>
-              )}
-            </>
-          )}
-          {!isLoading && apiErrors.length > 0 && (
-            <div className="mt-10 bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-sm text-yellow-200">
-              Some industries are temporarily unavailable:{' '}
-              {apiErrors.map(error => error.slug).join(', ')}. We&apos;ll keep trying to pull them
-              in.
-            </div>
-          )}
+          {!isLoading && !errorMessage && renderNewsSection()}
         </div>
       </div>
     </AuthGuard>
