@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { AuthGuard } from '@/components/AuthGuard';
 import { useGetIndustry } from './hooks/useGetIndustry';
 import { useGetNewsHooks } from './hooks/useGetNewsHooks';
@@ -17,6 +18,7 @@ const formatMetaDate = (value?: string | null) => {
 };
 
 export default function ExplorePage() {
+  const router = useRouter();
   const { industry, loading: industryLoading } = useGetIndustry();
   const {
     newsHooks,
@@ -29,6 +31,11 @@ export default function ExplorePage() {
 
   // Get the most recent news hook for the user's industry
   const latestNewsHook = newsHooks.length > 0 ? newsHooks[0] : null;
+
+  const handleUseHook = (hookText: string) => {
+    const encodedText = encodeURIComponent(hookText);
+    router.push(`/create/edit?text=${encodedText}`);
+  };
 
   const renderLoadingState = () => (
     <div className="flex flex-col items-center justify-center py-20 text-white/70 gap-4">
@@ -79,9 +86,16 @@ export default function ExplorePage() {
               {latestNewsHook.hooks.map((hook, index) => (
                 <div
                   key={index}
-                  className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/40 transition-all duration-300"
+                  className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/40 transition-all duration-300 flex flex-col"
                 >
-                  <p className="text-white/90 leading-relaxed">{hook}</p>
+                  <p className="text-white/90 leading-relaxed mb-4 flex-1">{hook}</p>
+                  <button
+                    onClick={() => handleUseHook(hook)}
+                    className="w-full mt-4 py-2 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90"
+                    style={{ backgroundColor: '#9BC6E9' }}
+                  >
+                    Use Hook
+                  </button>
                 </div>
               ))}
             </div>
