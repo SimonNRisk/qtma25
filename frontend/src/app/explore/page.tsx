@@ -1,8 +1,7 @@
 'use client';
 
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
-import { FaRedo } from 'react-icons/fa';
 import { useGetIndustry } from './hooks/useGetIndustry';
 import { useGetNewsHooks } from './hooks/useGetNewsHooks';
 
@@ -24,20 +23,12 @@ export default function ExplorePage() {
     loading: newsHooksLoading,
     error: newsHooksError,
   } = useGetNewsHooks(industry || undefined);
-  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const isLoading = industryLoading || newsHooksLoading;
   const errorMessage = newsHooksError;
 
   // Get the most recent news hook for the user's industry
   const latestNewsHook = newsHooks.length > 0 ? newsHooks[0] : null;
-
-  const handleRefresh = useCallback(async () => {
-    setIsRefreshing(true);
-    // Force a re-fetch by triggering a state update
-    // The hooks will automatically refetch when dependencies change
-    window.location.reload();
-  }, []);
 
   const renderLoadingState = () => (
     <div className="flex flex-col items-center justify-center py-20 text-white/70 gap-4">
@@ -50,12 +41,6 @@ export default function ExplorePage() {
     <div className="bg-red-500/10 border border-red-500/40 rounded-xl p-6 text-white">
       <p className="font-medium mb-2">We couldn&apos;t load fresh stories.</p>
       <p className="text-sm text-white/80">{errorMessage}</p>
-      <button
-        onClick={handleRefresh}
-        className="mt-4 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm border border-white/20 transition-colors"
-      >
-        Try again
-      </button>
     </div>
   );
 
@@ -115,16 +100,8 @@ export default function ExplorePage() {
         }}
       >
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+          <div className="mb-8">
             <h1 className="text-4xl font-medium text-white">Never miss the moment.</h1>
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="w-10 h-10 flex items-center justify-center text-white border border-white/20 rounded-lg hover:bg-white/10 disabled:opacity-60 transition-colors"
-              aria-label="Refresh feed"
-            >
-              <FaRedo className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-            </button>
           </div>
 
           <div className="border-b border-white/20 mb-6"></div>
