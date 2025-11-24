@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { StoryCard, NewsArticle } from './components/StoryCard';
 import { FaChevronRight, FaRedo } from 'react-icons/fa';
 import { API_URL } from '@/lib/api';
+import { useGetIndustry } from './hooks/useGetIndustry';
 
 interface IndustryNewsResponse {
   industry: string;
@@ -37,6 +38,19 @@ export default function ExplorePage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const mountedRef = useRef(false);
+
+  const { industry, loading } = useGetIndustry();
+
+  useEffect(() => {
+    if (loading) {
+      setIsLoading(true);
+    }
+  }, [loading]);
+
+  if (!industry) {
+    //actually, here we will just show all industries. but leaving that for now, as everyone should be onboarded
+    console.log('No industry found - please reach out to our team');
+  }
 
   const fetchNews = useCallback(async (options: { initial?: boolean } = {}) => {
     const { initial = false } = options;
