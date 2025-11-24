@@ -1,56 +1,62 @@
 import React from 'react';
-import { FaLightbulb, FaStar, FaFire, FaRocket, FaBookmark, FaArrowRight } from 'react-icons/fa';
+import { FaArrowRight } from 'react-icons/fa';
 
-export type StoryTag = 'Thought-Provoking' | 'Insightful' | 'Contrarian' | 'Engaging';
+export interface NewsArticle {
+  title: string;
+  description?: string | null;
+  url: string;
+  published_at?: string | null;
+  source?: string | null;
+}
 
 interface StoryCardProps {
-  content: string;
-  tag: StoryTag;
+  article: NewsArticle;
+  industry: string;
   className?: string;
 }
 
-const getTagIcon = (tag: StoryTag) => {
-  switch (tag) {
-    case 'Thought-Provoking':
-      return <FaLightbulb className="w-3 h-3" />;
-    case 'Insightful':
-      return <FaStar className="w-3 h-3" />;
-    case 'Contrarian':
-      return <FaFire className="w-3 h-3" />;
-    case 'Engaging':
-      return <FaRocket className="w-3 h-3" />;
-    default:
-      return null;
-  }
+const formatPublishedDate = (publishedAt?: string | null) => {
+  if (!publishedAt) return null;
+  const parsed = new Date(publishedAt);
+  if (Number.isNaN(parsed.getTime())) return null;
+
+  return new Intl.DateTimeFormat('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(parsed);
 };
 
-export function StoryCard({ content, tag, className = '' }: StoryCardProps) {
+export function StoryCard({ article, industry, className = '' }: StoryCardProps) {
+  const publishedDate = formatPublishedDate(article.published_at);
+  const sourceLabel = article.source || industry;
+
   return (
-    <div
-      className={`bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-5 flex flex-col gap-4 relative group hover:border-white/30 transition-all duration-300 ${className}`}
+    <article
+      className={`bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-5 flex flex-col gap-4 relative group hover:border-white/40 transition-all duration-300 ${className}`}
     >
-      <div className="absolute top-4 right-4 text-white/40 hover:text-white cursor-pointer transition-colors">
-        <FaBookmark className="w-4 h-4" />
+      <div className="space-y-2 flex-1">
+        <p className="text-xs font-medium uppercase tracking-wide text-white/60">{industry}</p>
+        <h3 className="text-lg font-semibold text-white leading-snug">{article.title}</h3>
+        {article.description && (
+          <p className="text-sm text-white/70 leading-relaxed">{article.description}</p>
+        )}
       </div>
 
-      <div className="flex-1">
-        <p className="text-lg font-medium text-white/90 leading-relaxed">
-          {content}
-        </p>
+      <div className="flex items-center justify-between text-xs text-white/50 pt-2 border-t border-white/10">
+        <span className="truncate">{sourceLabel}</span>
+        {publishedDate && <time dateTime={article.published_at || undefined}>{publishedDate}</time>}
       </div>
 
-      <div className="flex items-center justify-between mt-auto pt-4">
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-xs font-medium text-white/80">
-          {tag}
-          {getTagIcon(tag)}
-        </div>
-      </div>
-
-      <button className="w-full mt-3 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-white transition-all group-hover:bg-brand-blue/50">
-        Create
+      <a
+        href={article.url}
+        target="_blank"
+        rel="noreferrer"
+        className="w-full mt-3 py-2 bg-white/10 hover:bg-white/20 border border-white/10 rounded-lg flex items-center justify-center gap-2 text-sm font-medium text-white transition-all group-hover:bg-brand-blue/40"
+      >
+        Read article
         <FaArrowRight className="w-3 h-3" />
-      </button>
-    </div>
+      </a>
+    </article>
   );
 }
-

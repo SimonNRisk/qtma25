@@ -108,5 +108,5 @@ def rate_limit_dependency(
 openai_rate_limiter = RateLimiter(max_requests=10, window_seconds=3600)
 
 # News endpoints: 10 requests per hour (more lenient since they're read-only)
-news_rate_limiter = RateLimiter(max_requests=10, window_seconds=3600)
+news_rate_limiter = RateLimiter(max_requests=30, window_seconds=3600)
 
