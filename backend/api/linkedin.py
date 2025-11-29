@@ -70,12 +70,27 @@ async def linkedin_callback(request: LinkedInCallbackRequest):
         # Exchange code for token
         token_data = await oauth.exchange_code_for_token(code)
         access_token = token_data.get("access_token")
+        refresh_token = token_data.get("refresh_token")
+        
+        if not access_token:
+            raise HTTPException(status_code=500, detail="Failed to obtain access token from LinkedIn")
         
         # Get user profile
         profile_data = await oauth.get_user_profile(access_token)
         
         # Store token in Supabase using the authenticated user's ID
-        await linkedin_supabase_service.store_linkedin_token(user_id, access_token, profile_data)
+        storage_success = await linkedin_supabase_service.store_linkedin_token(
+            user_id, 
+            access_token, 
+            profile_data,
+            refresh_token=refresh_token
+        )
+        
+        if not storage_success:
+            raise HTTPException(
+                status_code=500, 
+                detail="Failed to store LinkedIn token. Please try again."
+            )
         
         return {
             "message": "Authentication successful",
