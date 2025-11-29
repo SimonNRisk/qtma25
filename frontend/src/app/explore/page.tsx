@@ -4,8 +4,9 @@ import React, { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { TrendingStories } from './components/TrendingStories';
 import { ThoughtPrompts } from './components/ThoughtPrompts';
+import { Integrations } from './components/Integrations';
 
-type TabType = 'trending' | 'repackage' | 'thought-prompts';
+type TabType = 'trending' | 'repackage' | 'thought-prompts' | 'integrations';
 
 interface Tab {
   id: TabType;
@@ -16,6 +17,7 @@ const TABS: Tab[] = [
   { id: 'trending', label: 'Trending Stories' },
   { id: 'repackage', label: 'Repackage' },
   { id: 'thought-prompts', label: 'Thought Prompts' },
+  { id: 'integrations', label: 'Integrations' },
 ];
 
 export default function ExplorePage() {
@@ -33,6 +35,8 @@ export default function ExplorePage() {
         );
       case 'thought-prompts':
         return <ThoughtPrompts />;
+      case 'integrations':
+        return <Integrations />;
       default:
         return null;
     }
@@ -47,6 +51,8 @@ export default function ExplorePage() {
         return 'Transform your content.';
       case 'thought-prompts':
         return 'Honest thoughts become powerful content.';
+      case 'integrations':
+        return 'Turn internal conversations into public content.';
       default:
         return 'Never miss the moment.';
     }
@@ -70,7 +76,7 @@ export default function ExplorePage() {
 
           {/* Tab Navigation */}
           <div className="flex items-center gap-4 mb-10">
-            {TABS.map((tab) => (
+            {TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
