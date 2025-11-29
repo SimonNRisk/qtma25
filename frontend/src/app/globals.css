@@ -55,6 +55,7 @@
   --gradient-astro-hero: var(--astro-hero-gradient);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-playfair);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -67,7 +68,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: var(--font-geist-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 /* Profile/Me Page Styles */

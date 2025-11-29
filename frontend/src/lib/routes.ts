@@ -6,6 +6,7 @@ export const EXCLUDED_SIDEBAR_ROUTES = [
   '/auth/callback',
   '/linkedin-connect',
   '/linkedin-connect/callback',
+  '/welcome',
 ];
 
 /**
