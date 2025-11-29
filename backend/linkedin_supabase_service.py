@@ -37,18 +37,24 @@ class SupabaseService:
                 'updated_at': datetime.utcnow().isoformat()
             }
             
-            if existing.data:
+            if existing.data and len(existing.data) > 0:
                 # Update existing token
                 result = self.supabase.table('linkedin_tokens').update(token_data).eq('user_id', user_id).execute()
+                logger.info(f"Updated LinkedIn token for user {user_id}")
             else:
                 # Insert new token
                 token_data['created_at'] = datetime.utcnow().isoformat()
                 result = self.supabase.table('linkedin_tokens').insert(token_data).execute()
+                logger.info(f"Inserted new LinkedIn token for user {user_id}")
             
-            return len(result.data) > 0
+            if not result.data or len(result.data) == 0:
+                logger.error(f"Database operation returned no data for user {user_id}")
+                return False
+            
+            return True
             
         except Exception as e:
-            print(f"Error storing LinkedIn token: {e}")
+            logger.error(f"Error storing LinkedIn token for user {user_id}: {e}", exc_info=True)
             return False
     
     async def get_linkedin_token(self, user_id: str) -> Optional[Dict[str, Any]]:
