@@ -5,6 +5,7 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { TrendingStories } from './components/TrendingStories';
 import { ThoughtPrompts } from './components/ThoughtPrompts';
 import { Integrations } from './components/Integrations';
+import { Repackage } from './components/Repackage';
 
 type TabType = 'trending' | 'repackage' | 'thought-prompts' | 'integrations';
 
@@ -28,11 +29,7 @@ export default function ExplorePage() {
       case 'trending':
         return <TrendingStories />;
       case 'repackage':
-        return (
-          <div className="bg-white/5 border border-white/10 rounded-xl p-8 text-white/80">
-            Repackage feature coming soon. Stay tuned!
-          </div>
-        );
+        return <Repackage />;
       case 'thought-prompts':
         return <ThoughtPrompts />;
       case 'integrations':
