@@ -13,108 +13,110 @@ interface RepackagePost {
   alternativeHooks: string[];
 }
 
-const REPACKAGE_POSTS: RepackagePost[] = [
-  {
-    id: '1',
-    date: '2 weeks ago',
-    originalHook: `Just hit 10K followers on LinkedIn. Here's what I learned about building an audience:
+// Make a post with astro to begin getting analytics on past posts
 
-1. Consistency beats perfection - I posted 3x/week for 6 months, even when I didn't feel like it
-2. Value first, promotion second - 80% of my content educates, 20% promotes
-3. Engage authentically - I respond to every comment for the first hour after posting
+// const REPACKAGE_POSTS: RepackagePost[] = [
+//   {
+//     id: '1',
+//     date: '2 weeks ago',
+//     originalHook: `Just hit 10K followers on LinkedIn. Here's what I learned about building an audience:
 
-The game-changer? Starting conversations, not just broadcasting.
+// 1. Consistency beats perfection - I posted 3x/week for 6 months, even when I didn't feel like it
+// 2. Value first, promotion second - 80% of my content educates, 20% promotes
+// 3. Engage authentically - I respond to every comment for the first hour after posting
 
-What's your biggest lesson in building an audience? 👇`,
-    reactions: 1247,
-    engagementRate: '12.4%',
-    alternativeHooks: [
-      `10K followers later, here's the truth about LinkedIn growth:
+// The game-changer? Starting conversations, not just broadcasting.
 
-Most people overthink it. I didn't.
+// What's your biggest lesson in building an audience? 👇`,
+//     reactions: 1247,
+//     engagementRate: '12.4%',
+//     alternativeHooks: [
+//       `10K followers later, here's the truth about LinkedIn growth:
 
-I just showed up consistently, gave value, and talked to people like humans.
+// Most people overthink it. I didn't.
 
-The secret? There isn't one. Just do the work.`,
-      `I hit 10K followers. Everyone asks "how?"
+// I just showed up consistently, gave value, and talked to people like humans.
 
-The real answer: I stopped trying to go viral and started trying to help.
+// The secret? There isn't one. Just do the work.`,
+//       `I hit 10K followers. Everyone asks "how?"
 
-3 posts a week. Real conversations. Genuine value.
+// The real answer: I stopped trying to go viral and started trying to help.
 
-That's it. That's the strategy.`
-    ],
-  },
-  {
-    id: '2',
-    date: '3 weeks ago',
-    originalHook: `We just raised our Series A. The fundraising process was brutal, but I learned 3 things that changed everything:
+// 3 posts a week. Real conversations. Genuine value.
 
-1. **Timing matters more than traction** - We started too early. By the time we got term sheets, our metrics had 2x'd. That changed everything.
+// That's it. That's the strategy.`
+//     ],
+//   },
+//   {
+//     id: '2',
+//     date: '3 weeks ago',
+//     originalHook: `We just raised our Series A. The fundraising process was brutal, but I learned 3 things that changed everything:
 
-2. **Your co-founder relationship will be tested** - Long nights, tough decisions, conflicting advice. If you're not aligned before, you won't be after.
+// 1. **Timing matters more than traction** - We started too early. By the time we got term sheets, our metrics had 2x'd. That changed everything.
 
-3. **The "no" that hurts most isn't the rejection** - It's the one that comes after 3 months of conversations.
+// 2. **Your co-founder relationship will be tested** - Long nights, tough decisions, conflicting advice. If you're not aligned before, you won't be after.
 
-But here's what I learned: every "no" made our pitch better. Every question we couldn't answer made us stronger.
+// 3. **The "no" that hurts most isn't the rejection** - It's the one that comes after 3 months of conversations.
 
-To everyone in the trenches: keep going. The right investors are out there.`,
-    reactions: 892,
-    engagementRate: '9.8%',
-    alternativeHooks: [
-      `Series A closed. Here's what fundraising really taught me:
+// But here's what I learned: every "no" made our pitch better. Every question we couldn't answer made us stronger.
 
-It's not about the money. It's about finding partners who believe in your vision when you're at your lowest.
+// To everyone in the trenches: keep going. The right investors are out there.`,
+//     reactions: 892,
+//     engagementRate: '9.8%',
+//     alternativeHooks: [
+//       `Series A closed. Here's what fundraising really taught me:
 
-The process will test you. Your relationships. Your conviction.
+// It's not about the money. It's about finding partners who believe in your vision when you're at your lowest.
 
-But if you're building something real, the right people will find you.`,
-      `We raised our Series A. The biggest lesson?
+// The process will test you. Your relationships. Your conviction.
 
-Fundraising isn't about convincing investors you're right.
+// But if you're building something real, the right people will find you.`,
+//       `We raised our Series A. The biggest lesson?
 
-It's about finding the ones who already believe you're right.
+// Fundraising isn't about convincing investors you're right.
 
-The difference? Everything.`
-    ],
-  },
-  {
-    id: '3',
-    date: '1 month ago',
-    originalHook: `I fired my best employee last week.
+// It's about finding the ones who already believe you're right.
 
-Not because they weren't talented. They were exceptional.
+// The difference? Everything.`
+//     ],
+//   },
+//   {
+//     id: '3',
+//     date: '1 month ago',
+//     originalHook: `I fired my best employee last week.
 
-But because they weren't aligned with where we're going.
+// Not because they weren't talented. They were exceptional.
 
-Here's what I learned:
-• Great skills + wrong direction = bad hire
-• Culture fit isn't optional, it's essential
-• Sometimes the hardest decisions are the right ones
+// But because they weren't aligned with where we're going.
 
-The team is stronger now. More focused. More aligned.
+// Here's what I learned:
+// • Great skills + wrong direction = bad hire
+// • Culture fit isn't optional, it's essential
+// • Sometimes the hardest decisions are the right ones
 
-Sometimes you have to let go of good to make room for great.`,
-    reactions: 2156,
-    engagementRate: '18.2%',
-    alternativeHooks: [
-      `I let go of my best performer last week.
+// The team is stronger now. More focused. More aligned.
 
-The hardest decision I've made as a founder.
+// Sometimes you have to let go of good to make room for great.`,
+//     reactions: 2156,
+//     engagementRate: '18.2%',
+//     alternativeHooks: [
+//       `I let go of my best performer last week.
 
-But here's why it was right: talent without alignment is just expensive misdirection.
+// The hardest decision I've made as a founder.
 
-Sometimes you have to choose between what's good and what's right.`,
-      `Firing my best employee taught me this:
+// But here's why it was right: talent without alignment is just expensive misdirection.
 
-Skills can be taught. Alignment can't.
+// Sometimes you have to choose between what's good and what's right.`,
+//       `Firing my best employee taught me this:
 
-When someone's talented but going the wrong direction, you're not helping them by keeping them.
+// Skills can be taught. Alignment can't.
 
-You're hurting everyone.`
-    ],
-  },
-];
+// When someone's talented but going the wrong direction, you're not helping them by keeping them.
+
+// You're hurting everyone.`
+//     ],
+//   },
+// ];
 
 // Helper function to render text with markdown-style bold (**text**)
 const renderBoldText = (text: string) => {
@@ -150,14 +152,29 @@ export function Repackage() {
         </p>
       </div>
 
+      {/* Message: Make a post with astro first */}
+      <div className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-8 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
+            <FaHeart className="w-8 h-8 text-white/50" />
+          </div>
+          <div>
+            <h3 className="text-xl font-medium text-white mb-2">Get Started with Repackaging</h3>
+            <p className="text-white/60 text-sm max-w-md">
+              Make a post with Astro first to begin getting analytics on past posts and repackage your best content
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Posts Grid */}
-      <div className="space-y-6">
+      {/* Make a post with astro to begin getting analytics on past posts */}
+      {/* <div className="space-y-6">
         {REPACKAGE_POSTS.map(post => (
           <div
             key={post.id}
             className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/40 transition-all duration-300"
           >
-            {/* Header with Date and Stats */}
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
               <div className="flex items-center gap-4">
                 <span className="text-xs text-white/50">{post.date}</span>
@@ -173,7 +190,6 @@ export function Repackage() {
               </div>
             </div>
 
-            {/* Original Post */}
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-xs font-medium uppercase tracking-wide text-white/60">
@@ -187,7 +203,6 @@ export function Repackage() {
               </div>
             </div>
 
-            {/* Alternative Hooks */}
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xs font-medium uppercase tracking-wide text-white/60">
@@ -217,7 +232,7 @@ export function Repackage() {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }

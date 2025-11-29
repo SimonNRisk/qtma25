@@ -11,64 +11,66 @@ interface IntegrationHook {
   timestamp: string;
 }
 
-const SLACK_HOOKS: IntegrationHook[] = [
-  {
-    id: '1',
-    content: `🎉 Excited to share that we're growing our team! Just hired 2 incredible interns who are already making an impact.
+// Launching Dec 1st
 
-Here's what I learned from the hiring process:
-• Look for curiosity over credentials
-• Cultural fit matters more than you think
-• Fresh perspectives can challenge your assumptions
+// const SLACK_HOOKS: IntegrationHook[] = [
+//   {
+//     id: '1',
+//     content: `🎉 Excited to share that we're growing our team! Just hired 2 incredible interns who are already making an impact.
 
-The best part? Watching them bring new energy to the team. Sometimes the best hires are the ones who ask "why not?" instead of "why?"
+// Here's what I learned from the hiring process:
+// • Look for curiosity over credentials
+// • Cultural fit matters more than you think
+// • Fresh perspectives can challenge your assumptions
 
-#Hiring #TeamBuilding #StartupLife`,
-    source: 'Slack - #general',
-    timestamp: '2 hours ago',
-  },
-  {
-    id: '2',
-    content: `Just wrapped up our Google Pay & Apple Pay integration. Here are the top 3 insights that surprised us:
+// The best part? Watching them bring new energy to the team. Sometimes the best hires are the ones who ask "why not?" instead of "why?"
 
-1. **User behavior shifts dramatically** - Mobile payments increased our conversion rate by 34%. People want frictionless experiences.
+// #Hiring #TeamBuilding #StartupLife`,
+//     source: 'Slack - #general',
+//     timestamp: '2 hours ago',
+//   },
+//   {
+//     id: '2',
+//     content: `Just wrapped up our Google Pay & Apple Pay integration. Here are the top 3 insights that surprised us:
 
-2. **Security concerns are real** - We spent 2x more time on security than we budgeted. But it was worth it. Trust is everything.
+// 1. **User behavior shifts dramatically** - Mobile payments increased our conversion rate by 34%. People want frictionless experiences.
 
-3. **The "small" details matter** - The loading states, error messages, and edge cases? They make or break the experience.
+// 2. **Security concerns are real** - We spent 2x more time on security than we budgeted. But it was worth it. Trust is everything.
 
-The biggest lesson? Ship fast, but don't compromise on the fundamentals. Your users notice.
+// 3. **The "small" details matter** - The loading states, error messages, and edge cases? They make or break the experience.
 
-What's been your experience with payment integrations? Drop your insights below 👇
+// The biggest lesson? Ship fast, but don't compromise on the fundamentals. Your users notice.
 
-#ProductDevelopment #FinTech #MobilePayments`,
-    source: 'Slack - #product',
-    timestamp: '5 hours ago',
-  },
-  {
-    id: '3',
-    content: `We just closed our Series A. Here's what I wish someone had told me before we started fundraising:
+// What's been your experience with payment integrations? Drop your insights below 👇
 
-**The process is emotional, not just financial.**
-You'll question everything - your product, your team, your vision. That's normal. The investors who get it will see through the noise.
+// #ProductDevelopment #FinTech #MobilePayments`,
+//     source: 'Slack - #product',
+//     timestamp: '5 hours ago',
+//   },
+//   {
+//     id: '3',
+//     content: `We just closed our Series A. Here's what I wish someone had told me before we started fundraising:
 
-**Timing is everything.**
-We started fundraising 3 months too early. By the time we got term sheets, our metrics had improved 2x. That changed everything.
+// **The process is emotional, not just financial.**
+// You'll question everything - your product, your team, your vision. That's normal. The investors who get it will see through the noise.
 
-**Your co-founder relationship will be tested.**
-Long nights, tough decisions, conflicting advice. If you're not aligned before fundraising, you won't be after.
+// **Timing is everything.**
+// We started fundraising 3 months too early. By the time we got term sheets, our metrics had improved 2x. That changed everything.
 
-**The "no" that hurts the most isn't the rejection - it's the one that comes after 3 months of conversations.**
+// **Your co-founder relationship will be tested.**
+// Long nights, tough decisions, conflicting advice. If you're not aligned before fundraising, you won't be after.
 
-But here's what I learned: every "no" made our pitch better. Every question we couldn't answer made us stronger.
+// **The "no" that hurts the most isn't the rejection - it's the one that comes after 3 months of conversations.**
 
-To everyone in the trenches: keep going. The right investors are out there. They just need to find you.
+// But here's what I learned: every "no" made our pitch better. Every question we couldn't answer made us stronger.
 
-#Fundraising #StartupLife #Entrepreneurship`,
-    source: 'Slack - #founders',
-    timestamp: '1 day ago',
-  },
-];
+// To everyone in the trenches: keep going. The right investors are out there. They just need to find you.
+
+// #Fundraising #StartupLife #Entrepreneurship`,
+//     source: 'Slack - #founders',
+//     timestamp: '1 day ago',
+//   },
+// ];
 
 // Helper function to render text with markdown-style bold (**text**)
 const renderBoldText = (text: string) => {
@@ -107,14 +109,24 @@ export function Integrations() {
         </p>
       </div>
 
-      {/* Hooks Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Launching Dec 1st */}
+      <div className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-8 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <FaSlack className="w-12 h-12 text-white/50" />
+          <div>
+            <h3 className="text-xl font-medium text-white mb-2">Slack Integration</h3>
+            <p className="text-white/60 text-sm">Launching Dec 1st</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Hooks Grid - Commented out until launch */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {SLACK_HOOKS.map(hook => (
           <div
             key={hook.id}
             className="bg-brand-dark/30 backdrop-blur-sm border border-white/10 rounded-xl p-6 hover:border-white/40 transition-all duration-300 flex flex-col"
           >
-            {/* Source Badge */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <FaSlack className="w-4 h-4 text-white/50" />
@@ -123,14 +135,12 @@ export function Integrations() {
               <span className="text-xs text-white/40">{hook.timestamp}</span>
             </div>
 
-            {/* Hook Content */}
             <div className="flex-1 mb-6">
               <p className="text-white/90 leading-relaxed whitespace-pre-wrap text-sm">
                 {renderBoldText(hook.content)}
               </p>
             </div>
 
-            {/* Use Hook Button */}
             <button
               onClick={() => handleUseHook(hook.content)}
               className="w-full py-3 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90"
@@ -140,7 +150,7 @@ export function Integrations() {
             </button>
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }
