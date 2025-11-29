@@ -12,11 +12,11 @@ export default function Home() {
     const isTokenExpired = session.isTokenExpired();
 
     if (!token || isTokenExpired) {
-      // Not authenticated, redirect to login
-      router.replace('/login');
+      // Not authenticated, send to public welcome page
+      router.replace('/welcome');
     } else {
-      // Authenticated, redirect to create
-      router.replace('/create');
+      // Authenticated, redirect to explore
+      router.replace('/explore');
     }
   }, [router]);
 
