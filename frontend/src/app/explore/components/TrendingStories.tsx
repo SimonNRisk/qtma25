@@ -106,12 +106,6 @@ export function TrendingStories() {
 
   return (
     <>
-      <div className="flex items-center gap-4 mb-10">
-        <button className="px-5 py-2 rounded-full text-sm font-medium border transition-all bg-brand-blue text-white border-brand-blue">
-          Trending Stories
-        </button>
-      </div>
-
       {isLoading && renderLoadingState()}
       {!isLoading && errorMessage && renderErrorState()}
       {!isLoading && !errorMessage && renderNewsSection()}
