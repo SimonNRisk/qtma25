@@ -17,7 +17,7 @@ export default function CreateLayout({ children }: { children: React.ReactNode }
   return (
     <AuthGuard>
       <div
-        className="min-h-screen px-4 py-20 sm:px-6 lg:px-8"
+        className="min-h-screen px-4 py-6 sm:px-6 lg:px-8"
         style={{
           background: 'var(--astro-hero-gradient)',
         }}
