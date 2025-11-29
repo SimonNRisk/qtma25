@@ -25,6 +25,12 @@ else:
 def get_cors_origins():
     """Get list of allowed CORS origins based on environment"""
     origins = [FRONTEND_ORIGIN]
+    
+    # Always allow production domain
+    production_domain = "https://getastro.ca"
+    if production_domain not in origins:
+        origins.append(production_domain)
+    
     if IS_DEV:
         # Always allow localhost variants in dev mode
         if "http://localhost:3000" not in origins:
