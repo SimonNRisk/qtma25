@@ -6,6 +6,10 @@
   --astro-lazuli: #3c698e;
   --astro-sky: #9bc6e9;
   --astro-white: #ffffff;
+  --astro-panel-dark: #1a3a4a;
+  --astro-button-base: #8aa9b3;
+  --astro-button-hover: #90b0bc;
+  --astro-text-dark: #0c1a25;
   --astro-panel-shadow: 0 40px 120px rgba(14, 19, 22, 0.65);
   --astro-accent-glow: 0 0 60px rgba(155, 198, 233, 0.45);
   --astro-hero-gradient:
@@ -49,6 +53,10 @@
   --color-astro-lazuli: var(--astro-lazuli);
   --color-astro-sky: var(--astro-sky);
   --color-astro-white: var(--astro-white);
+  --color-astro-panel-dark: var(--astro-panel-dark);
+  --color-astro-button-base: var(--astro-button-base);
+  --color-astro-button-hover: var(--astro-button-hover);
+  --color-astro-text-dark: var(--astro-text-dark);
   --shadow-astro-panel: var(--astro-panel-shadow);
   --shadow-astro-glow: var(--astro-accent-glow);
   --radius-astro-pill: 9999px;
@@ -68,12 +76,17 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: var(--font-geist-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 /* Profile/Me Page Styles */
 .profile-bg {
   background-image: var(--profile-bg-gradient);
+}
+
+/* Hero Gradient Background */
+.bg-astro-hero {
+  background: var(--astro-hero-gradient);
 }
 
 /* Login Page Styles */

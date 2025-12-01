@@ -1,28 +1,28 @@
-"use client"
+'use client';
 
-import { motion } from "framer-motion"
-import Image from "next/image"
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const steps = [
   {
-    number: "1",
-    title: "Ideation",
-    description: "Connect to LinkedIn, select curated hooks from trending posts and news.",
-    image: "/images/linkedin-connection-dashboard.png",
+    number: '1',
+    title: 'Ideation',
+    description: 'Connect to LinkedIn, select curated hooks from trending posts and news.',
+    image: '/images/linkedin-connection-dashboard.png',
   },
   {
-    number: "2",
-    title: "Creation",
-    description: "Edit your post and plan future posts to automatically post trending updates.",
-    image: "/ai-content-generation-interface.jpg",
+    number: '2',
+    title: 'Creation',
+    description: 'Edit your post and plan future posts to automatically post trending updates.',
+    image: '/ai-content-generation-interface.jpg',
   },
   {
-    number: "3",
-    title: "Execution",
-    description: "Post to LinkedIn and watch interactions grow.",
-    image: "/growth-metrics-dashboard.png",
+    number: '3',
+    title: 'Execution',
+    description: 'Post to LinkedIn and watch interactions grow.',
+    image: '/growth-metrics-dashboard.png',
   },
-]
+];
 
 export default function Features() {
   return (
@@ -35,7 +35,9 @@ export default function Features() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">LinkedIn SEO in 3 steps</h2>
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
+            LinkedIn SEO in 3 steps
+          </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             The easiest way to automate beautiful, SEO-optimized LinkedIn posts.
           </p>
@@ -53,7 +55,7 @@ export default function Features() {
             >
               <div className="bg-card rounded-2xl p-6 shadow-lg border border-border mb-6 aspect-video overflow-hidden flex items-center justify-center">
                 <Image
-                  src={step.image || "/placeholder.svg"}
+                  src={step.image || '/placeholder.svg'}
                   alt={step.title}
                   width={600}
                   height={400}
@@ -72,5 +74,5 @@ export default function Features() {
         </div>
       </div>
     </section>
-  )
+  );
 }

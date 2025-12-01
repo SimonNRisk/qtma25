@@ -1,6 +1,6 @@
 /**
  * Hook for fetching the current thought prompt
- * 
+ *
  * Fetches the most recent active thought prompt and indicates
  * whether the current user has already responded.
  */
@@ -62,7 +62,7 @@ export const useThoughtPrompt = (): UseThoughtPromptReturn => {
       }
 
       const data: GetPromptResponse = await response.json();
-      
+
       setPrompt(data.data);
       setHasResponded(data.has_responded);
       setExistingResponse(data.existing_response);
@@ -97,4 +97,3 @@ export const useThoughtPrompt = (): UseThoughtPromptReturn => {
     fetchRandom,
   };
 };
-

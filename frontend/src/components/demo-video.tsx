@@ -1,39 +1,39 @@
-"use client"
+'use client';
 
-import { useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
 
 export default function DemoVideo() {
-  const videoRef = useRef<HTMLVideoElement | null>(null)
+  const videoRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
+    const video = videoRef.current;
+    if (!video) return;
 
     const handlePlay = async () => {
       try {
-        await video.play()
+        await video.play();
       } catch {
         // Ignore play errors (e.g., if the browser blocks autoplay until in view)
       }
-    }
+    };
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
-            handlePlay()
+            handlePlay();
           } else {
-            video.pause()
+            video.pause();
           }
-        })
+        });
       },
       { threshold: 0.4 }
-    )
+    );
 
-    observer.observe(video)
-    return () => observer.disconnect()
-  }, [])
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section className="relative py-24 md:py-32">
@@ -60,5 +60,5 @@ export default function DemoVideo() {
         </motion.div>
       </div>
     </section>
-  )
+  );
 }

@@ -21,7 +21,7 @@ export const OnboardingHeader = ({ currentStep, totalSteps }: OnboardingHeaderPr
           <div className="relative w-96 h-3 border-2 border-white/60 rounded-full overflow-hidden bg-transparent">
             {/* Completed portion (darker blue) */}
             <div
-              className="absolute top-0 left-0 h-full bg-[#3c698e] transition-all duration-300 ease-in-out"
+              className="absolute top-0 left-0 h-full bg-astro-lazuli transition-all duration-300 ease-in-out"
               style={{ width: `${progress}%` }}
             />
           </div>

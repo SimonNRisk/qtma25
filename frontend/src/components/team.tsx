@@ -1,60 +1,60 @@
-"use client"
+'use client';
 
-import { motion } from "framer-motion"
-import Image from "next/image"
+import { motion } from 'framer-motion';
+import Image from 'next/image';
 
 const teamMembers = [
   {
-    name: "Nicole Steiner",
-    role: "Product Manager",
-    image: "/images/team/1st.png",
+    name: 'Nicole Steiner',
+    role: 'Product Manager',
+    image: '/images/team/1st.png',
   },
   {
-    name: "Brian Yau",
-    role: "Sr. Business Analyst",
-    image: "/images/team/2nd.png",
+    name: 'Brian Yau',
+    role: 'Sr. Business Analyst',
+    image: '/images/team/2nd.png',
   },
   {
-    name: "Simon Risk",
-    role: "Sr. Developer",
-    image: "/images/team/3rd.png",
+    name: 'Simon Risk',
+    role: 'Sr. Developer',
+    image: '/images/team/3rd.png',
   },
   {
-    name: "Hana Brissenden",
-    role: "Sr. UI/UX Designer",
-    image: "/images/team/4th.png",
+    name: 'Hana Brissenden',
+    role: 'Sr. UI/UX Designer',
+    image: '/images/team/4th.png',
   },
   {
-    name: "Kayne Lee",
-    role: "Developer",
-    image: "/images/team/5th.png",
+    name: 'Kayne Lee',
+    role: 'Developer',
+    image: '/images/team/5th.png',
   },
   {
-    name: "Amanda Cao",
-    role: "UI/UX Designer",
-    image: "/images/team/6th.png",
+    name: 'Amanda Cao',
+    role: 'UI/UX Designer',
+    image: '/images/team/6th.png',
   },
   {
-    name: "Julia Bartman",
-    role: "Business Analyst",
-    image: "/images/team/7th.png",
+    name: 'Julia Bartman',
+    role: 'Business Analyst',
+    image: '/images/team/7th.png',
   },
   {
-    name: "Dylan Atwal",
-    role: "Business Analyst",
-    image: "/images/team/8th.png",
+    name: 'Dylan Atwal',
+    role: 'Business Analyst',
+    image: '/images/team/8th.png',
   },
   {
-    name: "Kevin Valencia",
-    role: "Developer",
-    image: "/images/team/9th.png",
+    name: 'Kevin Valencia',
+    role: 'Developer',
+    image: '/images/team/9th.png',
   },
   {
-    name: "Udula Abeykoon",
-    role: "Jr. Developer",
-    image: "/images/team/10th.png",
+    name: 'Udula Abeykoon',
+    role: 'Jr. Developer',
+    image: '/images/team/10th.png',
   },
-]
+];
 
 export default function Team() {
   return (
@@ -84,7 +84,7 @@ export default function Team() {
                 >
                   <div className="relative w-32 h-40 md:w-40 md:h-52 overflow-hidden">
                     <Image
-                      src={member.image || "/placeholder.svg"}
+                      src={member.image || '/placeholder.svg'}
                       alt={member.name}
                       fill
                       className="object-contain"
@@ -97,5 +97,5 @@ export default function Team() {
         </div>
       </div>
     </section>
-  )
+  );
 }

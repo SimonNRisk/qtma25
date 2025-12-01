@@ -161,7 +161,8 @@ export function Repackage() {
           <div>
             <h3 className="text-xl font-medium text-white mb-2">Get Started with Repackaging</h3>
             <p className="text-white/60 text-sm max-w-md">
-              Make a post with Astro first to begin getting analytics on past posts and repackage your best content
+              Make a post with Astro first to begin getting analytics on past posts and repackage
+              your best content
             </p>
           </div>
         </div>
@@ -220,8 +221,7 @@ export function Repackage() {
                     </p>
                     <button
                       onClick={() => handleUseHook(hook)}
-                      className="w-full py-2.5 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90 flex items-center justify-center gap-2"
-                      style={{ backgroundColor: '#9BC6E9' }}
+                      className="w-full py-2.5 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90 flex items-center justify-center gap-2 bg-astro-sky"
                     >
                       Use This Hook
                       <FaArrowRight className="w-3 h-3" />
@@ -236,4 +236,3 @@ export function Repackage() {
     </div>
   );
 }
-
