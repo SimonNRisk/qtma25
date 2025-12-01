@@ -1,37 +1,44 @@
-"use client"
+'use client';
 
-import { motion, useScroll, useTransform } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import Image from "next/image"
-import { useRef } from "react"
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRef } from 'react';
 
 export default function Hero() {
-  const containerRef = useRef<HTMLElement>(null)
-  const { scrollY } = useScroll()
-  const circleOpacity = useTransform(scrollY, [0, 400], [1, 0])
+  const containerRef = useRef<HTMLElement>(null);
+  const { scrollY } = useScroll();
+  const circleOpacity = useTransform(scrollY, [0, 400], [1, 0]);
 
   return (
-    <section id="hero" ref={containerRef} className="relative min-h-screen flex flex-col overflow-hidden bg-background">
-      <motion.div className="absolute inset-0 overflow-hidden pointer-events-none" style={{ opacity: circleOpacity }}>
+    <section
+      id="hero"
+      ref={containerRef}
+      className="relative min-h-screen flex flex-col overflow-hidden bg-background"
+    >
+      <motion.div
+        className="absolute inset-0 overflow-hidden pointer-events-none"
+        style={{ opacity: circleOpacity }}
+      >
         {/* Top right blue glow - moves in a circular pattern */}
         <motion.div
           className="absolute w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(137, 180, 216, 0.5) 0%, rgba(137, 180, 216, 0.3) 25%, rgba(137, 180, 216, 0.1) 50%, transparent 70%)",
-            filter: "blur(60px)",
+              'radial-gradient(circle, rgba(137, 180, 216, 0.5) 0%, rgba(137, 180, 216, 0.3) 25%, rgba(137, 180, 216, 0.1) 50%, transparent 70%)',
+            filter: 'blur(60px)',
           }}
-          initial={{ x: "60%", y: "-30%" }}
+          initial={{ x: '60%', y: '-30%' }}
           animate={{
-            x: ["60%", "70%", "60%", "50%", "60%"],
-            y: ["-30%", "-20%", "-10%", "-20%", "-30%"],
+            x: ['60%', '70%', '60%', '50%', '60%'],
+            y: ['-30%', '-20%', '-10%', '-20%', '-30%'],
             scale: [1, 1.1, 1.05, 1.15, 1],
           }}
           transition={{
             duration: 20,
             repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
         />
 
@@ -40,19 +47,19 @@ export default function Hero() {
           className="absolute w-[600px] h-[600px] md:w-[800px] md:h-[800px] rounded-full"
           style={{
             background:
-              "radial-gradient(circle, rgba(137, 180, 216, 0.5) 0%, rgba(137, 180, 216, 0.3) 25%, rgba(137, 180, 216, 0.1) 50%, transparent 70%)",
-            filter: "blur(60px)",
+              'radial-gradient(circle, rgba(137, 180, 216, 0.5) 0%, rgba(137, 180, 216, 0.3) 25%, rgba(137, 180, 216, 0.1) 50%, transparent 70%)',
+            filter: 'blur(60px)',
           }}
-          initial={{ x: "-30%", y: "60%" }}
+          initial={{ x: '-30%', y: '60%' }}
           animate={{
-            x: ["-30%", "-40%", "-30%", "-20%", "-30%"],
-            y: ["60%", "70%", "80%", "70%", "60%"],
+            x: ['-30%', '-40%', '-30%', '-20%', '-30%'],
+            y: ['60%', '70%', '80%', '70%', '60%'],
             scale: [1.1, 1, 1.1, 1.05, 1.1],
           }}
           transition={{
             duration: 25,
             repeat: Number.POSITIVE_INFINITY,
-            ease: "easeInOut",
+            ease: 'easeInOut',
           }}
         />
       </motion.div>
@@ -80,7 +87,9 @@ export default function Hero() {
                 <span className="relative z-10">CREATE</span>
               </span>
               <span className="relative z-10">CONTENT</span>
-              <span className="font-serif italic relative z-10 text-[var(--astro-sky)]">Differently.</span>
+              <span className="font-serif italic relative z-10 text-[var(--astro-sky)]">
+                Differently.
+              </span>
             </h1>
           </motion.div>
 
@@ -92,7 +101,7 @@ export default function Hero() {
             <Button
               asChild
               size="lg"
-              className="group bg-[#8aa9b3] hover:bg-[#90b0bc] text-[#0c1a25] px-16 py-6 text-2xl rounded-2xl transition-all duration-300 hover:scale-105 shadow-2xl border-none outline-none ring-0 focus-visible:ring-0"
+              className="group bg-astro-button-base hover:bg-astro-button-hover text-astro-text-dark px-16 py-6 text-2xl rounded-2xl transition-all duration-300 hover:scale-105 shadow-2xl border-none outline-none ring-0 focus-visible:ring-0"
             >
               <Link href="/login">
                 <svg
@@ -113,5 +122,5 @@ export default function Hero() {
         </div>
       </div>
     </section>
-  )
+  );
 }

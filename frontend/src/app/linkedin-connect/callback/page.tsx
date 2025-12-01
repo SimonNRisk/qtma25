@@ -53,14 +53,9 @@ function LinkedInCallbackContent() {
 
   return (
     <AuthGuard>
-      <div
-        className="min-h-screen px-8 py-10 sm:px-10 lg:px-12 flex items-center justify-center"
-        style={{
-          background: 'var(--astro-hero-gradient)',
-        }}
-      >
+      <div className="min-h-screen px-8 py-10 sm:px-10 lg:px-12 flex items-center justify-center bg-astro-hero">
         <div className="max-w-2xl mx-auto w-full">
-          <div className="bg-[#1a3a4a]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center animate-[fade-in_0.6s_ease-out]">
+          <div className="bg-astro-panel-dark/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center animate-[fade-in_0.6s_ease-out]">
             <div
               className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 border ${
                 isSuccess ? 'bg-green-500/20 border-green-500/40' : 'bg-white/10 border-white/20'
@@ -86,12 +81,7 @@ export default function LinkedInCallback() {
   return (
     <Suspense
       fallback={
-        <div
-          className="min-h-screen px-8 py-10 sm:px-10 lg:px-12 flex items-center justify-center"
-          style={{
-            background: 'var(--astro-hero-gradient)',
-          }}
-        >
+        <div className="min-h-screen px-8 py-10 sm:px-10 lg:px-12 flex items-center justify-center bg-astro-hero">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white/40 mx-auto mb-4"></div>
             <p className="text-white/70">Loading...</p>

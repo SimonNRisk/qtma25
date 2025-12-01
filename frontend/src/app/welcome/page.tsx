@@ -1,7 +1,7 @@
-import Hero from "@/components/hero"
-import DemoVideo from "@/components/demo-video"
-import Features from "@/components/features"
-import Team from "@/components/team"
+import Hero from '@/components/hero';
+import DemoVideo from '@/components/demo-video';
+import Features from '@/components/features';
+import Team from '@/components/team';
 
 export default function Page() {
   return (
@@ -11,5 +11,5 @@ export default function Page() {
       <Features />
       <Team />
     </main>
-  )
+  );
 }

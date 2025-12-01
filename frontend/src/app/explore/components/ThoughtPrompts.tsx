@@ -82,7 +82,7 @@ export function ThoughtPrompts() {
     setSubmitSuccess(false);
 
     const result = await submitResponse(prompt.id, reflection);
-    
+
     if (result) {
       setSubmitSuccess(true);
       // Reset form after successful submission
@@ -137,7 +137,7 @@ export function ThoughtPrompts() {
   return (
     <div className="animate-[fade-in_0.6s_ease-out]">
       {/* Main Card */}
-      <div className="bg-[#1a3a4a]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
+      <div className="bg-astro-panel-dark/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8">
         {/* Header */}
         <div className="mb-6">
           <p className="text-white/50 text-sm italic mb-3">Use this space to reflect.</p>
@@ -165,9 +165,9 @@ export function ThoughtPrompts() {
             <div className="relative">
               <textarea
                 value={reflection}
-                onChange={(e) => setReflection(e.target.value)}
+                onChange={e => setReflection(e.target.value)}
                 placeholder="Share the moment, lesson, or insight..."
-                className="w-full h-48 px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-[#9BC6E9]"
+                className="w-full h-48 px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-astro-sky"
                 maxLength={5000}
               />
               <button
@@ -178,14 +178,14 @@ export function ThoughtPrompts() {
                 <FaMicrophone className="w-5 h-5" />
               </button>
             </div>
-            <div className="mt-2 text-right text-white/40 text-xs">
-              {reflection.length}/5000
-            </div>
+            <div className="mt-2 text-right text-white/40 text-xs">{reflection.length}/5000</div>
           </div>
 
           {/* Right Column - Customization Options */}
           <div>
-            <label className="block text-white font-medium mb-3">Customize Your Post (Optional)</label>
+            <label className="block text-white font-medium mb-3">
+              Customize Your Post (Optional)
+            </label>
             <div className="grid grid-cols-2 gap-4">
               {/* Post Length */}
               <div>
@@ -193,9 +193,9 @@ export function ThoughtPrompts() {
                 <input
                   type="text"
                   value={customization.postLength}
-                  onChange={(e) => handleCustomizationChange('postLength', e.target.value)}
+                  onChange={e => handleCustomizationChange('postLength', e.target.value)}
                   placeholder="e.g., Short, Medium, Long"
-                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9BC6E9]"
+                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-astro-sky"
                 />
               </div>
 
@@ -205,9 +205,9 @@ export function ThoughtPrompts() {
                 <input
                   type="text"
                   value={customization.numberOfHooks}
-                  onChange={(e) => handleCustomizationChange('numberOfHooks', e.target.value)}
+                  onChange={e => handleCustomizationChange('numberOfHooks', e.target.value)}
                   placeholder="e.g., 3, 5"
-                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9BC6E9]"
+                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-astro-sky"
                 />
               </div>
 
@@ -217,9 +217,9 @@ export function ThoughtPrompts() {
                 <input
                   type="text"
                   value={customization.targetAudience}
-                  onChange={(e) => handleCustomizationChange('targetAudience', e.target.value)}
+                  onChange={e => handleCustomizationChange('targetAudience', e.target.value)}
                   placeholder="e.g., Founders, Engineers"
-                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9BC6E9]"
+                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-astro-sky"
                 />
               </div>
 
@@ -229,9 +229,9 @@ export function ThoughtPrompts() {
                 <input
                   type="text"
                   value={customization.tone}
-                  onChange={(e) => handleCustomizationChange('tone', e.target.value)}
+                  onChange={e => handleCustomizationChange('tone', e.target.value)}
                   placeholder="e.g., Professional, Casual"
-                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#9BC6E9]"
+                  className="w-full px-4 py-3 bg-white rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-astro-sky"
                 />
               </div>
             </div>
@@ -256,11 +256,7 @@ export function ThoughtPrompts() {
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || !reflection.trim()}
-          className="w-full mt-8 py-4 rounded-xl text-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: '#9BC6E9',
-            color: '#1a3a4a',
-          }}
+          className="w-full mt-8 py-4 rounded-xl text-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-astro-sky text-astro-panel-dark"
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
@@ -284,4 +280,3 @@ export function ThoughtPrompts() {
     </div>
   );
 }
-

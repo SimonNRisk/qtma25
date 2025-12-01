@@ -48,12 +48,7 @@ export default function LinkedInConnect() {
 
   return (
     <AuthGuard>
-      <div
-        className="min-h-screen px-8 py-10 sm:px-10 lg:px-12"
-        style={{
-          background: 'var(--astro-hero-gradient)',
-        }}
-      >
+      <div className="min-h-screen px-8 py-10 sm:px-10 lg:px-12 bg-astro-hero">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="mb-8">
@@ -66,7 +61,7 @@ export default function LinkedInConnect() {
           <div className="border-b border-white/20 mb-8"></div>
 
           {!isConnected ? (
-            <div className="bg-[#1a3a4a]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 animate-[fade-in_0.6s_ease-out]">
+            <div className="bg-astro-panel-dark/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 animate-[fade-in_0.6s_ease-out]">
               <div className="text-center mb-8">
                 <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/20">
                   <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -91,11 +86,7 @@ export default function LinkedInConnect() {
               <button
                 onClick={handleConnect}
                 disabled={isConnecting}
-                className="w-full py-4 rounded-xl text-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
-                style={{
-                  backgroundColor: '#9BC6E9',
-                  color: '#1a3a4a',
-                }}
+                className="w-full py-4 rounded-xl text-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 bg-astro-sky text-astro-panel-dark"
               >
                 {isConnecting ? (
                   <>
@@ -128,7 +119,7 @@ export default function LinkedInConnect() {
               </div>
             </div>
           ) : (
-            <div className="bg-[#1a3a4a]/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center animate-[fade-in_0.6s_ease-out]">
+            <div className="bg-astro-panel-dark/80 backdrop-blur-sm border border-white/10 rounded-2xl p-8 text-center animate-[fade-in_0.6s_ease-out]">
               <div className="w-20 h-20 bg-green-500/20 border border-green-500/40 rounded-full flex items-center justify-center mx-auto mb-6">
                 <svg
                   className="w-10 h-10 text-green-400"
@@ -158,11 +149,7 @@ export default function LinkedInConnect() {
                 </button>
                 <button
                   onClick={() => (window.location.href = '/create')}
-                  className="px-6 py-3 rounded-xl font-medium transition-colors hover:opacity-90"
-                  style={{
-                    backgroundColor: '#9BC6E9',
-                    color: '#1a3a4a',
-                  }}
+                  className="px-6 py-3 rounded-xl font-medium transition-colors hover:opacity-90 bg-astro-sky text-astro-panel-dark"
                 >
                   Start Posting
                 </button>

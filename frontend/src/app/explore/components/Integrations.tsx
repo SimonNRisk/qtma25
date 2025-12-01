@@ -143,8 +143,7 @@ export function Integrations() {
 
             <button
               onClick={() => handleUseHook(hook.content)}
-              className="w-full py-3 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90"
-              style={{ backgroundColor: '#9BC6E9' }}
+              className="w-full py-3 text-white rounded-lg text-sm font-medium transition-colors hover:opacity-90 bg-astro-sky"
             >
               Use Hook
             </button>
