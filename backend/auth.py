@@ -84,10 +84,6 @@ def verify_token(token: str, token_type: str = "access"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 # ---------- Auth Helpers ----------
-def _extract_token_from_cookie(request: Request) -> Optional[str]:
-    """Extract access token from HttpOnly cookie"""
-    return request.cookies.get("access_token")
-
 def _extract_bearer_token(authorization: Optional[str]) -> str:
     """Extract Bearer token from Authorization header"""
     if not authorization:
@@ -98,15 +94,15 @@ def _extract_bearer_token(authorization: Optional[str]) -> str:
     return parts[1]
 
 # When we call this via "Depends(get_current_user)", FastAPI automatically passes in the request object and the authorization header. We annotate with "Header()" as metadata so fastapi knows how to get the authorization... from the header.
-# For example, you could have Annotated[SomeDataType, Body()], and fastapi would know to get the data from the body of the request.
-async def get_current_user(request: Request, authorization: Annotated[Optional[str], Header()] = None):
+# Need to ensure the cookie is called "access_token".
+async def get_current_user(access_token: Annotated[Optional[str], Cookie()] = None, authorization: Annotated[Optional[str], Header()] = None):
     """Get current user from JWT token"""
     token = None
 
-    # First try to get token from cookie (better pattern)
-    token = _extract_token_from_cookie(request)
+    if access_token:
+        token = access_token
     
-    if not token:
+    if not token and authorization:
         token = _extract_bearer_token(authorization)
 
     if not token:
