@@ -2,7 +2,7 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -84,6 +84,10 @@ def verify_token(token: str, token_type: str = "access"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 # ---------- Auth Helpers ----------
+def _extract_token_from_cookie(request: Request) -> Optional[str]:
+    """Extract access token from HttpOnly cookie"""
+    return request.cookies.get("access_token")
+
 def _extract_bearer_token(authorization: Optional[str]) -> str:
     """Extract Bearer token from Authorization header"""
     if not authorization:
@@ -93,9 +97,21 @@ def _extract_bearer_token(authorization: Optional[str]) -> str:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Authorization header")
     return parts[1]
 
-async def get_current_user(authorization: Annotated[Optional[str], Header()] = None):
+# When we call this via "Depends(get_current_user)", FastAPI automatically passes in the request object and the authorization header. We annotate with "Header()" as metadata so fastapi knows how to get the authorization... from the header.
+# For example, you could have Annotated[SomeDataType, Body()], and fastapi would know to get the data from the body of the request.
+async def get_current_user(request: Request, authorization: Annotated[Optional[str], Header()] = None):
     """Get current user from JWT token"""
-    token = _extract_bearer_token(authorization)
+    token = None
+
+    # First try to get token from cookie (better pattern)
+    token = _extract_token_from_cookie(request)
+    
+    if not token:
+        token = _extract_bearer_token(authorization)
+
+    if not token:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing auth token")
+    
     payload = verify_token(token, "access")
     
     user_id = payload.get("sub")
