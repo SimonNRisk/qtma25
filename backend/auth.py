@@ -2,7 +2,7 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Request
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Request, Response
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
 from dotenv import load_dotenv
@@ -177,7 +177,7 @@ def signup(body: SignUpBody):
         raise HTTPException(status_code=400, detail=str(e))
 
 @auth_router.post("/login", response_model=TokenResponse)
-def login(body: LoginBody):
+def login(body: LoginBody, response: Response):
     """Login user and return JWT tokens"""
     try:
         # Authenticate with Supabase
@@ -206,6 +206,27 @@ def login(body: LoginBody):
         
         access_token = create_access_token(token_data)
         refresh_token = create_refresh_token({"sub": user_id})
+
+        # Set HttpOnly cookies for secure token storage
+        # httponly=True: Prevents JavaScript from accessing the cookie (protects against XSS attacks)
+        # secure=True: Cookie only sent over HTTPS connections (not accessible via HTTP) (protects against man-in-the-middle attacks)
+        # samesite="strict": Cookie only sent with requests from same site (protects against CSRF attacks)
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=True,
+            samesite="strict",
+            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="strict",
+            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+        )
 
         return TokenResponse(
             access_token=access_token,
@@ -290,7 +311,7 @@ def oauth_login(provider: str):
         raise HTTPException(status_code=400, detail=f"OAuth login failed: {str(e)}")
 
 @auth_router.post("/oauth/callback")
-def oauth_callback(request: dict):
+def oauth_callback(request: dict, response: Response):
     """Handle OAuth callback and return JWT tokens"""
     try:
         code = request.get("code")
@@ -339,6 +360,24 @@ def oauth_callback(request: dict):
         
         jwt_access_token = create_access_token(token_data)
         jwt_refresh_token = create_refresh_token({"sub": user_id})
+
+        # Set HttpOnly cookies
+        response.set_cookie(
+            key="access_token",
+            value=jwt_access_token,
+            httponly=True,
+            secure=True,
+            samesite="strict",
+            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=jwt_refresh_token,
+            httponly=True,
+            secure=True,
+            samesite="strict",
+            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+        )
 
         # Save profile to database if admin client is available
         profile_upserted = False
