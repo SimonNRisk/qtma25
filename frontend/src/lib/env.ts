@@ -42,25 +42,3 @@ export const getBackendUrl = (): string => {
 
   return prodUrl;
 };
-
-/**
- * Check if we're on a production domain but should be using localhost
- */
-export const shouldRedirectToLocalhost = (): boolean => {
-  if (typeof window === 'undefined') return false;
-
-  const isProductionDomain =
-    window.location.hostname.includes('vercel.app') ||
-    window.location.hostname.includes('onrender.com') ||
-    window.location.hostname === 'getastro.ca';
-
-  return isProductionDomain && IS_DEV;
-};
-
-/**
- * Get the localhost URL for the current path
- */
-export const getLocalhostUrl = (path: string = window.location.pathname): string => {
-  const search = window.location.search;
-  return `http://localhost:3000${path}${search}`;
-};
