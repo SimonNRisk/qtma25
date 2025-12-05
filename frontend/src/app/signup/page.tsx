@@ -35,18 +35,30 @@ function SignUpForm() {
     setOauthLoading(provider);
     setMsg(null);
     try {
-      const response = await fetch(`${API_URL}/auth/oauth/${provider}`);
+      const response = await fetch(`${API_URL}/auth/oauth/${provider}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.detail || `Failed to connect to ${provider}. Please try again.`;
+        setMsg(errorMessage);
+        setOauthLoading(null);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.url) {
         // Redirect to OAuth provider
         window.location.href = data.url;
       } else {
-        setMsg('OAuth login failed. Please try again.');
+        setMsg(`Failed to initiate ${provider} login. Please try again.`);
+        setOauthLoading(null);
       }
-    } catch {
-      setMsg('OAuth login failed. Please try again.');
-    } finally {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : `Failed to connect to ${provider}. Please try again.`;
+      setMsg(errorMessage);
       setOauthLoading(null);
     }
   }
@@ -102,8 +114,7 @@ function SignUpForm() {
             password,
           });
 
-          // Save JWT tokens
-          session.save(loginResponse.access_token, loginResponse.refresh_token);
+          // Tokens are set as HttpOnly cookies by backend - no need to save them
 
           // Sync onboarding data if it exists
           try {

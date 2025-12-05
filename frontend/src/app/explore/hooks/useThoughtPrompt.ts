@@ -7,7 +7,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { API_URL } from '@/lib/api';
-import { session } from '@/lib/session';
 
 export interface ThoughtPrompt {
   id: string;
@@ -44,15 +43,8 @@ export const useThoughtPrompt = (): UseThoughtPromptReturn => {
       setLoading(true);
       setError(null);
 
-      const accessToken = session.access();
-      if (!accessToken) {
-        throw new Error('Not authenticated');
-      }
-
       const response = await fetch(`${API_URL}/api/thought-prompts/${endpoint}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        credentials: 'include', // Include cookies
         cache: 'no-store',
       });
 

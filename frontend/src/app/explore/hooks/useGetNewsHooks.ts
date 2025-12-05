@@ -1,5 +1,4 @@
 import { API_URL } from '@/lib/api';
-import { session } from '@/lib/session';
 import { useState, useEffect } from 'react';
 
 interface NewsHook {
@@ -28,12 +27,6 @@ export const useGetNewsHooks = (industrySlug?: string, createdAfter?: string) =>
         setLoading(true);
         setError(null);
 
-        // Get access token for authentication
-        const accessToken = session.access();
-        if (!accessToken) {
-          throw new Error('Not authenticated');
-        }
-
         // Build query params
         const params = new URLSearchParams();
         if (industrySlug) {
@@ -44,9 +37,7 @@ export const useGetNewsHooks = (industrySlug?: string, createdAfter?: string) =>
         }
 
         const response = await fetch(`${API_URL}/api/news/hooks?${params.toString()}`, {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          credentials: 'include', // Include cookies
           cache: 'no-store',
         });
 

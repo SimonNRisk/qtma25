@@ -24,23 +24,16 @@ export default function MePage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = session.access();
-
-    if (!token) {
-      router.replace('/login');
-      return;
-    }
-
-    // Fetch both user profile and LinkedIn status
-    Promise.all([getJSON('/me', token), getJSON('/api/linkedin/status', token)])
+    // Fetch both user profile and LinkedIn status (cookies sent automatically)
+    Promise.all([getJSON('/me'), getJSON('/api/linkedin/status')])
       .then(([userData, linkedinData]) => {
         setUser(userData.user);
         setLinkedinStatus(linkedinData);
         setLoading(false);
       })
-      .catch(error => {
+      .catch(async error => {
         console.error('Profile request failed:', error);
-        session.clear();
+        await session.clear();
         router.replace('/login');
       });
   }, [router]);
@@ -172,8 +165,8 @@ export default function MePage() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
-                  onClick={() => {
-                    session.clear();
+                  onClick={async () => {
+                    await session.clear();
                     router.replace('/login');
                   }}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"

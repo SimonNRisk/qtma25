@@ -2,11 +2,11 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
 from pydantic import BaseModel, EmailStr
 from supabase import create_client, Client
 from dotenv import load_dotenv
-from config import FRONTEND_ORIGIN
+from config import FRONTEND_ORIGIN, IS_DEV
 
 load_dotenv()
 
@@ -50,6 +50,11 @@ class TokenResponse(BaseModel):
     expires_in: int
     user: dict
 
+class AuthResponse(BaseModel):
+    """Response model for auth endpoints - tokens are set as HttpOnly cookies, not returned in body"""
+    message: str = "Authentication successful"
+    user: dict
+
 # ---------- JWT Utilities ----------
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Create a JWT access token"""
@@ -84,31 +89,17 @@ def verify_token(token: str, token_type: str = "access"):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
 # ---------- Auth Helpers ----------
-def _extract_bearer_token(authorization: Optional[str]) -> str:
-    """Extract Bearer token from Authorization header"""
-    if not authorization:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing Authorization header")
-    parts = authorization.split()
-    if len(parts) != 2 or parts[0].lower() != "bearer":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid Authorization header")
-    return parts[1]
-
-# When we call this via "Depends(get_current_user)", FastAPI automatically passes in the request object and the authorization header. We annotate with "Header()" as metadata so fastapi knows how to get the authorization... from the header.
-# Need to ensure the cookie is called "access_token".
-async def get_current_user(access_token: Annotated[Optional[str], Cookie()] = None, authorization: Annotated[Optional[str], Header()] = None):
-    """Get current user from JWT token"""
-    token = None
-
-    if access_token:
-        token = access_token
+async def get_current_user(
+    access_token: Annotated[Optional[str], Cookie()] = None
+):
+    """Get current user from JWT token in HttpOnly cookie"""
+    if not access_token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing authentication token. Please log in."
+        )
     
-    if not token and authorization:
-        token = _extract_bearer_token(authorization)
-
-    if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Missing auth token")
-    
-    payload = verify_token(token, "access")
+    payload = verify_token(access_token, "access")
     
     user_id = payload.get("sub")
     if not user_id:
@@ -176,9 +167,9 @@ def signup(body: SignUpBody):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-@auth_router.post("/login", response_model=TokenResponse)
+@auth_router.post("/login", response_model=AuthResponse)
 def login(body: LoginBody, response: Response):
-    """Login user and return JWT tokens"""
+    """Login user and set JWT tokens as HttpOnly cookies"""
     try:
         # Authenticate with Supabase
         res = supabase.auth.sign_in_with_password({
@@ -209,29 +200,31 @@ def login(body: LoginBody, response: Response):
 
         # Set HttpOnly cookies for secure token storage
         # httponly=True: Prevents JavaScript from accessing the cookie (protects against XSS attacks)
-        # secure=True: Cookie only sent over HTTPS connections (not accessible via HTTP) (protects against man-in-the-middle attacks)
-        # samesite="strict": Cookie only sent with requests from same site (protects against CSRF attacks)
+        # secure: False in dev (localhost HTTP), True in production (HTTPS required)
+        # samesite: "lax" in dev (works with same-origin requests via Next.js proxy), "strict" in production
+        # In dev, frontend uses Next.js API proxy (/api/proxy) so requests appear same-origin
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
-            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+            secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
+            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            path="/"
         )
         response.set_cookie(
             key="refresh_token",
             value=refresh_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
-            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+            secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
+            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+            path="/"
         )
 
-        return TokenResponse(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            expires_in=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Convert to seconds
+        # Return user data only - tokens are set as HttpOnly cookies
+        return AuthResponse(
+            message="Authentication successful",
             user={
                 "id": user_id,
                 "email": body.email,
@@ -244,10 +237,15 @@ def login(body: LoginBody, response: Response):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid email or password")
 
-@auth_router.post("/refresh")
-def refresh_token(refresh_token: str):
-    """Refresh access token using refresh token"""
+@auth_router.post("/refresh", response_model=AuthResponse)
+def refresh_token(refresh_token: Annotated[Optional[str], Cookie()] = None, response: Response = None):
+    if response is None:
+        response = Response()
+    """Refresh access token using refresh token from cookie"""
     try:
+        if not refresh_token:
+            raise HTTPException(status_code=401, detail="Refresh token not found")
+            
         payload = verify_token(refresh_token, "refresh")
         user_id = payload.get("sub")
         
@@ -272,11 +270,26 @@ def refresh_token(refresh_token: str):
         
         access_token = create_access_token(token_data)
 
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "expires_in": JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
-        }
+        # Set new access token as HttpOnly cookie
+        response.set_cookie(
+            key="access_token",
+            value=access_token,
+            httponly=True,
+            secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
+            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            path="/"
+        )
+
+        return AuthResponse(
+            message="Token refreshed successfully",
+            user={
+                "id": user_id,
+                "email": getattr(user, "email", ""),
+                "first_name": user_metadata.get("first_name", ""),
+                "last_name": user_metadata.get("last_name", "")
+            }
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -286,11 +299,14 @@ def refresh_token(refresh_token: str):
 def oauth_login(provider: str):
     """Initiate OAuth login with specified provider"""
     if provider not in ["google", "github"]:
-        raise HTTPException(status_code=400, detail="Unsupported OAuth provider")
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Unsupported OAuth provider: {provider}. Supported providers: google, github"
+        )
     
     try:
         redirect_url = f"{FRONTEND_ORIGIN}/auth/callback"
-                
+        
         if provider == "google":
             res = supabase.auth.sign_in_with_oauth({
                 "provider": "google",
@@ -306,13 +322,29 @@ def oauth_login(provider: str):
                 }
             })
         
+        if not res or not hasattr(res, 'url') or not res.url:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Failed to initiate {provider} OAuth login. Please try again."
+            )
+        
         return {"url": res.url}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"OAuth login failed: {str(e)}")
+        error_msg = str(e).lower()
+        if "configuration" in error_msg or "not configured" in error_msg:
+            detail = f"{provider.capitalize()} OAuth is not properly configured. Please contact support."
+        elif "network" in error_msg or "connection" in error_msg:
+            detail = f"Network error connecting to {provider}. Please check your connection and try again."
+        else:
+            detail = f"Failed to initiate {provider} OAuth login. Please try again."
+        
+        raise HTTPException(status_code=500, detail=detail)
 
-@auth_router.post("/oauth/callback")
+@auth_router.post("/oauth/callback", response_model=AuthResponse)
 def oauth_callback(request: dict, response: Response):
-    """Handle OAuth callback and return JWT tokens"""
+    """Handle OAuth callback and set JWT tokens as HttpOnly cookies"""
     try:
         code = request.get("code")
         access_token = request.get("access_token")
@@ -324,24 +356,47 @@ def oauth_callback(request: dict, response: Response):
             try:
                 res = supabase.auth.exchange_code_for_session({"auth_code": code})
                 if not res.session or not res.user:
-                    raise HTTPException(status_code=401, detail="Failed to exchange code for session")
+                    raise HTTPException(
+                        status_code=401, 
+                        detail="OAuth authentication failed. The authorization code may have expired. Please try logging in again."
+                    )
                 
                 user = res.user
                 access_token = res.session.access_token
                 refresh_token = res.session.refresh_token
+            except HTTPException:
+                raise
             except Exception as e:
-                raise HTTPException(status_code=401, detail=f"Code exchange failed: {str(e)}")
+                error_msg = str(e).lower()
+                if "expired" in error_msg or "invalid" in error_msg:
+                    detail = "OAuth authorization code expired or invalid. Please try logging in again."
+                elif "network" in error_msg or "connection" in error_msg:
+                    detail = "Network error during OAuth authentication. Please check your connection and try again."
+                else:
+                    detail = "OAuth authentication failed. Please try logging in again."
+                raise HTTPException(status_code=401, detail=detail)
         
         # Handle direct token flow
         elif access_token:
             # Get user info from Supabase using the access token
-            user_res = supabase.auth.get_user(access_token)
-            user = user_res.user
-            
-            if not user:
-                raise HTTPException(status_code=401, detail="Invalid OAuth token")
+            try:
+                user_res = supabase.auth.get_user(access_token)
+                user = user_res.user
+                
+                if not user:
+                    raise HTTPException(status_code=401, detail="Invalid OAuth token. Please try logging in again.")
+            except HTTPException:
+                raise
+            except Exception as e:
+                raise HTTPException(
+                    status_code=401, 
+                    detail="Failed to verify OAuth token. Please try logging in again."
+                )
         else:
-            raise HTTPException(status_code=400, detail="Missing code or access token")
+            raise HTTPException(
+                status_code=400, 
+                detail="Missing OAuth authorization code or token. Please try logging in again."
+            )
         
         user_id = getattr(user, "id", None)
         user_metadata = getattr(user, "user_metadata", {})
@@ -366,18 +421,30 @@ def oauth_callback(request: dict, response: Response):
             key="access_token",
             value=jwt_access_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
-            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60
+            secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
+            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            path="/"
         )
         response.set_cookie(
             key="refresh_token",
             value=jwt_refresh_token,
             httponly=True,
-            secure=True,
-            samesite="strict",
-            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60
+            secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
+            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+            path="/"
         )
+
+        # Check if user has completed onboarding (has an account)
+        # For OAuth, we allow login if they have onboarding data
+        has_onboarding_data = False
+        if admin:
+            try:
+                onboarding_result = admin.table("onboarding_context").select("id").eq("user_id", user_id).execute()
+                has_onboarding_data = bool(onboarding_result.data)
+            except Exception:
+                has_onboarding_data = False
 
         # Save profile to database if admin client is available
         profile_upserted = False
@@ -396,10 +463,9 @@ def oauth_callback(request: dict, response: Response):
             except Exception:
                 profile_upserted = False
 
-        response_data = TokenResponse(
-            access_token=jwt_access_token,
-            refresh_token=jwt_refresh_token,
-            expires_in=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        # Return user data only - tokens are set as HttpOnly cookies
+        return AuthResponse(
+            message="OAuth authentication successful",
             user={
                 "id": user_id,
                 "email": email,
@@ -408,19 +474,25 @@ def oauth_callback(request: dict, response: Response):
                 "profile_saved": profile_upserted
             }
         )
-        
-        return response_data
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=401, detail=f"OAuth callback failed: {str(e)}")
 
 @auth_router.post("/logout")
-def logout(authorization: Annotated[Optional[str], Header()] = None):
-    """Logout user and invalidate tokens"""
+def logout(response: Response):
+    """Logout user and clear HttpOnly cookies"""
     try:
         # Sign out from Supabase
         supabase.auth.sign_out()
+        
+        # Clear HttpOnly cookies
+        response.delete_cookie(key="access_token", path="/")
+        response.delete_cookie(key="refresh_token", path="/")
+        
         return {"message": "Logged out successfully"}
     except Exception:
-        return {"message": "Logged out (client should clear tokens)"}
+        # Still clear cookies even if Supabase sign out fails
+        response.delete_cookie(key="access_token", path="/")
+        response.delete_cookie(key="refresh_token", path="/")
+        return {"message": "Logged out successfully"}

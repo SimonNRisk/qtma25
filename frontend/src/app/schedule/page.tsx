@@ -63,20 +63,12 @@ export default function HooksPage() {
   } | null>(null);
 
   const fetchHooks = useCallback(async (offset: number = 0) => {
-    const token = session.access();
-    if (!token) {
-      setError('Authentication required. Please log in.');
-      setIsLoading(false);
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
     try {
       const response = (await getJSON(
-        `/api/hooks/get-user-hooks?limit=50&offset=${offset}`,
-        token
+        `/api/hooks/get-user-hooks?limit=50&offset=${offset}`
       )) as HooksResponse;
 
       if (response.success) {
@@ -108,22 +100,19 @@ export default function HooksPage() {
   useEffect(() => {
     fetchHooks(0);
 
-    // Fetch user profile data
-    const token = session.access();
-    if (token) {
-      getJSON('/me', token)
-        .then((data: UserResponse) => {
-          setUser(data.user);
-        })
-        .catch(err => {
-          console.error('Failed to fetch user data:', err);
-          // Fallback to JWT token data
-          const jwtUser = session.getUser();
-          if (jwtUser) {
-            setUser(jwtUser);
-          }
-        });
-    }
+    // Fetch user profile data (cookies sent automatically)
+    getJSON('/me')
+      .then((data: UserResponse) => {
+        setUser(data.user);
+      })
+      .catch(async err => {
+        console.error('Failed to fetch user data:', err);
+        // Fallback to session user data
+        const jwtUser = await session.getUser();
+        if (jwtUser) {
+          setUser(jwtUser);
+        }
+      });
   }, [fetchHooks]);
 
   return (

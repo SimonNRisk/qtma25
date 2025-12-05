@@ -1,62 +1,75 @@
+import { getApiUrl } from './env';
+
+// Session management for cookie-based authentication
+// Note: HttpOnly cookies cannot be read by JavaScript (by design for security)
+// Cookies are sent automatically with requests, so we don't need to read them manually
+
+const API_URL = getApiUrl();
+
 export const session = {
-  save(access: string, refresh?: string) {
-    // Save to localStorage for client-side access
-    localStorage.setItem('access_token', access);
-    if (refresh) localStorage.setItem('refresh_token', refresh);
-
-    // Also save to cookies for server-side access
-    document.cookie = `access_token=${access}; path=/; max-age=${7 * 24 * 60 * 60}; secure; samesite=strict`;
-    if (refresh) {
-      document.cookie = `refresh_token=${refresh}; path=/; max-age=${30 * 24 * 60 * 60}; secure; samesite=strict`;
+  // Check if user is authenticated by making an API call
+  // Since we can't read HttpOnly cookies, we verify via backend
+  async isAuthenticated(retries: number = 2): Promise<boolean> {
+    for (let i = 0; i <= retries; i++) {
+      try {
+        const response = await fetch(`${API_URL}/me`, {
+          credentials: 'include', // Include cookies
+        });
+        if (response.ok) {
+          return true;
+        }
+        // If not OK and not the last retry, wait a bit and retry
+        if (i < retries) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      } catch (error) {
+        // If error and not the last retry, wait a bit and retry
+        if (i < retries) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
     }
+    return false;
   },
-  access() {
-    return localStorage.getItem('access_token');
-  },
-  refresh() {
-    return localStorage.getItem('refresh_token');
-  },
-  clear() {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
 
-    // Clear cookies
-    document.cookie = 'access_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-    document.cookie = 'refresh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
-  },
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!this.access();
-  },
-  // Get user info from token (basic implementation)
-  getUser() {
-    const token = this.access();
-    if (!token) return null;
-
+  // Get user info from backend (cookies sent automatically)
+  async getUser() {
     try {
-      // Decode JWT token to get user info
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      return {
-        id: payload.sub,
-        email: payload.email,
-        first_name: payload.first_name,
-        last_name: payload.last_name,
-      };
+      const response = await fetch(`${API_URL}/me`, {
+        credentials: 'include', // Include cookies
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.user || null;
+      }
+      return null;
     } catch {
       return null;
     }
   },
-  // Check if token is expired
-  isTokenExpired() {
-    const token = this.access();
-    if (!token) return true;
 
+  // Check if token is expired - requires API call since we can't read cookies
+  async isTokenExpired(): Promise<boolean> {
     try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      const exp = payload.exp * 1000; // Convert to milliseconds
-      return Date.now() >= exp;
+      const response = await fetch(`${API_URL}/me`, {
+        credentials: 'include', // Include cookies
+      });
+      return !response.ok; // If request fails, token is likely expired
     } catch {
       return true;
+    }
+  },
+
+  // Clear session by calling backend logout endpoint (clears HttpOnly cookies)
+  async clear() {
+    try {
+      await fetch(`${API_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include', // Include cookies so backend can clear them
+      });
+    } catch (error) {
+      // Even if logout fails, continue - cookies may expire naturally
+      console.warn('Logout request failed:', error);
     }
   },
 };

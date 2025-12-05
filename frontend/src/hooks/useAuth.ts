@@ -15,11 +15,11 @@ export function useAuth(redirectTo: string = '/login') {
   } | null>(null);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const token = session.access();
-      const isTokenExpired = session.isTokenExpired();
+    const checkAuth = async () => {
+      const isAuth = await session.isAuthenticated();
+      const isExpired = await session.isTokenExpired();
 
-      if (!token || isTokenExpired) {
+      if (!isAuth || isExpired) {
         setIsAuthenticated(false);
         setUser(null);
         if (redirectTo) {
@@ -29,14 +29,15 @@ export function useAuth(redirectTo: string = '/login') {
       }
 
       setIsAuthenticated(true);
-      setUser(session.getUser());
+      const userData = await session.getUser();
+      setUser(userData);
     };
 
     checkAuth();
   }, [router, redirectTo]);
 
-  const logout = () => {
-    session.clear();
+  const logout = async () => {
+    await session.clear(); // Clear cookies via backend
     setIsAuthenticated(false);
     setUser(null);
     router.replace('/login');
