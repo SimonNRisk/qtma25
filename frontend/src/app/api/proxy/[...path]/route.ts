@@ -47,15 +47,11 @@ export async function PATCH(
   return proxyRequest(request, path, 'PATCH');
 }
 
-async function proxyRequest(
-  request: NextRequest,
-  pathSegments: string[],
-  method: string
-) {
+async function proxyRequest(request: NextRequest, pathSegments: string[], method: string) {
   try {
     const path = `/${pathSegments.join('/')}`;
     const url = new URL(path, BACKEND_URL);
-    
+
     // Forward query parameters
     request.nextUrl.searchParams.forEach((value, key) => {
       url.searchParams.append(key, value);
@@ -84,7 +80,7 @@ async function proxyRequest(
 
     // Get response body
     const responseBody = await backendResponse.text();
-    
+
     // Create response with same status and headers
     const response = new NextResponse(responseBody, {
       status: backendResponse.status,
@@ -94,19 +90,19 @@ async function proxyRequest(
     // Forward Set-Cookie headers from backend (this sets cookies on the frontend domain)
     // Rewrite cookie domain to match frontend domain (localhost:3000)
     const setCookieHeaders = backendResponse.headers.getSetCookie();
-    setCookieHeaders.forEach((cookie) => {
+    setCookieHeaders.forEach(cookie => {
       // Remove domain attribute if present (so cookie is set for current domain)
       // Also ensure path is set correctly
       let rewrittenCookie = cookie;
-      
+
       // Remove any domain= attribute (replace domain=localhost:8000 or domain=localhost with nothing)
       rewrittenCookie = rewrittenCookie.replace(/;\s*domain=[^;]*/gi, '');
-      
+
       // Ensure path is / if not already set
       if (!rewrittenCookie.includes('Path=')) {
         rewrittenCookie += '; Path=/';
       }
-      
+
       response.headers.append('Set-Cookie', rewrittenCookie);
     });
 
@@ -120,9 +116,11 @@ async function proxyRequest(
   } catch (error) {
     console.error('Proxy error:', error);
     return NextResponse.json(
-      { error: 'Proxy request failed', details: error instanceof Error ? error.message : String(error) },
+      {
+        error: 'Proxy request failed',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     );
   }
 }
-

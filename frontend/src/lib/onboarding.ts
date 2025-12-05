@@ -23,7 +23,7 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
     // First, try to get from backend API (cookies sent automatically)
     let user = null;
     let backendData = null;
-    
+
     try {
       const isAuth = await session.isAuthenticated(2); // Retry up to 2 times
       if (isAuth) {
@@ -52,7 +52,7 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
       const storedData = localStorage.getItem('onboarding_data');
       if (storedData) {
         const parsedData = JSON.parse(storedData);
-        
+
         // Try to get user info, but don't fail if we can't
         if (!user) {
           try {
@@ -62,7 +62,7 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
             user = { id: 'temp', email: '' };
           }
         }
-        
+
         // Convert localStorage format to OnboardingContext format
         return {
           id: 'local-' + Date.now(),
@@ -131,7 +131,7 @@ export async function syncOnboardingDataAfterSignup(): Promise<boolean> {
   try {
     // Wait a moment for cookies to be available, then check auth with retries
     await new Promise(resolve => setTimeout(resolve, 300));
-    
+
     // Check authentication with retries (cookies might not be immediately available)
     const isAuth = await session.isAuthenticated(3);
     if (!isAuth) {

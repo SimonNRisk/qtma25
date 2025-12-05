@@ -41,7 +41,8 @@ function SignUpForm() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.detail || `Failed to connect to ${provider}. Please try again.`;
+        const errorMessage =
+          errorData.detail || `Failed to connect to ${provider}. Please try again.`;
         setMsg(errorMessage);
         setOauthLoading(null);
         return;
@@ -57,7 +58,10 @@ function SignUpForm() {
         setOauthLoading(null);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : `Failed to connect to ${provider}. Please try again.`;
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : `Failed to connect to ${provider}. Please try again.`;
       setMsg(errorMessage);
       setOauthLoading(null);
     }

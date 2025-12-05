@@ -111,14 +111,14 @@ function AuthCallbackContent() {
             } else {
               const errorData = await response.json().catch(() => ({}));
               const errorMessage = errorData.detail || 'OAuth authentication failed';
-              
+
               // Check if this is an "account not found" error (user needs to sign up)
               if (response.status === 403 && errorMessage.includes('Account not found')) {
                 setStatus('error');
                 setMessage('Account not found. Please create an account first by signing up.');
                 return;
               }
-              
+
               throw new Error(errorMessage);
             }
           } catch (exchangeError) {
@@ -191,14 +191,14 @@ function AuthCallbackContent() {
             } else {
               const errorData = await response.json().catch(() => ({}));
               const errorMessage = errorData.detail || 'OAuth authentication failed';
-              
+
               // Check if this is an "account not found" error (user needs to sign up)
               if (response.status === 403 && errorMessage.includes('Account not found')) {
                 setStatus('error');
                 setMessage('Account not found. Please create an account first by signing up.');
                 return;
               }
-              
+
               throw new Error(errorMessage);
             }
           } catch (exchangeError) {
