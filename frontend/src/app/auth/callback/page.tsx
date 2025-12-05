@@ -3,7 +3,6 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { API_URL } from '@/lib/api';
-import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
 import { getOnboardingData, syncOnboardingDataAfterSignup } from '@/lib/onboarding';
 import Image from 'next/image';
 import { HiCheck, HiXMark } from 'react-icons/hi2';
@@ -13,20 +12,6 @@ function AuthCallbackContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
-
-  // Check if we're on the wrong domain (production when we should be on localhost)
-  useEffect(() => {
-    if (shouldRedirectToLocalhost()) {
-      window.location.href = getLocalhostUrl();
-      return;
-    }
-  }, []);
-
-  // Prevent the root page from interfering - don't let it redirect while we're handling OAuth
-  useEffect(() => {
-    // This ensures we stay on the callback page until redirect is complete
-    return () => {};
-  }, []);
 
   useEffect(() => {
     const handleAuthCallback = async () => {

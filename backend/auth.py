@@ -88,6 +88,26 @@ def verify_token(token: str, token_type: str = "access"):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 
+def get_cookie_domain():
+    """Get cookie domain for cross-subdomain cookie sharing in production"""
+    if IS_DEV:
+        return None
+    if not FRONTEND_ORIGIN:
+        return None
+    try:
+        from urllib.parse import urlparse
+        parsed = urlparse(FRONTEND_ORIGIN)
+        hostname = parsed.hostname
+        if hostname and '.' in hostname:
+            # Get root domain (e.g., getastro.ca from api.getastro.ca or getastro.ca)
+            parts = hostname.split('.')
+            if len(parts) >= 2:
+                root_domain = '.'.join(parts[-2:])  # Get last two parts (e.g., getastro.ca)
+                return f".{root_domain}"  # Add leading dot for subdomain sharing
+    except Exception:
+        pass
+    return None
+
 # ---------- Auth Helpers ----------
 async def get_current_user(
     access_token: Annotated[Optional[str], Cookie()] = None
@@ -201,16 +221,16 @@ def login(body: LoginBody, response: Response):
         # Set HttpOnly cookies for secure token storage
         # httponly=True: Prevents JavaScript from accessing the cookie (protects against XSS attacks)
         # secure: False in dev (localhost HTTP), True in production (HTTPS required)
-        # samesite: "lax" in dev, "none" in production for cross-subdomain (api.getastro.ca <-> getastro.ca)
-        # domain: Set to .getastro.ca in production to allow cross-subdomain cookie sharing
+        # samesite: "lax" works for same-site subdomains (api.getastro.ca <-> getastro.ca)
+        # domain: Extract root domain from FRONTEND_ORIGIN to allow cross-subdomain cookie sharing
         # In dev, frontend uses Next.js API proxy (/api/proxy) so requests appear same-origin
-        cookie_domain = None if IS_DEV else ".getastro.ca"
+        cookie_domain = get_cookie_domain()
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "none",  # None required for cross-subdomain, lax for same-origin
+            samesite="lax",  # Lax works for same-site (subdomains share cookies)
             domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             path="/"
@@ -220,7 +240,7 @@ def login(body: LoginBody, response: Response):
             value=refresh_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "none",  # None required for cross-subdomain, lax for same-origin
+            samesite="lax",  # Lax works for same-site (subdomains share cookies)
             domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             path="/"
@@ -275,7 +295,7 @@ def refresh_token(refresh_token: Annotated[Optional[str], Cookie()] = None, resp
         access_token = create_access_token(token_data)
 
         # Set new access token as HttpOnly cookie
-        cookie_domain = None if IS_DEV else ".getastro.ca"
+        cookie_domain = get_cookie_domain()
         response.set_cookie(
             key="access_token",
             value=access_token,
@@ -423,7 +443,7 @@ def oauth_callback(request: dict, response: Response):
         jwt_refresh_token = create_refresh_token({"sub": user_id})
 
         # Set HttpOnly cookies
-        cookie_domain = None if IS_DEV else ".getastro.ca"
+        cookie_domain = get_cookie_domain()
         response.set_cookie(
             key="access_token",
             value=jwt_access_token,
