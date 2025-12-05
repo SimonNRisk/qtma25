@@ -1,5 +1,4 @@
 import { useRouter } from 'next/navigation';
-import { session } from '@/lib/session';
 
 interface User {
   first_name?: string;

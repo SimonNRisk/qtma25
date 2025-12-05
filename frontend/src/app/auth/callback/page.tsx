@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
 import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
 import { getOnboardingData, syncOnboardingDataAfterSignup } from '@/lib/onboarding';
@@ -93,7 +92,7 @@ function AuthCallbackContent() {
                     const existingData = await getOnboardingData();
                     hasOnboardingData = !!existingData;
                   }
-                } catch (error) {
+                } catch {
                   // If sync fails, just check backend
                   try {
                     const existingData = await getOnboardingData();
@@ -173,7 +172,7 @@ function AuthCallbackContent() {
                     const existingData = await getOnboardingData();
                     hasOnboardingData = !!existingData;
                   }
-                } catch (error) {
+                } catch {
                   // If sync fails, just check backend
                   try {
                     const existingData = await getOnboardingData();

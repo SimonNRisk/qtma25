@@ -55,7 +55,7 @@ function LoginForm() {
     setMsg(null);
     setLoading(true);
     try {
-      const data = await postJSON('/auth/login', { email, password });
+      await postJSON('/auth/login', { email, password });
       // Tokens are set as HttpOnly cookies by backend - no need to save them
 
       const f = sessionStorage.getItem('pending_first_name');

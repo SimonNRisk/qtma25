@@ -22,7 +22,6 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
   try {
     // First, try to get from backend API (cookies sent automatically)
     let user = null;
-    let backendData = null;
 
     try {
       const isAuth = await session.isAuthenticated(2); // Retry up to 2 times

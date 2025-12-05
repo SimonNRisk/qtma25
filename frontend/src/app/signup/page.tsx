@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { postJSON, API_URL } from '@/lib/api';
-import { session } from '@/lib/session';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -113,7 +112,7 @@ function SignUpForm() {
       } else {
         // Email confirmation not required - automatically log in
         try {
-          const loginResponse = await postJSON('/auth/login', {
+          await postJSON('/auth/login', {
             email,
             password,
           });

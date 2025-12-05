@@ -22,7 +22,7 @@ export const session = {
         if (i < retries) {
           await new Promise(resolve => setTimeout(resolve, 500));
         }
-      } catch (error) {
+      } catch {
         // If error and not the last retry, wait a bit and retry
         if (i < retries) {
           await new Promise(resolve => setTimeout(resolve, 500));
