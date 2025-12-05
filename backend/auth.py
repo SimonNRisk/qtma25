@@ -201,14 +201,17 @@ def login(body: LoginBody, response: Response):
         # Set HttpOnly cookies for secure token storage
         # httponly=True: Prevents JavaScript from accessing the cookie (protects against XSS attacks)
         # secure: False in dev (localhost HTTP), True in production (HTTPS required)
-        # samesite: "lax" in dev (works with same-origin requests via Next.js proxy), "strict" in production
+        # samesite: "lax" in dev, "none" in production for cross-subdomain (api.getastro.ca <-> getastro.ca)
+        # domain: Set to .getastro.ca in production to allow cross-subdomain cookie sharing
         # In dev, frontend uses Next.js API proxy (/api/proxy) so requests appear same-origin
+        cookie_domain = None if IS_DEV else ".getastro.ca"
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            samesite="lax" if IS_DEV else "none",  # None required for cross-subdomain, lax for same-origin
+            domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             path="/"
         )
@@ -217,7 +220,8 @@ def login(body: LoginBody, response: Response):
             value=refresh_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            samesite="lax" if IS_DEV else "none",  # None required for cross-subdomain, lax for same-origin
+            domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             path="/"
         )
@@ -271,12 +275,14 @@ def refresh_token(refresh_token: Annotated[Optional[str], Cookie()] = None, resp
         access_token = create_access_token(token_data)
 
         # Set new access token as HttpOnly cookie
+        cookie_domain = None if IS_DEV else ".getastro.ca"
         response.set_cookie(
             key="access_token",
             value=access_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            samesite="lax" if IS_DEV else "lax",  # Lax works for same-site (subdomains share cookies)
+            domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             path="/"
         )
@@ -417,12 +423,14 @@ def oauth_callback(request: dict, response: Response):
         jwt_refresh_token = create_refresh_token({"sub": user_id})
 
         # Set HttpOnly cookies
+        cookie_domain = None if IS_DEV else ".getastro.ca"
         response.set_cookie(
             key="access_token",
             value=jwt_access_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            samesite="lax" if IS_DEV else "lax",  # Lax works for same-site (subdomains share cookies)
+            domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
             path="/"
         )
@@ -431,7 +439,8 @@ def oauth_callback(request: dict, response: Response):
             value=jwt_refresh_token,
             httponly=True,
             secure=False if IS_DEV else True,  # False for localhost HTTP, True for production HTTPS
-            samesite="lax" if IS_DEV else "strict",  # Lax works with same-origin proxy, strict for production
+            samesite="lax" if IS_DEV else "lax",  # Lax works for same-site (subdomains share cookies)
+            domain=cookie_domain,  # .getastro.ca allows cookie sharing across subdomains
             max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
             path="/"
         )
