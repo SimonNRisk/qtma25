@@ -28,6 +28,13 @@ export const PersonalInfoStep = ({
   onBack,
   isFormValid,
 }: PersonalInfoStepProps) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (e.key === 'Enter' && isFormValid) {
+      e.preventDefault();
+      onNext();
+    }
+  };
+
   return (
     <div className="w-[900px] mt-8">
       <StepCard>
@@ -44,6 +51,7 @@ export const PersonalInfoStep = ({
             onChange={value => onInputChange('name', value)}
             placeholder="Enter your full name"
             required
+            onKeyDown={handleKeyDown}
           />
 
           <FormInput
@@ -53,6 +61,7 @@ export const PersonalInfoStep = ({
             onChange={value => onInputChange('company', value)}
             placeholder="Enter your company name"
             required
+            onKeyDown={handleKeyDown}
           />
 
           <FormInput
@@ -62,6 +71,7 @@ export const PersonalInfoStep = ({
             onChange={value => onInputChange('role', value)}
             placeholder="e.g. Marketing Manager, CEO, Developer"
             required
+            onKeyDown={handleKeyDown}
           />
 
           <FormInput
@@ -73,6 +83,7 @@ export const PersonalInfoStep = ({
             placeholder="Select your industry"
             options={industries}
             required
+            onKeyDown={handleKeyDown}
           />
         </div>
 

@@ -7,6 +7,7 @@ interface FormInputProps {
   placeholder: string;
   required?: boolean;
   options?: string[];
+  onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
 export const FormInput = ({
@@ -18,6 +19,7 @@ export const FormInput = ({
   placeholder,
   required = false,
   options,
+  onKeyDown,
 }: FormInputProps) => {
   if (type === 'select' && options) {
     return (
@@ -32,6 +34,7 @@ export const FormInput = ({
           id={id}
           value={value}
           onChange={e => onChange(e.target.value)}
+          onKeyDown={onKeyDown}
           className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
         >
           <option value="" className="text-black">
@@ -60,6 +63,7 @@ export const FormInput = ({
         type={type}
         value={value}
         onChange={e => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
         className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
         placeholder={placeholder}
       />
