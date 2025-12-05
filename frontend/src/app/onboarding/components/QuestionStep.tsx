@@ -34,6 +34,19 @@ export const QuestionStep = ({
   inputType = 'textarea',
   rows = 4,
 }: QuestionStepProps) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement | HTMLInputElement>) => {
+    // Enter key triggers Next when form is valid (not disabled)
+    // For textareas, users can still create new lines with Shift+Enter
+    if (e.key === 'Enter' && !nextDisabled) {
+      // Allow Shift+Enter to create new lines in textareas
+      if (inputType === 'textarea' && e.shiftKey) {
+        return; // Let the default behavior happen (new line)
+      }
+      e.preventDefault();
+      onNext();
+    }
+  };
+
   return (
     <div className="w-[900px] mx-auto mt-8">
       <StepCard>
@@ -52,6 +65,7 @@ export const QuestionStep = ({
               <textarea
                 value={value}
                 onChange={e => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 rows={rows}
                 className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30 resize-none"
@@ -61,6 +75,7 @@ export const QuestionStep = ({
                 type="text"
                 value={value}
                 onChange={e => onChange(e.target.value)}
+                onKeyDown={handleKeyDown}
                 placeholder={placeholder}
                 className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
               />
