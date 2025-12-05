@@ -1,7 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { AuthGuard } from '@/components/AuthGuard';
-import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
 
 export default function LinkedInConnect() {
@@ -14,17 +13,9 @@ export default function LinkedInConnect() {
     setError('');
 
     try {
-      // Get OAuth URL from backend with authentication
-      const token = session.access();
-      if (!token) {
-        setError('Please log in first');
-        return;
-      }
-
+      // Get OAuth URL from backend with authentication (cookies sent automatically)
       const response = await fetch(`${API_URL}/api/linkedin/auth`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        credentials: 'include', // Include cookies
       });
       const data = await response.json();
 

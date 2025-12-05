@@ -1,5 +1,4 @@
 import { useRouter } from 'next/navigation';
-import { session } from '@/lib/session';
 
 interface User {
   first_name?: string;
@@ -18,15 +17,8 @@ export const getUserName = (user: User | null) => {
     return user.email.split('@')[0];
   }
 
-  if (typeof window !== 'undefined') {
-    const jwtUser = session.getUser();
-    if (jwtUser?.first_name && jwtUser?.last_name) {
-      return `${jwtUser.first_name} ${jwtUser.last_name}`;
-    }
-    if (jwtUser?.first_name) {
-      return jwtUser.first_name;
-    }
-  }
+  // Note: session.getUser() is now async and requires API call
+  // For synchronous fallback, just return 'User'
   return 'User';
 };
 

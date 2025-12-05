@@ -44,7 +44,9 @@ app.include_router(news_router)
 app.include_router(thought_prompts_router)
 # ---------- Routes ----------
 @app.get("/me")
-def get_current_user_profile(current_user: Annotated[dict, Depends(get_current_user)]):
+def get_current_user_profile(
+    current_user: Annotated[dict, Depends(get_current_user)]
+):
     """Get current user's profile information"""
     return {"user": current_user}
 @app.get("/")

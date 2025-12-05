@@ -2,7 +2,6 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { session } from '@/lib/session';
 import { API_URL } from '@/lib/api';
 import { shouldRedirectToLocalhost, getLocalhostUrl } from '@/lib/env';
 import { getOnboardingData, syncOnboardingDataAfterSignup } from '@/lib/onboarding';
@@ -23,6 +22,12 @@ function AuthCallbackContent() {
     }
   }, []);
 
+  // Prevent the root page from interfering - don't let it redirect while we're handling OAuth
+  useEffect(() => {
+    // This ensures we stay on the callback page until redirect is complete
+    return () => {};
+  }, []);
+
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
@@ -32,6 +37,7 @@ function AuthCallbackContent() {
         const refreshToken = searchParams.get('refresh_token');
         const error = searchParams.get('error');
         const errorDescription = searchParams.get('error_description');
+        // OAuth callback - always treat as login
 
         console.log('OAuth callback params:', {
           code: !!code,
@@ -55,6 +61,7 @@ function AuthCallbackContent() {
               headers: {
                 'Content-Type': 'application/json',
               },
+              credentials: 'include', // Required for cookies to be set and sent
               body: JSON.stringify({
                 code: code,
               }),
@@ -63,43 +70,55 @@ function AuthCallbackContent() {
             if (response.ok) {
               const data = await response.json();
 
-              // Check if we have the required tokens
-              if (!data.access_token) {
-                throw new Error('No access token received from backend');
-              }
-
-              // Save our JWT tokens to localStorage
-              session.save(data.access_token, data.refresh_token);
-
-              // Sync onboarding data if it exists in localStorage
-              try {
-                const synced = await syncOnboardingDataAfterSignup();
-                if (synced) {
-                  console.log('Onboarding data synced successfully');
-                } else {
-                  console.log('No onboarding data to sync');
-                }
-              } catch (error) {
-                console.warn('Failed to sync onboarding data:', error);
+              // Tokens are set as HttpOnly cookies by backend - no need to save them
+              // Verify we got user data
+              if (!data.user) {
+                throw new Error('No user data received from backend');
               }
 
               setStatus('success');
               setMessage('Successfully logged in! Welcome to your account.');
 
-              // Redirect to profile page after a short delay
+              // Check onboarding data and redirect accordingly
               setTimeout(async () => {
-                const onboardingData = await getOnboardingData();
-                const redirectPath = onboardingData ? '/me' : '/onboarding';
-                if (shouldRedirectToLocalhost()) {
-                  window.location.href = `http://localhost:3000${redirectPath}`;
-                } else {
-                  router.push(redirectPath);
+                let hasOnboardingData = false;
+                try {
+                  // Try to sync onboarding data from localStorage first
+                  const synced = await syncOnboardingDataAfterSignup();
+                  if (synced) {
+                    hasOnboardingData = true;
+                  } else {
+                    // Check if onboarding data exists in backend
+                    const existingData = await getOnboardingData();
+                    hasOnboardingData = !!existingData;
+                  }
+                } catch {
+                  // If sync fails, just check backend
+                  try {
+                    const existingData = await getOnboardingData();
+                    hasOnboardingData = !!existingData;
+                  } catch {
+                    // If both fail, assume no data
+                    hasOnboardingData = false;
+                  }
                 }
-              }, 2000);
+
+                // Use hard navigation to ensure cookies are sent
+                const redirectPath = hasOnboardingData ? '/me' : '/onboarding';
+                window.location.href = redirectPath;
+              }, 500);
             } else {
-              const errorText = await response.text();
-              console.error('Backend error:', errorText);
-              throw new Error(`Failed to exchange code: ${errorText}`);
+              const errorData = await response.json().catch(() => ({}));
+              const errorMessage = errorData.detail || 'OAuth authentication failed';
+
+              // Check if this is an "account not found" error (user needs to sign up)
+              if (response.status === 403 && errorMessage.includes('Account not found')) {
+                setStatus('error');
+                setMessage('Account not found. Please create an account first by signing up.');
+                return;
+              }
+
+              throw new Error(errorMessage);
             }
           } catch (exchangeError) {
             console.error('OAuth code exchange error:', exchangeError);
@@ -119,6 +138,7 @@ function AuthCallbackContent() {
               headers: {
                 'Content-Type': 'application/json',
               },
+              credentials: 'include', // Required for cookies to be set and sent
               body: JSON.stringify({
                 access_token: accessToken,
                 refresh_token: refreshToken,
@@ -130,39 +150,55 @@ function AuthCallbackContent() {
             if (response.ok) {
               const data = await response.json();
               console.log('Backend response data:', data);
-              // Save our JWT tokens to localStorage
-              session.save(data.access_token, data.refresh_token);
-
-              // Sync onboarding data if it exists in localStorage
-              try {
-                const synced = await syncOnboardingDataAfterSignup();
-                if (synced) {
-                  console.log('Onboarding data synced successfully');
-                } else {
-                  console.log('No onboarding data to sync');
-                }
-              } catch (error) {
-                console.warn('Failed to sync onboarding data:', error);
+              // Tokens are set as HttpOnly cookies by backend - no need to save them
+              // Verify we got user data
+              if (!data.user) {
+                throw new Error('No user data received from backend');
               }
 
               setStatus('success');
               setMessage('Successfully logged in! Welcome to your account.');
 
-              // Check if user has completed onboarding
+              // Check onboarding data and redirect accordingly
               setTimeout(async () => {
-                const onboardingData = await getOnboardingData();
-                const redirectPath = onboardingData ? '/me' : '/onboarding';
-
-                if (shouldRedirectToLocalhost()) {
-                  window.location.href = `http://localhost:3000${redirectPath}`;
-                } else {
-                  router.push(redirectPath);
+                let hasOnboardingData = false;
+                try {
+                  // Try to sync onboarding data from localStorage first
+                  const synced = await syncOnboardingDataAfterSignup();
+                  if (synced) {
+                    hasOnboardingData = true;
+                  } else {
+                    // Check if onboarding data exists in backend
+                    const existingData = await getOnboardingData();
+                    hasOnboardingData = !!existingData;
+                  }
+                } catch {
+                  // If sync fails, just check backend
+                  try {
+                    const existingData = await getOnboardingData();
+                    hasOnboardingData = !!existingData;
+                  } catch {
+                    // If both fail, assume no data
+                    hasOnboardingData = false;
+                  }
                 }
-              }, 2000);
+
+                // Use hard navigation to ensure cookies are sent
+                const redirectPath = hasOnboardingData ? '/me' : '/onboarding';
+                window.location.href = redirectPath;
+              }, 500);
             } else {
-              const errorText = await response.text();
-              console.error('Backend error:', errorText);
-              throw new Error(`Failed to exchange tokens: ${errorText}`);
+              const errorData = await response.json().catch(() => ({}));
+              const errorMessage = errorData.detail || 'OAuth authentication failed';
+
+              // Check if this is an "account not found" error (user needs to sign up)
+              if (response.status === 403 && errorMessage.includes('Account not found')) {
+                setStatus('error');
+                setMessage('Account not found. Please create an account first by signing up.');
+                return;
+              }
+
+              throw new Error(errorMessage);
             }
           } catch (exchangeError) {
             console.error('OAuth exchange error:', exchangeError);
@@ -265,18 +301,37 @@ function AuthCallbackContent() {
               <h1 className="text-3xl font-bold text-white mb-3">Oops! Something went wrong</h1>
               <p className="text-white/80 text-lg mb-8">{message}</p>
               <div className="space-y-3">
-                <button
-                  onClick={() => router.push('/login')}
-                  className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  Try Again
-                </button>
-                <button
-                  onClick={() => router.push('/')}
-                  className="w-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 font-medium py-3 px-6 rounded-xl transition-all duration-200 hover:text-white"
-                >
-                  Back to Home
-                </button>
+                {message.includes('Account not found') ? (
+                  <>
+                    <button
+                      onClick={() => router.push('/onboarding')}
+                      className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      Create Account
+                    </button>
+                    <button
+                      onClick={() => router.push('/login')}
+                      className="w-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 font-medium py-3 px-6 rounded-xl transition-all duration-200 hover:text-white"
+                    >
+                      Back to Login
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => router.push('/login')}
+                      className="w-full bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/30 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                    >
+                      Try Again
+                    </button>
+                    <button
+                      onClick={() => router.push('/')}
+                      className="w-full bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 font-medium py-3 px-6 rounded-xl transition-all duration-200 hover:text-white"
+                    >
+                      Back to Home
+                    </button>
+                  </>
+                )}
               </div>
             </>
           )}

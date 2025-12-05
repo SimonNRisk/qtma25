@@ -20,33 +20,25 @@ export interface OnboardingContext {
 
 export async function getOnboardingData(): Promise<OnboardingContext | null> {
   try {
-    if (!session.isAuthenticated()) {
-      return null;
-    }
+    // First, try to get from backend API (cookies sent automatically)
+    let user = null;
 
-    const user = session.getUser();
-    if (!user) {
-      return null;
-    }
-
-    const accessToken = session.access();
-    if (!accessToken) {
-      return null;
-    }
-
-    // Try to get from backend API first
     try {
-      const response = await fetch(`${API_URL}/api/onboarding/data`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const isAuth = await session.isAuthenticated(2); // Retry up to 2 times
+      if (isAuth) {
+        user = await session.getUser();
+        if (user) {
+          const response = await fetch(`${API_URL}/api/onboarding/data`, {
+            method: 'GET',
+            credentials: 'include', // Include cookies
+          });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data) {
-          return result.data;
+          if (response.ok) {
+            const result = await response.json();
+            if (result.data) {
+              return result.data;
+            }
+          }
         }
       }
     } catch (error) {
@@ -54,18 +46,30 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
     }
 
     // If not found in backend, try localStorage as fallback
+    // This is important for OAuth flow where cookies might not be immediately available
     try {
       const storedData = localStorage.getItem('onboarding_data');
       if (storedData) {
         const parsedData = JSON.parse(storedData);
+
+        // Try to get user info, but don't fail if we can't
+        if (!user) {
+          try {
+            user = await session.getUser();
+          } catch {
+            // If we can't get user, use placeholder
+            user = { id: 'temp', email: '' };
+          }
+        }
+
         // Convert localStorage format to OnboardingContext format
         return {
           id: 'local-' + Date.now(),
-          user_id: user.id,
+          user_id: user?.id || 'temp',
           name: parsedData.name || '',
           company: parsedData.company || '',
           role: parsedData.role || '',
-          email: user.email || '', // Use email from user account
+          email: user?.email || '', // Use email from user account
           industry: parsedData.industry || '',
           company_mission: parsedData.companyMission || '',
           target_audience: parsedData.targetAudience || '',
@@ -89,27 +93,22 @@ export async function getOnboardingData(): Promise<OnboardingContext | null> {
 
 export async function updateOnboardingData(updates: Partial<OnboardingContext>): Promise<boolean> {
   try {
-    if (!session.isAuthenticated()) {
+    if (!(await session.isAuthenticated())) {
       return false;
     }
 
-    const user = session.getUser();
+    const user = await session.getUser();
     if (!user) {
       return false;
     }
 
-    const accessToken = session.access();
-    if (!accessToken) {
-      return false;
-    }
-
-    // Use backend API for updates
+    // Use backend API for updates (cookies sent automatically)
     const response = await fetch(`${API_URL}/api/onboarding/data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
       },
+      credentials: 'include', // Include cookies
       body: JSON.stringify(updates),
     });
 
@@ -129,7 +128,13 @@ export async function updateOnboardingData(updates: Partial<OnboardingContext>):
 // Simple function to sync localStorage data to Supabase after signup
 export async function syncOnboardingDataAfterSignup(): Promise<boolean> {
   try {
-    if (!session.isAuthenticated()) {
+    // Wait a moment for cookies to be available, then check auth with retries
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Check authentication with retries (cookies might not be immediately available)
+    const isAuth = await session.isAuthenticated(3);
+    if (!isAuth) {
+      console.warn('User not authenticated, cannot sync onboarding data');
       return false;
     }
 
@@ -154,18 +159,12 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
 }): Promise<boolean> {
   try {
     // Use custom session management instead of Supabase auth
-    if (!session.isAuthenticated()) {
+    if (!(await session.isAuthenticated())) {
       return false;
     }
 
-    const user = session.getUser();
+    const user = await session.getUser();
     if (!user) {
-      return false;
-    }
-
-    // Get the access token for backend API authentication
-    const accessToken = session.access();
-    if (!accessToken) {
       return false;
     }
 
@@ -208,13 +207,13 @@ export async function syncLocalStorageToSupabase(completeFormData?: {
       };
     }
 
-    // Use backend API instead of direct Supabase
+    // Use backend API instead of direct Supabase (cookies sent automatically)
     const response = await fetch(`${API_URL}/api/onboarding/data`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
       },
+      credentials: 'include', // Include cookies
       body: JSON.stringify(onboardingData),
     });
 

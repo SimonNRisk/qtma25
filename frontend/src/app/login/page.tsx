@@ -19,17 +19,33 @@ function LoginForm() {
     setOauthLoading(provider);
     setMsg(null);
     try {
-      const response = await fetch(`${API_URL}/auth/oauth/${provider}`);
+      const response = await fetch(`${API_URL}/auth/oauth/${provider}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage =
+          errorData.detail || `Failed to connect to ${provider}. Please try again.`;
+        setMsg(errorMessage);
+        setOauthLoading(null);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.url) {
         window.location.href = data.url;
       } else {
-        setMsg('OAuth login failed. Please try again.');
+        setMsg(`Failed to initiate ${provider} login. Please try again.`);
+        setOauthLoading(null);
       }
-    } catch {
-      setMsg('OAuth login failed. Please try again.');
-    } finally {
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : `Failed to connect to ${provider}. Please try again.`;
+      setMsg(errorMessage);
       setOauthLoading(null);
     }
   }
@@ -39,8 +55,8 @@ function LoginForm() {
     setMsg(null);
     setLoading(true);
     try {
-      const data = await postJSON('/auth/login', { email, password });
-      session.save(data.access_token, data.refresh_token);
+      await postJSON('/auth/login', { email, password });
+      // Tokens are set as HttpOnly cookies by backend - no need to save them
 
       const f = sessionStorage.getItem('pending_first_name');
       const l = sessionStorage.getItem('pending_last_name');
@@ -64,7 +80,10 @@ function LoginForm() {
   }
 
   useEffect(() => {
-    if (session.access()) router.replace('/me');
+    // Check authentication via API (cookies sent automatically)
+    session.isAuthenticated().then(isAuth => {
+      if (isAuth) router.replace('/me');
+    });
   }, [router]);
 
   return (

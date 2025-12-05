@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { API_URL } from '@/lib/api';
-import { session } from '@/lib/session';
 
 export interface GeneratedPost {
   id: string;
@@ -32,17 +31,12 @@ export const useGeneratePosts = (options: UseGeneratePostsOptions = {}) => {
     setGeneratedPosts([]);
 
     try {
-      const token = session.access();
-      if (!token) {
-        throw new Error('Authentication required. Please log in.');
-      }
-
       const response = await fetch(`${API_URL}/api/openai/generate-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify({
           quantity,
           context: query.trim(),
@@ -83,17 +77,12 @@ export const useGeneratePosts = (options: UseGeneratePostsOptions = {}) => {
     }
 
     try {
-      const token = session.access();
-      if (!token) {
-        throw new Error('Authentication required. Please log in.');
-      }
-
       const response = await fetch(`${API_URL}/api/hooks/bookmark-hook`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
         },
+        credentials: 'include', // Include cookies
         body: JSON.stringify({
           hook: post.content,
         }),

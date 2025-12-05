@@ -6,7 +6,6 @@
 
 import { useState, useCallback } from 'react';
 import { API_URL } from '@/lib/api';
-import { session } from '@/lib/session';
 
 export interface ThoughtPromptResponse {
   id: string;
@@ -69,17 +68,12 @@ export const useSubmitThoughtResponse = (): UseSubmitThoughtResponseReturn => {
         setIsSubmitting(true);
         setError(null);
 
-        const accessToken = session.access();
-        if (!accessToken) {
-          throw new Error('Not authenticated');
-        }
-
         const res = await fetch(`${API_URL}/api/thought-prompts/respond`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${accessToken}`,
           },
+          credentials: 'include', // Include cookies
           body: JSON.stringify({
             thought_prompt_id: thoughtPromptId,
             response: trimmedResponse,
