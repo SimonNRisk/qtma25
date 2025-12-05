@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { session } from '@/lib/session';
+import { syncLocalStorageToSupabase } from '@/lib/onboarding';
 
 export interface OnboardingFormData {
   name: string;
@@ -128,7 +130,40 @@ export const useOnboarding = () => {
     // Save complete onboarding data to localStorage (including personal info)
     saveToLocalStorage(true);
 
-    // Redirect to signup page
+    // Check if user is already authenticated (e.g., from OAuth)
+    try {
+      const isAuth = await session.isAuthenticated();
+      if (isAuth) {
+        // User is already authenticated - sync onboarding data immediately
+        console.log('User already authenticated, syncing onboarding data...');
+        const synced = await syncLocalStorageToSupabase({
+          name: formData.name,
+          company: formData.company,
+          role: formData.role,
+          industry: formData.industry,
+          companyMission: formData.companyMission,
+          targetAudience: formData.targetAudience,
+          topicsToPost: formData.topicsToPost,
+          selectedGoals: formData.selectedGoals,
+          selectedHooks: formData.selectedHooks,
+        });
+
+        if (synced) {
+          console.log('Onboarding data synced successfully');
+        } else {
+          console.warn('Failed to sync onboarding data, but continuing...');
+        }
+
+        // Redirect to profile page since user is already authenticated
+        window.location.href = '/me';
+        return;
+      }
+    } catch (error) {
+      console.warn('Error checking authentication status:', error);
+      // Continue to signup flow if check fails
+    }
+
+    // User is not authenticated - redirect to signup page
     window.location.href = '/signup';
   };
 

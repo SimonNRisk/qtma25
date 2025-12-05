@@ -5,7 +5,8 @@ import { postJSON, API_URL } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { syncOnboardingDataAfterSignup } from '@/lib/onboarding';
+import { syncOnboardingDataAfterSignup, syncLocalStorageToSupabase } from '@/lib/onboarding';
+import { session } from '@/lib/session';
 import { StepCard } from '../onboarding/components/StepCard';
 
 function SignUpForm() {
@@ -21,13 +22,50 @@ function SignUpForm() {
   const [oauthLoading, setOauthLoading] = useState<string | null>(null);
 
   // Check if user has completed onboarding before allowing signup
+  // Also sync onboarding data if user is already authenticated (OAuth flow)
   useEffect(() => {
-    const onboardingData = localStorage.getItem('onboarding_data');
+    const checkOnboardingAndSync = async () => {
+      const onboardingData = localStorage.getItem('onboarding_data');
 
-    // If no onboarding data exists, redirect to onboarding (no signup without onboarding)
-    if (!onboardingData) {
-      router.replace('/onboarding');
-    }
+      // If no onboarding data exists, redirect to onboarding (no signup without onboarding)
+      if (!onboardingData) {
+        router.replace('/onboarding');
+        return;
+      }
+
+      // If user is already authenticated (e.g., from OAuth), sync onboarding data and redirect
+      try {
+        const isAuth = await session.isAuthenticated();
+        if (isAuth) {
+          console.log('User already authenticated on signup page, syncing onboarding data...');
+          const parsedData = JSON.parse(onboardingData);
+          const synced = await syncLocalStorageToSupabase({
+            name: parsedData.name,
+            company: parsedData.company,
+            role: parsedData.role,
+            industry: parsedData.industry,
+            companyMission: parsedData.companyMission,
+            targetAudience: parsedData.targetAudience,
+            topicsToPost: parsedData.topicsToPost,
+            selectedGoals: parsedData.selectedGoals,
+            selectedHooks: parsedData.selectedHooks,
+          });
+
+          if (synced) {
+            console.log('Onboarding data synced successfully, redirecting to /me');
+            // Redirect to profile page since user is already authenticated
+            router.replace('/me');
+          } else {
+            console.warn('Failed to sync onboarding data, staying on signup page');
+          }
+        }
+      } catch (error) {
+        console.warn('Error checking authentication or syncing data:', error);
+        // Continue with signup flow if check fails
+      }
+    };
+
+    checkOnboardingAndSync();
   }, [router]);
 
   async function handleOAuthLogin(provider: string) {
