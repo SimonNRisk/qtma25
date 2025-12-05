@@ -40,7 +40,8 @@ export function useAuth(redirectTo: string = '/login') {
     await session.clear(); // Clear cookies via backend
     setIsAuthenticated(false);
     setUser(null);
-    router.replace('/login');
+    // Use hard navigation to ensure cookies are cleared and page refreshes
+    window.location.href = '/login';
   };
 
   return {

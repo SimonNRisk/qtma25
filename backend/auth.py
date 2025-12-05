@@ -514,14 +514,25 @@ def logout(response: Response):
     try:
         # Sign out from Supabase
         supabase.auth.sign_out()
-        
-        # Clear HttpOnly cookies
-        response.delete_cookie(key="access_token", path="/")
-        response.delete_cookie(key="refresh_token", path="/")
-        
-        return {"message": "Logged out successfully"}
     except Exception:
-        # Still clear cookies even if Supabase sign out fails
-        response.delete_cookie(key="access_token", path="/")
-        response.delete_cookie(key="refresh_token", path="/")
-        return {"message": "Logged out successfully"}
+        # Continue even if Supabase sign out fails
+        pass
+    
+    # Clear HttpOnly cookies - must use same domain as when setting them
+    cookie_domain = get_cookie_domain()
+    response.delete_cookie(
+        key="access_token",
+        path="/",
+        domain=cookie_domain,  # Must match the domain used when setting the cookie
+        samesite="lax",
+        secure=False if IS_DEV else True
+    )
+    response.delete_cookie(
+        key="refresh_token",
+        path="/",
+        domain=cookie_domain,  # Must match the domain used when setting the cookie
+        samesite="lax",
+        secure=False if IS_DEV else True
+    )
+    
+    return {"message": "Logged out successfully"}

@@ -167,7 +167,8 @@ export default function MePage() {
                 <button
                   onClick={async () => {
                     await session.clear();
-                    router.replace('/login');
+                    // Use hard navigation to ensure cookies are cleared and page refreshes
+                    window.location.href = '/login';
                   }}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl"
                 >
