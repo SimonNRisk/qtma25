@@ -8,6 +8,7 @@ from typing import Annotated, Optional
 from auth import get_current_user
 from linkedin_supabase_service import SupabaseService
 from utils.rate_limit import openai_rate_limiter, get_client_ip
+from services.prompt_context import PromptContextService
 
 load_dotenv()
 
@@ -17,6 +18,11 @@ client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Initialize LinkedIn Supabase service for storing generated hooks
 linkedin_supabase_service = SupabaseService()
+prompt_context_service: Optional[PromptContextService] = None
+try:
+    prompt_context_service = PromptContextService()
+except Exception as err:
+    print(f"PromptContextService unavailable; continuing without RAG context: {err}")
 
 class FirstPostRequest(BaseModel):
     full_name: str
@@ -132,12 +138,26 @@ async def generate_linkedin_posts(
     target_words = word_counts[request.length]
     
     # Build the prompt
+    rag_context = ""
+    if prompt_context_service:
+        try:
+            context_result = await prompt_context_service.build_prompt_context(
+                user_id=current_user["id"],
+                query=request.context,
+                memory_limit=5,
+                news_limit=3,
+                search_top_k=5,
+            )
+            rag_context = f"\n\nContext pack (onboarding, memories, news, vector matches):\n{context_result['prompt_context']}"
+        except Exception as err:
+            print(f"Warning: failed to build prompt context: {err}")
+
     context_part = ""
     if request.context:
         context_part = f"\n\nUser Context: {request.context}\nMake the posts specific and relevant to this context."
     else:
         context_part = "\n\nUser Context: Not provided. Create generic but engaging startup-focused posts that would work for any founder/entrepreneur."
-    
+
     tone_part = ""
     if request.tone:
         tone_part = f"\nTone: {request.tone}"
@@ -148,7 +168,7 @@ async def generate_linkedin_posts(
     
     system_prompt = f"""You are an expert LinkedIn content creator specializing in helping startups and entrepreneurs gain traction.
 
-Your task is to generate {request.quantity} unique LinkedIn posts, each with a DIFFERENT style and approach. Each post should be approximately {target_words} words.{context_part}{tone_part}{audience_part}
+Your task is to generate {request.quantity} unique LinkedIn posts, each with a DIFFERENT style and approach. Each post should be approximately {target_words} words.{context_part}{tone_part}{audience_part}{rag_context}
 
 Requirements:
 1. Each post must be UNIQUE in style - use different formats like: storytelling, tips/advice, thought leadership, engagement questions, case studies, personal anecdotes, etc.

@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 from fastapi import HTTPException, status
+import json
 
 from .models import (
     Article,
@@ -114,7 +115,14 @@ class IndustryNewsService:
         async with httpx.AsyncClient(timeout=config.timeout) as client:
             response = await client.get(config.endpoint, params=params)
             response.raise_for_status()
-            return response.json()
+            try:
+                return response.json()
+            except json.JSONDecodeError:
+                # Some providers (e.g., GDELT) occasionally return non-JSON payloads.
+                # Fallback to an empty payload so callers can continue with a graceful summary.
+                snippet = response.text[:200] if response.text else "empty response"
+                print(f"Warning: failed to decode JSON from {config.provider} ({config.endpoint}). Snippet: {snippet}")
+                return {"articles": []}
 
     def resolve_slugs(self, requested: Optional[str]) -> List[str]:
         if not requested:
@@ -135,4 +143,3 @@ class IndustryNewsService:
                 ordered.append(slug)
                 seen.add(slug)
         return ordered
-
