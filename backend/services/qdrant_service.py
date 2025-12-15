@@ -6,6 +6,7 @@ by embedding the content with OpenAI.
 """
 
 import os
+import time
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
@@ -56,7 +57,35 @@ class QdrantService:
                     distance=qmodels.Distance.COSINE,
                 ),
             )
+        self._ensure_payload_indexes(name)
         return name
+
+    def _ensure_payload_indexes(self, collection_name: str) -> None:
+        """Create indexes needed for filtering; safe to call repeatedly."""
+        for field, field_type in (
+            ("user_id", qmodels.PayloadSchemaType.KEYWORD),
+            ("url", qmodels.PayloadSchemaType.KEYWORD),
+            ("indexed_ts", qmodels.PayloadSchemaType.FLOAT),
+            ("published_ts", qmodels.PayloadSchemaType.FLOAT),
+        ):
+            try:
+                self.client.create_payload_index(
+                    collection_name=collection_name,
+                    field_name=field,
+                    field_schema=field_type,
+                )
+            except Exception:
+                # Ignore if already exists or not supported
+                pass
+
+    def wipe_collection(self, collection_name: Optional[str] = None) -> None:
+        """Drop the collection entirely."""
+        name = collection_name or self.default_collection
+        try:
+            self.client.delete_collection(name)
+        except Exception:
+            # Ignore if it does not exist
+            pass
 
     def embed_text(self, content: str) -> list[float]:
         """Generate an embedding vector for the given content."""
@@ -71,6 +100,41 @@ class QdrantService:
         if not vector:
             raise ValueError("Failed to generate embedding for the provided content")
         return vector
+
+    def delete_by_filter(
+        self,
+        payload_filter: qmodels.Filter,
+        collection_name: Optional[str] = None,
+    ) -> None:
+        """Delete points matching a filter."""
+        collection = self.ensure_collection(collection_name)
+        self.client.delete(
+            collection_name=collection,
+            points_selector=payload_filter,
+        )
+
+    def delete_by_url(
+        self,
+        url: str,
+        user_id: str,
+        collection_name: Optional[str] = None,
+    ) -> None:
+        """Delete any existing points for the same user + URL."""
+        if not url or not user_id:
+            return
+        payload_filter = qmodels.Filter(
+            must=[
+                qmodels.FieldCondition(
+                    key="user_id",
+                    match=qmodels.MatchValue(value=user_id),
+                ),
+                qmodels.FieldCondition(
+                    key="url",
+                    match=qmodels.MatchValue(value=url),
+                ),
+            ]
+        )
+        self.delete_by_filter(payload_filter, collection_name)
 
     def upsert_document(
         self,
@@ -117,6 +181,7 @@ class QdrantService:
         collection_name: Optional[str] = None,
         top_k: int = 5,
         score_threshold: Optional[float] = None,
+        recent_days: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
         """Search for the most relevant documents for a given user and query."""
         if not query or not query.strip():
@@ -127,21 +192,44 @@ class QdrantService:
         collection = self.ensure_collection(collection_name)
         query_vector = self.embed_text(query)
 
-        results = self.client.search(
-            collection_name=collection,
-            query_vector=query_vector,
-            limit=top_k,
-            with_payload=True,
-            score_threshold=score_threshold,
-            query_filter=qmodels.Filter(
-                must=[
-                    qmodels.FieldCondition(
-                        key="user_id",
-                        match=qmodels.MatchValue(value=user_id),
-                    )
-                ]
-            ),
-        )
+        must_conditions: List[qmodels.FieldCondition] = [
+            qmodels.FieldCondition(
+                key="user_id",
+                match=qmodels.MatchValue(value=user_id),
+            )
+        ]
+
+        if recent_days and recent_days > 0:
+            cutoff_ts = time.time() - (recent_days * 86400)
+            must_conditions.append(
+                qmodels.FieldCondition(
+                    key="indexed_ts",
+                    range=qmodels.Range(gte=cutoff_ts),
+                )
+            )
+
+        query_filter = qmodels.Filter(must=must_conditions)
+
+        # qdrant-client >=1.14 renamed `search` -> `query_points`
+        if hasattr(self.client, "query_points"):
+            response = self.client.query_points(
+                collection_name=collection,
+                query=query_vector,
+                limit=top_k,
+                with_payload=True,
+                score_threshold=score_threshold,
+                query_filter=query_filter,
+            )
+            hits = getattr(response, "points", response)
+        else:
+            hits = self.client.search(
+                collection_name=collection,
+                query_vector=query_vector,
+                limit=top_k,
+                with_payload=True,
+                score_threshold=score_threshold,
+                query_filter=query_filter,
+            )
 
         return [
             {
@@ -149,5 +237,5 @@ class QdrantService:
                 "score": hit.score,
                 "payload": hit.payload,
             }
-            for hit in results
+            for hit in hits
         ]
