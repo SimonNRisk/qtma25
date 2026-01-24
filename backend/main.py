@@ -15,6 +15,7 @@ from api.hooks import router as hooks_router
 from api.onboarding import router as onboarding_router
 from api.news import router as news_router
 from api.thought_prompts import router as thought_prompts_router
+from api.slack import router as slack_router
 # Load environment variables
 load_dotenv()
 
@@ -42,6 +43,7 @@ app.include_router(hooks_router)
 app.include_router(onboarding_router)
 app.include_router(news_router)
 app.include_router(thought_prompts_router)
+app.include_router(slack_router)
 # ---------- Routes ----------
 @app.get("/me")
 def get_current_user_profile(
