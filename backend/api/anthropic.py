@@ -1,19 +1,19 @@
 from fastapi import APIRouter, Request, HTTPException, status, Depends
 from pydantic import BaseModel
-from openai import OpenAI
+import anthropic
 import os
 import re
 from dotenv import load_dotenv
 from typing import Annotated, Optional
 from auth import get_current_user
 from linkedin_supabase_service import SupabaseService
-from utils.rate_limit import openai_rate_limiter, get_client_ip
+from utils.rate_limit import anthropic_rate_limiter, get_client_ip
 
 load_dotenv()
 
-router = APIRouter(prefix="/api/openai", tags=["openai"])
+router = APIRouter(prefix="/api/anthropic", tags=["anthropic"])
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 # Initialize LinkedIn Supabase service for storing generated hooks
 linkedin_supabase_service = SupabaseService()
@@ -45,7 +45,7 @@ async def generate_first_post(
 ):
     # Rate limiting check
     client_ip = get_client_ip(http_request)
-    if not openai_rate_limiter.check_rate_limit(client_ip):
+    if not anthropic_rate_limiter.check_rate_limit(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded. Please try again later."
@@ -73,15 +73,15 @@ async def generate_first_post(
         - Do NOT include hashtags or mentions.
         """
     )
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
+    response = client.messages.create(
+        model="claude-3-5-sonnet-20241022",
+        max_tokens=800,
+        system=system_prompt,
         messages=[
-            {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt}
         ],
-        max_tokens=800,
     )
-    post_text = response.choices[0].message.content
+    post_text = response.content[0].text
     if not post_text:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -95,7 +95,7 @@ async def generate_linkedin_posts(
     current_user: Annotated[dict, Depends(get_current_user)]
 ):
     """
-    Generate multiple LinkedIn post hooks/content using OpenAI
+    Generate multiple LinkedIn post hooks/content using Anthropic
     
     Parameters:
     - quantity: Number of posts to generate (default: 10, minimum: 3)
@@ -106,11 +106,11 @@ async def generate_linkedin_posts(
     
     Returns a list of unique LinkedIn post suggestions in different styles.
     """
-    # Validate OpenAI API key
+    # Validate Anthropic API key
     if not client:
         raise HTTPException(
             status_code=500, 
-            detail="OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file"
+            detail="Anthropic API key not configured. Please set ANTHROPIC_API_KEY in your .env file"
         )
     
     # Validate quantity
@@ -162,23 +162,23 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
 """
     
     try:
-        response = client.chat.completions.create(
-            model="gpt-4",
+        response = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=4000 if request.length == 3 else 2500 if request.length == 2 else 1500,
+            temperature=0.9,  # Higher temperature for more creative and varied outputs
+            system=system_prompt,
             messages=[
-                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": f"Generate {request.quantity} unique LinkedIn posts with different styles."}
             ],
-            temperature=0.9,  # Higher temperature for more creative and varied outputs
-            max_tokens=4000 if request.length == 3 else 2500 if request.length == 2 else 1500
         )
         
         # Safely extract content with null safety
-        posts_text = response.choices[0].message.content if response.choices and response.choices[0].message.content else ""
+        posts_text = response.content[0].text if response.content and len(response.content) > 0 else ""
         
         if not posts_text:
             raise HTTPException(
                 status_code=500,
-                detail="OpenAI returned empty response. Please try again."
+                detail="Anthropic returned empty response. Please try again."
             )
         
         # Parse the posts (split by blank lines)

@@ -1,8 +1,8 @@
-import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
 import { NextRequest, NextResponse } from 'next/server';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
 function verifyToken(token: string | undefined): boolean {
@@ -79,17 +79,24 @@ export async function POST(request: NextRequest) {
       content: userContent,
     });
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages,
+    const systemMessage = messages.find(m => m.role === 'system')?.content;
+    const userMessages = messages.filter(m => m.role === 'user').map(m => ({
+      role: 'user' as const,
+      content: m.content,
+    }));
+
+    const completion = await anthropic.messages.create({
+      model: 'claude-3-haiku-20240307',
       max_tokens: 500,
+      ...(systemMessage && { system: systemMessage }),
+      messages: userMessages,
     });
 
-    const generatedText = completion.choices[0]?.message?.content || '';
+    const generatedText = completion.content[0]?.type === 'text' ? completion.content[0].text : '';
 
     return NextResponse.json({ generatedText });
   } catch (error) {
-    console.error('OpenAI API error:', error);
+    console.error('Anthropic API error:', error);
     return NextResponse.json({ error: 'Failed to generate content' }, { status: 500 });
   }
 }
