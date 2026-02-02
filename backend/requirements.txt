@@ -28,6 +28,7 @@ h2==4.2.0
 
 # OpenAI for content generation
 openai==2.6.1
+trafilatura==1.8.1
 
 # Environment variables
 python-dotenv==1.1.1
@@ -39,3 +40,11 @@ idna==3.10
 certifi==2025.7.14
 typing-extensions==4.14.1
 
+#QDrant for vectordb
+qdrant-client==1.16.1
+trafilatura==1.8.1
+
+# Agentic planner (LangGraph / LangChain + Anthropic)
+langchain-core==0.3.15
+langgraph==0.2.31
+langchain-anthropic==0.1.23
