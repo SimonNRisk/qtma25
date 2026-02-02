@@ -15,7 +15,7 @@ JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY")
 if not JWT_SECRET_KEY:
     raise ValueError("JWT_SECRET_KEY environment variable is required and must be set")
 JWT_ALGORITHM = "HS256"
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 30
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24
 JWT_REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 # Supabase Configuration
