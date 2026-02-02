@@ -42,3 +42,9 @@ typing-extensions==4.14.1
 
 #QDrant for vectordb
 qdrant-client==1.16.1
+trafilatura==1.8.1
+
+# Agentic planner (LangGraph / LangChain + Anthropic)
+langchain-core==0.3.15
+langgraph==0.2.31
+langchain-anthropic==0.1.23
