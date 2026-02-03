@@ -1,22 +1,26 @@
+"""
+LLM-backed generation API (first-post, generate-posts).
+Provider-agnostic route surface; implementation may use any model provider.
+"""
 from fastapi import APIRouter, Request, HTTPException, status, Depends
 from pydantic import BaseModel
 import anthropic
 import os
-import re
 from dotenv import load_dotenv
 from typing import Annotated, Optional
 from auth import get_current_user
 from linkedin_supabase_service import SupabaseService
-from utils.rate_limit import anthropic_rate_limiter, get_client_ip
+from utils.rate_limit import llm_rate_limiter, get_client_ip
 
 load_dotenv()
 
-router = APIRouter(prefix="/api/anthropic", tags=["anthropic"])
+router = APIRouter(prefix="/api/llm", tags=["llm"])
 
 client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 # Initialize LinkedIn Supabase service for storing generated hooks
 linkedin_supabase_service = SupabaseService()
+
 
 class FirstPostRequest(BaseModel):
     full_name: str
@@ -28,8 +32,10 @@ class FirstPostRequest(BaseModel):
     selected_goals: list[str]
     selected_hooks: list[str]
 
+
 class FirstPostResponse(BaseModel):
     post_text: str
+
 
 class LinkedInPostGenerationRequest(BaseModel):
     quantity: int = 10
@@ -38,6 +44,7 @@ class LinkedInPostGenerationRequest(BaseModel):
     tone: Optional[str] = None  # Optional: professional, casual, friendly, etc.
     audience: Optional[str] = None  # Optional: more specific audience targeting
 
+
 @router.post("/first-post", response_model=FirstPostResponse)
 async def generate_first_post(
     request: FirstPostRequest,
@@ -45,7 +52,7 @@ async def generate_first_post(
 ):
     # Rate limiting check
     client_ip = get_client_ip(http_request)
-    if not anthropic_rate_limiter.check_rate_limit(client_ip):
+    if not llm_rate_limiter.check_rate_limit(client_ip):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded. Please try again later."
@@ -89,63 +96,64 @@ async def generate_first_post(
         )
     return FirstPostResponse(post_text=post_text)
 
+
 @router.post("/generate-posts")
 async def generate_linkedin_posts(
     request: LinkedInPostGenerationRequest,
     current_user: Annotated[dict, Depends(get_current_user)]
 ):
     """
-    Generate multiple LinkedIn post hooks/content using Anthropic
-    
+    Generate multiple LinkedIn post hooks/content using the configured LLM.
+
     Parameters:
     - quantity: Number of posts to generate (default: 10, minimum: 3)
     - context: Optional user context to personalize posts (default: null for generic posts)
     - length: Post length - 1=short (~150 words), 2=medium (~300 words), 3=long (~500 words) (default: 2)
     - tone: Optional tone (professional, casual, friendly, etc.)
     - audience: Optional specific audience targeting
-    
+
     Returns a list of unique LinkedIn post suggestions in different styles.
     """
-    # Validate Anthropic API key
+    # Validate LLM API key
     if not client:
         raise HTTPException(
-            status_code=500, 
-            detail="Anthropic API key not configured. Please set ANTHROPIC_API_KEY in your .env file"
+            status_code=500,
+            detail="LLM API key not configured. Please set ANTHROPIC_API_KEY in your .env file"
         )
-    
+
     # Validate quantity
     if request.quantity < 3:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Quantity must be at least 3"
         )
-    
+
     # Validate length
     if request.length not in [1, 2, 3]:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Length must be 1 (short), 2 (medium), or 3 (long)"
         )
-    
+
     # Determine word count based on length
     word_counts = {1: "about 150", 2: "about 300", 3: "about 500"}
     target_words = word_counts[request.length]
-    
+
     # Build the prompt
     context_part = ""
     if request.context:
         context_part = f"\n\nUser Context: {request.context}\nMake the posts specific and relevant to this context."
     else:
         context_part = "\n\nUser Context: Not provided. Create generic but engaging startup-focused posts that would work for any founder/entrepreneur."
-    
+
     tone_part = ""
     if request.tone:
         tone_part = f"\nTone: {request.tone}"
-    
+
     audience_part = ""
     if request.audience:
         audience_part = f"\nTarget Audience: {request.audience}"
-    
+
     system_prompt = f"""You are an expert LinkedIn content creator specializing in helping startups and entrepreneurs gain traction.
 
 Your task is to generate {request.quantity} unique LinkedIn posts, each with a DIFFERENT style and approach. Each post should be approximately {target_words} words.{context_part}{tone_part}{audience_part}
@@ -160,7 +168,7 @@ Requirements:
 
 CRITICAL: Each post must start immediately with the post content - do NOT prefix posts with numbers (like "1." or "Post 1:"), titles / headings, or labels. Separate posts with blank lines.
 """
-    
+
     try:
         response = client.messages.create(
             model="claude-3-5-sonnet-20241022",
@@ -171,19 +179,19 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
                 {"role": "user", "content": f"Generate {request.quantity} unique LinkedIn posts with different styles."}
             ],
         )
-        
+
         # Safely extract content with null safety
         posts_text = response.content[0].text if response.content and len(response.content) > 0 else ""
-        
+
         if not posts_text:
             raise HTTPException(
                 status_code=500,
-                detail="Anthropic returned empty response. Please try again."
+                detail="LLM returned empty response. Please try again."
             )
-        
+
         # Parse the posts (split by blank lines)
         posts_list = [p.strip() for p in posts_text.split('\n\n') if p.strip()]
-        
+
         # Simple cleanup - just remove leading prefixes like "1.", "Post 1:", etc.
         cleaned_posts = []
         for post in posts_list:
@@ -191,7 +199,7 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
                 post = post.strip()
                 if post and len(post) > 10:
                     cleaned_posts.append(post)
-        
+
         # Store hooks in database
         stored_record = None
         storage_error = None
@@ -204,7 +212,7 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
             # Log error but don't fail the request
             storage_error = str(e)
             print(f"Warning: Failed to store hooks in database: {storage_error}")
-        
+
         response = {
             "success": True,
             "quantity": len(cleaned_posts),
@@ -217,7 +225,7 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
                 "audience": request.audience
             }
         }
-        
+
         # Include storage info if successful
         if stored_record:
             response["storage"] = {
@@ -230,9 +238,9 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
                 "stored": False,
                 "error": storage_error
             }
-        
+
         return response
-    
+
     except Exception as e:
         raise HTTPException(
             status_code=500,

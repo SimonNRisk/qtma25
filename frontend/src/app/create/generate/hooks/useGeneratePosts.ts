@@ -31,7 +31,7 @@ export const useGeneratePosts = (options: UseGeneratePostsOptions = {}) => {
     setGeneratedPosts([]);
 
     try {
-      const response = await fetch(`${API_URL}/api/anthropic/generate-posts`, {
+      const response = await fetch(`${API_URL}/api/llm/generate-posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

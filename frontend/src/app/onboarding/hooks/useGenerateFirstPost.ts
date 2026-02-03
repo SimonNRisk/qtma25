@@ -52,7 +52,7 @@ export const useGenerateFirstPost = () => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/api/anthropic/first-post`, {
+      const response = await fetch(`${API_URL}/api/llm/first-post`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
