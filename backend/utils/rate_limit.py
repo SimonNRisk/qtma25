@@ -104,8 +104,8 @@ def rate_limit_dependency(
 
 
 # Pre-configured rate limiters for different endpoints
-# OpenAI endpoints: 10 requests per hour
-openai_rate_limiter = RateLimiter(max_requests=10, window_seconds=3600)
+# LLM generation endpoints: 10 requests per hour
+llm_rate_limiter = RateLimiter(max_requests=10, window_seconds=3600)
 
 # News endpoints: 10 requests per hour (more lenient since they're read-only)
 news_rate_limiter = RateLimiter(max_requests=30, window_seconds=3600)

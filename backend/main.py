@@ -9,7 +9,7 @@ from config import get_cors_origins
 
 # Routers
 from auth import auth_router, get_current_user
-from api.openai import router as openai_router
+from api.llm import router as llm_router
 from api.linkedin import router as linkedin_router
 from api.hooks import router as hooks_router
 from api.onboarding import router as onboarding_router
@@ -36,7 +36,7 @@ class ProfileBody(BaseModel):
 
 # Include auth router
 app.include_router(auth_router)
-app.include_router(openai_router)
+app.include_router(llm_router)
 app.include_router(linkedin_router)
 app.include_router(hooks_router)
 app.include_router(onboarding_router)

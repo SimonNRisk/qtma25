@@ -4,7 +4,7 @@ import os
 import base64
 import json
 from dotenv import load_dotenv
-from typing import Optional, Annotated, List, Dict, Any
+from typing import Optional, Annotated
 from linkedin_supabase_service import SupabaseService
 from linkedin_oauth import LinkedInOAuth
 from linkedin_service import LinkedInService

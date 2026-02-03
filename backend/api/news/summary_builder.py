@@ -2,18 +2,18 @@ import os
 from typing import TYPE_CHECKING, List, Optional
 
 from fastapi.concurrency import run_in_threadpool
-from openai import OpenAI
+import anthropic
 
 if TYPE_CHECKING:
     from .models import Article
 
 
 class NewsSummaryBuilder:
-    """Generates condensed summaries with OpenAI when available."""
+    """Generates condensed summaries with Anthropic when available."""
 
     def __init__(self) -> None:
-        api_key = os.getenv("OPENAI_API_KEY")
-        self.client: Optional[OpenAI] = OpenAI(api_key=api_key) if api_key else None
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        self.client: Optional[anthropic.Anthropic] = anthropic.Anthropic(api_key=api_key) if api_key else None
 
     async def build_summary(
         self, industry: str, provider: str, articles: List["Article"]
@@ -55,19 +55,16 @@ class NewsSummaryBuilder:
             f"Headlines:\n{os.linesep.join(bullet_lines)}"
         )
 
-        response = self.client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = self.client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=200,
+            temperature=0.3,
+            system="You are a chief-of-staff producing sharp competitive briefs.",
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are a chief-of-staff producing sharp competitive briefs.",
-                },
                 {"role": "user", "content": prompt},
             ],
-            temperature=0.3,
-            max_tokens=200,
         )
-        content = response.choices[0].message.content if response.choices else None
+        content = response.content[0].text if response.content and len(response.content) > 0 else None
         if not content:
             return self._build_fallback_summary(industry, [a.title for a in articles])
         return content.strip()

@@ -1,10 +1,11 @@
 import asyncio
 import json
 import os
+import re
 from typing import Annotated, Any, Awaitable, Dict, List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Header, Query, Request, status
-from openai import OpenAI
+import anthropic
 from pydantic import BaseModel
 
 from utils.rate_limit import news_rate_limiter, get_client_ip
@@ -129,8 +130,8 @@ INDUSTRY_CONFIGS: List[IndustryAPIConfig] = [
 summary_builder = NewsSummaryBuilder()
 news_service = IndustryNewsService(INDUSTRY_CONFIGS, summary_builder)
 
-# OpenAI client for generating hooks
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if os.getenv("OPENAI_API_KEY") else None
+# Anthropic client for generating hooks
+anthropic_client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY")) if os.getenv("ANTHROPIC_API_KEY") else None
 
 # Supabase service for storing news hooks
 try:
@@ -154,7 +155,7 @@ class NewsHooksResponse(BaseModel):
 
 async def generate_hooks_from_summary(summary: str, industry: str, num_hooks: int = 4) -> List[str]:
     """
-    Generate LinkedIn post hooks from a news summary using OpenAI tool calling.
+    Generate LinkedIn post hooks from a news summary using Anthropic.
     
     Args:
         summary: News summary text
@@ -164,10 +165,10 @@ async def generate_hooks_from_summary(summary: str, industry: str, num_hooks: in
     Returns:
         List of LinkedIn post hooks
     """
-    if not openai_client:
+    if not anthropic_client:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="OpenAI API key not configured",
+            detail="Anthropic API key not configured",
         )
 
     system_prompt = """You are an expert LinkedIn content creator specializing in creating engaging post hooks that grab attention and drive engagement.
@@ -193,76 +194,55 @@ Each hook should:
 - Focus on strategic implications rather than specific products or companies
 - Use patterns like "Here's what [trend] tells us about [broader insight]" or "The [industry] shift that matters for every business"
 - Make them diverse in style (questions, statements, insights, etc.)
-- Avoid mentioning specific brand names, product launches, or company-specific details unless they illustrate a larger trend"""
+- Avoid mentioning specific brand names, product launches, or company-specific details unless they illustrate a larger trend
 
-    # Define the tool/function for structured output
-    tools = [
-        {
-            "type": "function",
-            "function": {
-                "name": "generate_linkedin_hooks",
-                "description": "Generate LinkedIn post hooks from a news summary",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "hooks": {
-                            "type": "array",
-                            "items": {
-                                "type": "string",
-                                "description": "A LinkedIn post hook (1-2 sentences, attention-grabbing opening line)"
-                            },
-                            "description": f"List of exactly {num_hooks} unique LinkedIn post hooks",
-                            "minItems": num_hooks,
-                            "maxItems": num_hooks
-                        }
-                    },
-                    "required": ["hooks"]
-                }
-            }
-        }
-    ]
+IMPORTANT: Return your response as a JSON object with a "hooks" array containing exactly {num_hooks} hooks. Format:
+{{
+  "hooks": [
+    "Hook 1 text here",
+    "Hook 2 text here",
+    ...
+  ]
+}}"""
 
     try:
-        response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = anthropic_client.messages.create(
+            model="claude-haiku-4-5",
+            max_tokens=500,
+            temperature=0.8,
+            system=system_prompt,
             messages=[
-                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
-            tools=tools,
-            tool_choice={"type": "function", "function": {"name": "generate_linkedin_hooks"}},
-            temperature=0.8,
-            max_tokens=500,
         )
 
-        if not response.choices:
+        if not response.content or len(response.content) == 0:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="OpenAI returned no choices",
+                detail="Anthropic returned no content",
             )
 
-        message = response.choices[0].message
-        if not message.tool_calls or len(message.tool_calls) == 0:
+        # Extract the text content
+        response_text = response.content[0].text if response.content[0].type == "text" else ""
+        
+        if not response_text:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="OpenAI did not return tool call",
+                detail="Anthropic returned empty response",
             )
 
-        # Extract the function call result
-        tool_call = message.tool_calls[0]
-        if tool_call.function.name != "generate_linkedin_hooks":
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Unexpected tool call returned: {tool_call.function.name}",
-            )
-
-        # Parse the JSON arguments
+        # Parse the JSON response
         try:
-            function_args = json.loads(tool_call.function.arguments)
+            # Try to extract JSON from the response (might be wrapped in markdown code blocks)
+            json_match = re.search(r'\{[^{}]*"hooks"[^{}]*\[[^\]]*\][^{}]*\}', response_text, re.DOTALL)
+            if json_match:
+                response_text = json_match.group(0)
+            
+            function_args = json.loads(response_text)
         except json.JSONDecodeError as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Error parsing tool call arguments: {str(e)}",
+                detail=f"Error parsing Anthropic response: {str(e)}. Response was: {response_text[:200]}",
             )
         
         hooks = function_args.get("hooks", [])
@@ -287,7 +267,7 @@ Each hook should:
     except json.JSONDecodeError as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error parsing OpenAI response: {str(e)}",
+            detail=f"Error parsing Anthropic response: {str(e)}",
         )
     except Exception as e:
         raise HTTPException(
