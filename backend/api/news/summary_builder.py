@@ -56,7 +56,7 @@ class NewsSummaryBuilder:
         )
 
         response = self.client.messages.create(
-            model="claude-3-haiku-20240307",
+            model="claude-haiku-4-5",
             max_tokens=200,
             temperature=0.3,
             system="You are a chief-of-staff producing sharp competitive briefs.",

@@ -81,7 +81,7 @@ async def generate_first_post(
         """
     )
     response = client.messages.create(
-        model="claude-3-5-sonnet-20241022",
+        model="claude-haiku-4-5",
         max_tokens=800,
         system=system_prompt,
         messages=[
@@ -171,7 +171,7 @@ CRITICAL: Each post must start immediately with the post content - do NOT prefix
 
     try:
         response = client.messages.create(
-            model="claude-3-5-sonnet-20241022",
+            model="claude-haiku-4-5",
             max_tokens=4000 if request.length == 3 else 2500 if request.length == 2 else 1500,
             temperature=0.9,  # Higher temperature for more creative and varied outputs
             system=system_prompt,

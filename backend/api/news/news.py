@@ -207,7 +207,7 @@ IMPORTANT: Return your response as a JSON object with a "hooks" array containing
 
     try:
         response = anthropic_client.messages.create(
-            model="claude-3-haiku-20240307",
+            model="claude-haiku-4-5",
             max_tokens=500,
             temperature=0.8,
             system=system_prompt,
