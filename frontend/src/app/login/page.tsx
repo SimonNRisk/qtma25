@@ -129,9 +129,12 @@ function LoginForm() {
                 required
                 className="w-full rounded-xl border border-white/60 bg-transparent px-4 py-3 text-sm text-white placeholder-white/70 shadow-inner shadow-black/20 outline-none transition focus:border-white focus:ring-2 focus:ring-white/30"
               />
-              <p className="mt-1 text-[11px] text-white/75">
-                Use 8 or more letters, numbers, and symbols
-              </p>
+              <div className="mt-1 flex items-center justify-between">
+                <p className="text-[11px] text-white/75">Use 8 or more letters, numbers, and symbols</p>
+                <Link href="/forgot-password" className="text-[11px] text-white/85 hover:text-cyan-200">
+                  Forgot password?
+                </Link>
+              </div>
             </div>
 
             {msg && (

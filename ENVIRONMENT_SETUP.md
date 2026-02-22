@@ -85,9 +85,11 @@ The application uses environment variables to switch between development and pro
 
 1. **Default is Production**: If `ENVIRONMENT` or `NEXT_PUBLIC_ENVIRONMENT` is not set, the app runs in production mode
 2. **Production Requires URLs**: In production mode, `FRONTEND_ORIGIN` and `NEXT_PUBLIC_BACKEND_URL` must be set
-3. **Supabase Redirect URLs**: Make sure both localhost and production callback URLs are registered in Supabase:
+3. **Supabase Redirect URLs**: Make sure both localhost and production auth URLs are registered in Supabase:
    - `http://localhost:3000/auth/callback` (for dev)
    - `https://getastro.ca/auth/callback` (for prod)
+   - `http://localhost:3000/reset-password` (for dev password recovery)
+   - `https://getastro.ca/reset-password` (for prod password recovery)
 4. **Restart Required**: Always restart servers after changing environment variables
 
 ## Troubleshooting

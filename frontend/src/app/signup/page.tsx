@@ -371,6 +371,15 @@ function SignUpForm() {
                 Sign in
               </Link>
             </p>
+            <p className="mt-2 text-sm text-white/70">
+              Forgot your password?{' '}
+              <Link
+                href="/forgot-password"
+                className="text-white font-semibold hover:text-cyan-200 transition duration-200"
+              >
+                Reset it
+              </Link>
+            </p>
           </div>
         </StepCard>
       </div>
