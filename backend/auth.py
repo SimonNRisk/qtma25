@@ -2,11 +2,12 @@ import os
 import jwt
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie
-from pydantic import BaseModel, EmailStr
+from fastapi import APIRouter, Depends, HTTPException, status, Response, Cookie, Request
+from pydantic import BaseModel, EmailStr, Field, model_validator
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from config import FRONTEND_ORIGIN, IS_DEV
+from utils.rate_limit import RateLimiter, get_client_ip
 
 load_dotenv()
 
@@ -31,6 +32,8 @@ if SUPABASE_SERVICE_ROLE_KEY:
 
 # Router for auth endpoints
 auth_router = APIRouter(prefix="/auth", tags=["authentication"])
+forgot_password_rate_limiter = RateLimiter(max_requests=5, window_seconds=3600)
+FORGOT_PASSWORD_RESPONSE_MESSAGE = "If an account exists, a reset link has been sent."
 
 # ---------- Schemas ----------
 class SignUpBody(BaseModel):
@@ -42,6 +45,29 @@ class SignUpBody(BaseModel):
 class LoginBody(BaseModel):
     email: EmailStr
     password: str
+
+class ForgotPasswordBody(BaseModel):
+    email: EmailStr
+
+class ResetPasswordConfirmBody(BaseModel):
+    new_password: str = Field(min_length=8)
+    access_token: Optional[str] = None
+    refresh_token: Optional[str] = None
+    token_hash: Optional[str] = None
+    type: str = "recovery"
+
+    @model_validator(mode="after")
+    def validate_token_credentials(self):
+        has_token_hash = bool(self.token_hash)
+        has_token_pair = bool(self.access_token) and bool(self.refresh_token)
+
+        if not has_token_hash and not has_token_pair:
+            raise ValueError("Either token_hash or access_token + refresh_token is required")
+
+        if bool(self.access_token) != bool(self.refresh_token):
+            raise ValueError("Both access_token and refresh_token are required together")
+
+        return self
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -138,6 +164,128 @@ async def get_current_user(
     }
 
 # ---------- Auth Routes ----------
+@auth_router.post("/forgot-password")
+def forgot_password(body: ForgotPasswordBody, request: Request):
+    """Send a password reset email without revealing account existence."""
+    client_ip = get_client_ip(request)
+    if not forgot_password_rate_limiter.check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Rate limit exceeded. Please try again later.",
+        )
+
+    reset_redirect_url = f"{FRONTEND_ORIGIN}/reset-password"
+    try:
+        supabase.auth.reset_password_for_email(
+            str(body.email),
+            {"redirect_to": reset_redirect_url},
+        )
+    except Exception:
+        # Keep response generic to avoid account enumeration.
+        pass
+
+    return {"message": FORGOT_PASSWORD_RESPONSE_MESSAGE}
+
+@auth_router.post("/reset-password/confirm", response_model=AuthResponse)
+def confirm_reset_password(body: ResetPasswordConfirmBody, response: Response):
+    """Confirm password reset and issue application JWT cookies."""
+    try:
+        request_supabase: Client = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+
+        if body.token_hash:
+            auth_result = request_supabase.auth.verify_otp(
+                {
+                    "token_hash": body.token_hash,
+                    "type": body.type or "recovery",
+                }
+            )
+        else:
+            auth_result = request_supabase.auth.set_session(
+                body.access_token or "",
+                body.refresh_token or "",
+            )
+
+        if not auth_result or not auth_result.user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired reset link. Please request a new one.",
+            )
+
+        update_result = request_supabase.auth.update_user({"password": body.new_password})
+        user = update_result.user or auth_result.user
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired reset link. Please request a new one.",
+            )
+
+        user_id = getattr(user, "id", None)
+        email = getattr(user, "email", "")
+        user_metadata = getattr(user, "user_metadata", {}) or {}
+
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="User ID not found",
+            )
+
+        first_name = user_metadata.get("first_name", "")
+        last_name = user_metadata.get("last_name", "")
+        full_name = user_metadata.get("full_name", "")
+        if full_name and not (first_name or last_name):
+            name_parts = full_name.split()
+            first_name = name_parts[0] if name_parts else ""
+            last_name = " ".join(name_parts[1:]) if len(name_parts) > 1 else ""
+
+        token_data = {
+            "sub": user_id,
+            "email": email,
+            "first_name": first_name,
+            "last_name": last_name,
+        }
+
+        jwt_access_token = create_access_token(token_data)
+        jwt_refresh_token = create_refresh_token({"sub": user_id})
+
+        cookie_domain = get_cookie_domain()
+        response.set_cookie(
+            key="access_token",
+            value=jwt_access_token,
+            httponly=True,
+            secure=False if IS_DEV else True,
+            samesite="lax",
+            domain=cookie_domain,
+            max_age=JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            path="/",
+        )
+        response.set_cookie(
+            key="refresh_token",
+            value=jwt_refresh_token,
+            httponly=True,
+            secure=False if IS_DEV else True,
+            samesite="lax",
+            domain=cookie_domain,
+            max_age=JWT_REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
+            path="/",
+        )
+
+        return AuthResponse(
+            message="Password reset successful",
+            user={
+                "id": user_id,
+                "email": email,
+                "first_name": first_name,
+                "last_name": last_name,
+            },
+        )
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid or expired reset link. Please request a new one.",
+        )
+
 @auth_router.post("/signup")
 def signup(body: SignUpBody):
     """Sign up a new user - requires email confirmation"""

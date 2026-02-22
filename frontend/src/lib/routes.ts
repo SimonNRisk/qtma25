@@ -3,6 +3,8 @@ export const EXCLUDED_SIDEBAR_ROUTES = [
   '/',
   '/login',
   '/signup',
+  '/forgot-password',
+  '/reset-password',
   '/onboarding',
   '/auth/callback',
   '/linkedin-connect',
