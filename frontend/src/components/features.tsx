@@ -1,76 +1,86 @@
 'use client';
-
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-
-const steps = [
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Pencil, FileText, PlayCircle, Layers } from 'lucide-react';
+const features = [
   {
-    number: '1',
-    title: 'Ideation',
-    description: 'Connect to LinkedIn, select curated hooks from trending posts and news.',
-    image: '/images/linkedin-connection-dashboard.png',
+    id: 1,
+    description: "Generate post ideas from trends, prompts, and repurposed content.",
+    icon: <Pencil className="w-[18px] h-[18px]" strokeWidth={2.5} />,
+    fullTitle: "Content Ideation",
+    fullDescription: "Discover viral hooks, repurpose past posts, and generate thought prompts to quickly find new LinkedIn content ideas."
   },
   {
-    number: '2',
-    title: 'Creation',
-    description: 'Edit your post and plan future posts to automatically post trending updates.',
-    image: '/ai-content-generation-interface.jpg',
+    id: 2,
+    description: "Turn hooks into full posts written in your voice.",
+    icon: <FileText className="w-[18px] h-[18px]" strokeWidth={2.5} />,
+    fullTitle: "Post Creation",
+    fullDescription: "Transform strong hooks into complete posts and plan multiple pieces of content in advance."
   },
   {
-    number: '3',
-    title: 'Execution',
-    description: 'Post to LinkedIn and watch interactions grow.',
-    image: '/growth-metrics-dashboard.png',
+    id: 3,
+    description: "Organize drafts, scheduled posts, and live content in one place.",
+    icon: <PlayCircle className="w-[18px] h-[18px]" strokeWidth={2.5} />,
+    fullTitle: "Content Execution",
+    fullDescription: "Manage your entire posting workflow through a unified dashboard for drafts, queued posts, and published content."
   },
+  {
+    id: 4,
+    description: "Track engagement and identify your top-performing posts.",
+    icon: <Layers className="w-[18px] h-[18px]" strokeWidth={2.5} />,
+    fullTitle: "Performance Analysis",
+    fullDescription: "Monitor likes, views, and engagement to understand what content works and refine your posting strategy."
+  }
 ];
-
 export default function Features() {
+  const [activeFeature, setActiveFeature] = useState<number | null>(null);
+  const displayTitle = activeFeature !== null ? features[activeFeature].fullTitle : "Features";
+  const displayDescription = activeFeature !== null ? features[activeFeature].fullDescription : "ASTRO does everything you think it does and more...";
   return (
-    <section className="relative py-24 md:py-32">
-      <div className="container mx-auto px-4">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6">
-            LinkedIn SEO in 3 steps
-          </h2>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            The easiest way to automate beautiful, SEO-optimized LinkedIn posts.
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          {steps.map((step, index) => (
+    <section id="features" className="relative w-full bg-[#fdfdfd] text-[#4A4440] py-24 pb-48 px-4 sm:px-6 lg:px-8 border-t border-gray-100">
+      <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row gap-16 lg:gap-24 items-center">
+        {/* Left Side: Dynamic Text */}
+        <div className="flex-1 w-full flex flex-col justify-center min-h-[250px]">
+          <AnimatePresence mode="wait">
             <motion.div
-              key={step.number}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-              className="flex flex-col"
+              key={activeFeature !== null ? activeFeature : 'default'}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
             >
-              <div className="bg-card rounded-2xl p-6 shadow-lg border border-border mb-6 aspect-video overflow-hidden flex items-center justify-center">
-                <Image
-                  src={step.image || '/placeholder.svg'}
-                  alt={step.title}
-                  width={600}
-                  height={400}
-                  className="w-full h-full object-contain rounded-lg"
-                />
-              </div>
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-foreground mb-3 text-left">
-                  <span className="text-muted-foreground mr-2">{step.number}</span>
-                  {step.title}
-                </h3>
-                <p className="text-muted-foreground text-left">{step.description}</p>
-              </div>
+              <h2 className="font-poppins text-[48px] sm:text-[56px] lg:text-[64px] font-[800] leading-[1.1] mb-6 tracking-tight text-[#4A4440]">
+                {displayTitle}
+              </h2>
+              <p className="font-mono text-[16px] sm:text-[18px] leading-[1.7] text-[#4A4440] opacity-80 max-w-[400px]">
+                {displayDescription}
+              </p>
             </motion.div>
-          ))}
+          </AnimatePresence>
+        </div>
+        {/* Right Side: Grid of Tiles */}
+        <div className="flex-1 w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {features.map((feature, idx) => {
+            const isActive = activeFeature === idx;
+            return (
+              <div
+                key={feature.id}
+                onClick={() => setActiveFeature(idx)}
+                className={`cursor-pointer rounded-[32px] p-8 transition-all duration-300 flex flex-col aspect-square justify-between shadow-sm
+                  ${isActive
+                    ? 'bg-[#EAE8E2] border border-[#d1cec4] scale-[0.98]'
+                    : 'bg-[#F2F1ED] border border-transparent hover:bg-[#EAE8E2] hover:-translate-y-1'
+                  }`}
+              >
+                <div className="w-10 h-10 rounded-full bg-[#5C5A55] flex items-center justify-center text-[#E0D5B5] shadow-sm">
+                  {feature.icon}
+                </div>
+                <p className="text-[14.5px] font-medium leading-relaxed text-[#4A4440] max-w-[200px]">
+                  {feature.description}
+                </p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

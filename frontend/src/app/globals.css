@@ -1,126 +1,58 @@
-@import 'tailwindcss';
-
+@import "tailwindcss";
+@theme {
+  --animate-blob1: blob1 18s ease-in-out infinite;
+  --animate-blob2: blob2 26s ease-in-out infinite;
+  --animate-blob3: blob3 34s ease-in-out infinite;
+  --animate-spin-slow: spin 40s linear infinite;
+  --animate-float1: float1 24s ease-in-out infinite;
+  --animate-float2: float2 28s ease-in-out infinite;
+  --animate-float3: float3 32s ease-in-out infinite;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-playfair: var(--font-playfair), serif;
+}
+@keyframes blob1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+@keyframes blob2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(-40px, 25px) scale(1.08); }
+  66% { transform: translate(30px, -20px) scale(0.92); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+@keyframes blob3 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(25px, 40px) scale(0.95); }
+  66% { transform: translate(-30px, -25px) scale(1.05); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+@keyframes float1 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  33% { transform: translate(120px, -180px) rotate(15deg) scale(1.15); }
+  66% { transform: translate(-80px, 100px) rotate(-10deg) scale(0.85); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+@keyframes float2 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  33% { transform: translate(-150px, 120px) rotate(-15deg) scale(1.2); }
+  66% { transform: translate(100px, -80px) rotate(12deg) scale(0.8); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+@keyframes float3 {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+  33% { transform: translate(160px, 80px) rotate(20deg) scale(0.85); }
+  66% { transform: translate(-120px, -150px) rotate(-18deg) scale(1.3); }
+  100% { transform: translate(0, 0) rotate(0deg) scale(1); }
+}
 :root {
-  --astro-midnight: #0e1316;
-  --astro-indigo: #1e506c;
-  --astro-lazuli: #3c698e;
-  --astro-sky: #9bc6e9;
-  --astro-white: #ffffff;
-  --astro-panel-dark: #1a3a4a;
-  --astro-button-base: #8aa9b3;
-  --astro-button-hover: #90b0bc;
-  --astro-text-dark: #0c1a25;
-  --astro-panel-shadow: 0 40px 120px rgba(14, 19, 22, 0.65);
-  --astro-accent-glow: 0 0 60px rgba(155, 198, 233, 0.45);
-  --astro-hero-gradient:
-    radial-gradient(120% 120% at 50% 12%, rgba(155, 198, 233, 0.28), transparent 70%),
-    linear-gradient(145deg, #0e1316 0%, #1e506c 48%, #3c698e 100%);
-
-  --background: var(--astro-midnight);
-  --foreground: var(--astro-white);
-  --brand-dark: var(--astro-indigo);
-  --brand-light: var(--astro-sky);
-  --brand-blue: var(--astro-lazuli);
-
-  --profile-bg-gradient: radial-gradient(
-    circle at 50% 50%,
-    rgba(0, 0, 0, 0.65) 0%,
-    rgba(3, 34, 54, 0.75) 35%,
-    #0f4662 70%,
-    #0a324b 100%
-  );
-
-  --login-bg-start: #041626;
-  --login-bg-mid: #072f46;
-  --login-bg-end: #0b4c6c;
-  --login-card-start: #1c537a;
-  --login-card-mid: #174261;
-  --login-card-end: #112f45;
-  --login-button-start: #133045;
-  --login-button-mid: #05090f;
-  --login-button-end: #010305;
-  --login-button-border: #9ed0ff;
+  --background: #ffffff;
+  --foreground: #171717;
 }
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand-dark: var(--brand-dark);
-  --color-brand-light: var(--brand-light);
-  --color-brand-blue: var(--brand-blue);
-  --color-astro-midnight: var(--astro-midnight);
-  --color-astro-indigo: var(--astro-indigo);
-  --color-astro-lazuli: var(--astro-lazuli);
-  --color-astro-sky: var(--astro-sky);
-  --color-astro-white: var(--astro-white);
-  --color-astro-panel-dark: var(--astro-panel-dark);
-  --color-astro-button-base: var(--astro-button-base);
-  --color-astro-button-hover: var(--astro-button-hover);
-  --color-astro-text-dark: var(--astro-text-dark);
-  --shadow-astro-panel: var(--astro-panel-shadow);
-  --shadow-astro-glow: var(--astro-accent-glow);
-  --radius-astro-pill: 9999px;
-  --gradient-astro-hero: var(--astro-hero-gradient);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-serif: var(--font-playfair);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
-
-/* Profile/Me Page Styles */
-.profile-bg {
-  background-image: var(--profile-bg-gradient);
-}
-
-/* Hero Gradient Background */
-.bg-astro-hero {
-  background: var(--astro-hero-gradient);
-}
-
-/* Login Page Styles */
-.login-button {
-  box-shadow:
-    inset -30px -20px 60px rgba(0, 0, 0, 0.65),
-    0 18px 40px rgba(0, 0, 0, 0.5);
-}
-
-.login-button:hover:not(:disabled) {
-  box-shadow:
-    inset -30px -20px 60px rgba(0, 0, 0, 0.55),
-    0 20px 45px rgba(0, 0, 0, 0.6);
-}
-
-/* Auth Callback Animations */
-@keyframes scale-in {
-  from {
-    transform: scale(0);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  font-family: var(--font-sans);
+  overflow-x: hidden;
 }

@@ -36,7 +36,7 @@ export default function DemoVideo() {
   }, []);
 
   return (
-    <section className="relative py-24 md:py-32">
+    <section id="demo" className="relative w-full z-10 bg-[#fdfdfd] py-24 md:py-32">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 40 }}
